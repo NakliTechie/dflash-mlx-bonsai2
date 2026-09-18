@@ -103,9 +103,10 @@ def install_prism_verify_linears(packed_cls: Any, fwht: Any, mode: str | None = 
         rows = 1
         for d in shape[:-1]:
             rows *= d
-        if rows != 8 or self.weight.shape[0] % 64 != 0:
+        if rows == 1:
             return stock_call(self, x)
-        if mode == "fp16":
+        if mode == "fp16" or rows != 8 or self.weight.shape[0] % 64 != 0:
+            # 2..7 rows (adaptive verify shortens blocks) and >8 rows: the fp16 cast alone is 2.5x
             return stock_call(self, x.astype(mx.float16)).astype(x.dtype)
         x2 = x.reshape(rows, shape[-1])
         if self.block:
