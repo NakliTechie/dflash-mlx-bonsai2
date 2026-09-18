@@ -1,1 +1,36 @@
-[01:05:38] waiting for drafter
+[02:22:51] waiting for drafter
+[03:06:53] fetch.sh finished: assembled 3848817896 bytes sha256 67fc76d68dc5a9415511a4f394ef744d67510cd20e93b37cc2cc7d28e4bab65c 
+[03:06:59] checksum ok; removing parts
+[03:07:00] benchmark mode=v4b
+[03:07:01] mode=v4b exit 2 ; tail:
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+usage: dflash benchmark [-h] [--suite {smoke,humaneval,gsm8k,math500,aime25,longctx}] [--limit N]
+                        [--ctx-tokens N] [--prompt-file PATH] [--shuffle] [--seed INT]
+                        [--prompt PROMPT] [--max-tokens INT] [--block-tokens INT] [--no-memory]
+                        [--repeat INT] [--cooldown SECONDS] [--sustained-minutes MINUTES]
+                        [--wired-limit auto|none|BYTES] [--cache-limit auto|none|BYTES]
+                        [--model HF_REF_OR_PATH] [--draft HF_REF_OR_PATH] [--no-chat-template]
+                        [--draft-quant SPEC] [--no-eos] [--only-dflash]
+                        [--verify-mode {dflash,adaptive,ddtree,off}]
+                        [--copyspec-mode {conservative,off,auto}] [--prefill-step-size INT]
+                        [--target-fa-window INT] [--quantize-kv-cache | --no-quantize-kv-cache]
+                        [--draft-sink-size INT] [--draft-window-size INT]
+                        [--draft-full-context-min-ctx INT] [--verify-len-cap INT] [--out PATH]
+dflash benchmark: error: Model type prism_hadamard_qwen35 not supported.
+[03:07:01] benchmark mode=off
+[03:07:02] mode=off exit 2 ; tail:
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+usage: dflash benchmark [-h] [--suite {smoke,humaneval,gsm8k,math500,aime25,longctx}] [--limit N]
+                        [--ctx-tokens N] [--prompt-file PATH] [--shuffle] [--seed INT]
+                        [--prompt PROMPT] [--max-tokens INT] [--block-tokens INT] [--no-memory]
+                        [--repeat INT] [--cooldown SECONDS] [--sustained-minutes MINUTES]
+                        [--wired-limit auto|none|BYTES] [--cache-limit auto|none|BYTES]
+                        [--model HF_REF_OR_PATH] [--draft HF_REF_OR_PATH] [--no-chat-template]
+                        [--draft-quant SPEC] [--no-eos] [--only-dflash]
+                        [--verify-mode {dflash,adaptive,ddtree,off}]
+                        [--copyspec-mode {conservative,off,auto}] [--prefill-step-size INT]
+                        [--target-fa-window INT] [--quantize-kv-cache | --no-quantize-kv-cache]
+                        [--draft-sink-size INT] [--draft-window-size INT]
+                        [--draft-full-context-min-ctx INT] [--verify-len-cap INT] [--out PATH]
+dflash benchmark: error: Model type prism_hadamard_qwen35 not supported.
+[03:07:02] done

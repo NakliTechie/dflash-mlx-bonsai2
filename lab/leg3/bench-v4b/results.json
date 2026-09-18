@@ -1,0 +1,698 @@
+{
+  "config": {
+    "benchmark_mode": "smoke",
+    "block_tokens": 8,
+    "cache_limit": "auto",
+    "cooldown": 10,
+    "copyspec_mode": "conservative",
+    "ctx_tokens": 0,
+    "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+    "draft_full_context_min_ctx": 16384,
+    "draft_load_dtype": null,
+    "draft_load_dtype_source": null,
+    "draft_quant": null,
+    "draft_sink_size": 64,
+    "draft_window_size": 1024,
+    "git_hash": "9c675b0",
+    "hf_dataset_config": null,
+    "hf_dataset_name": null,
+    "hf_dataset_split": null,
+    "hf_shuffle_seed": null,
+    "include_memory": true,
+    "limit": 1,
+    "max_tokens": 512,
+    "metal_limits": {
+      "cache_applied": true,
+      "cache_bytes": 4767416320,
+      "cache_request": "auto",
+      "metal_available": true,
+      "recommended_bytes": 19069665280,
+      "warning": null,
+      "wired_applied": true,
+      "wired_bytes": 19069665280,
+      "wired_request": "auto"
+    },
+    "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+    "no_eos": true,
+    "no_memory": false,
+    "only_dflash": true,
+    "prefill_step_size": 2048,
+    "prompt": "The function $f$ satisfies the functional equation \\[ f(x) + f(y) = f(x + y) - xy - 1 \\] for all real numbers $x$ and $y$. If $f(1) = 1$, then find all integers $n$ such that $f(n) = n$. Enter all such integers, separated by commas. Please reason step by step, and put your final answer within \\boxed{}.",
+    "prompt_count": 1,
+    "prompt_file": null,
+    "prompt_id": "smoke-default",
+    "prompt_ids": [
+      "smoke-default"
+    ],
+    "prompt_source": "smoke",
+    "prompt_suite": "smoke",
+    "prompt_tokenization_mode": "chat_template",
+    "prompt_tokens": 144,
+    "repeat": 2,
+    "seed": 0,
+    "selected_row_indices": [
+      null
+    ],
+    "shuffle": false,
+    "suite": "smoke",
+    "target_fa_window": 0,
+    "use_chat_template": true,
+    "verify_len_cap": 0,
+    "verify_mode": "adaptive",
+    "wired_limit": "auto"
+  },
+  "hardware": {
+    "chip": "Apple M4 Pro",
+    "dflash_mlx_version": "0.1.10",
+    "memory_gb": "24",
+    "mlx_lm_version": "0.31.3",
+    "mlx_version": "0.32.2",
+    "python": "3.12.9"
+  },
+  "invocation": {
+    "argv": [
+      "dflash benchmark",
+      "--model",
+      "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+      "--draft",
+      "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+      "--only-dflash",
+      "--block-tokens",
+      "8",
+      "--max-tokens",
+      "512",
+      "--repeat",
+      "2",
+      "--no-eos",
+      "--out",
+      "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b"
+    ],
+    "command": "dflash benchmark --model /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit --draft /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 --only-dflash --block-tokens 8 --max-tokens 512 --repeat 2 --no-eos --out /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b",
+    "effective": {
+      "block_tokens": 8,
+      "cache_limit": "auto",
+      "cooldown": 10,
+      "copyspec_mode": "conservative",
+      "ctx_tokens": 0,
+      "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+      "draft_quant": null,
+      "draft_sink_size": 64,
+      "draft_window_size": 1024,
+      "include_memory": true,
+      "limit": 1,
+      "max_tokens": 512,
+      "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+      "no_eos": true,
+      "no_memory": false,
+      "only_dflash": true,
+      "out": "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b",
+      "prefill_step_size": 2048,
+      "prompt": null,
+      "prompt_file": null,
+      "repeat": 2,
+      "seed": 0,
+      "shuffle": false,
+      "suite": "smoke",
+      "target_fa_window": 0,
+      "use_chat_template": true,
+      "verify_len_cap": 0,
+      "verify_mode": "adaptive",
+      "wired_limit": "auto"
+    },
+    "explicit_flags": {
+      "block_tokens": 8,
+      "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+      "max_tokens": 512,
+      "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+      "no_eos": true,
+      "only_dflash": true,
+      "out": "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b",
+      "repeat": 2
+    },
+    "output_dir": "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b",
+    "output_path": "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b",
+    "primary_metric": "post_prefill_generation_tps",
+    "protocol_order": [
+      "dflash"
+    ],
+    "same_prompt_token_ids": null
+  },
+  "prompts": [
+    {
+      "config": {
+        "block_tokens": 8,
+        "cooldown": 10,
+        "copyspec_mode": "conservative",
+        "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+        "draft_full_context_min_ctx": 16384,
+        "draft_load_dtype": null,
+        "draft_load_dtype_source": null,
+        "draft_quant": null,
+        "draft_sink_size": 64,
+        "draft_window_size": 1024,
+        "git_hash": "9c675b0",
+        "max_tokens": 512,
+        "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+        "no_eos": true,
+        "only_dflash": true,
+        "prefill_step_size": 2048,
+        "prompt": "The function $f$ satisfies the functional equation \\[ f(x) + f(y) = f(x + y) - xy - 1 \\] for all real numbers $x$ and $y$. If $f(1) = 1$, then find all integers $n$ such that $f(n) = n$. Enter all such integers, separated by commas. Please reason step by step, and put your final answer within \\boxed{}.",
+        "prompt_id": "smoke-default",
+        "prompt_suite": "smoke",
+        "prompt_tokens": 144,
+        "repeat": 2,
+        "target_fa_window": 0,
+        "use_chat_template": true,
+        "verify_len_cap": 0,
+        "verify_mode": "adaptive"
+      },
+      "hardware": {
+        "chip": "Apple M4 Pro",
+        "dflash_mlx_version": "0.1.10",
+        "memory_gb": "24",
+        "mlx_lm_version": "0.31.3",
+        "mlx_version": "0.32.2",
+        "python": "3.12.9"
+      },
+      "runs": [
+        {
+          "baseline": {
+            "generation_tps": null,
+            "memory_end": null,
+            "peak_memory_gb": null,
+            "prefill_tok_s": null,
+            "prefill_tok_s_apparent": null,
+            "prefill_tok_s_physical": null,
+            "prefill_tokens_physical": null,
+            "ttft_ms": null
+          },
+          "dflash": {
+            "acceptance_first_20_avg": 2.15,
+            "acceptance_last_20_avg": 2.0,
+            "acceptance_ratio": 0.689453125,
+            "accepted_from_draft": 353,
+            "adaptive_metrics": {
+              "acceptance_by_block": {
+                "2": 1.0,
+                "3": 0.0,
+                "4": 0.7092198581560284,
+                "5": 0.8125
+              },
+              "cycles_by_block": {
+                "2": 1,
+                "3": 1,
+                "4": 141,
+                "5": 16
+              },
+              "cycles_by_mode": {
+                "full": 4,
+                "probe": 12,
+                "reduced": 143
+              },
+              "early_probe_cycles": 4,
+              "early_probe_full_acceptance": 0.75,
+              "early_probe_min_cycles": 16,
+              "early_probe_window": 8,
+              "full_accept_rate_by_block": {
+                "2": 1.0,
+                "3": 0.0,
+                "4": 0.6170212765957447,
+                "5": 0.6875
+              },
+              "full_accepts_by_block": {
+                "2": 1,
+                "4": 87,
+                "5": 11
+              },
+              "probe_cycles": 8,
+              "reduced_burst_cycles": 64,
+              "resume_speed_ratio": 1.0,
+              "tokens_per_cycle_by_block": {
+                "2": 2.0,
+                "3": 1.0,
+                "4": 3.127659574468085,
+                "5": 4.25
+              },
+              "tokens_per_cycle_by_mode": {
+                "full": 3.0,
+                "probe": 4.666666666666667,
+                "reduced": 3.104895104895105
+              },
+              "tokens_per_second_by_block": {
+                "2": 30.15800911902801,
+                "3": 11.319900384876613,
+                "4": 29.764791580694606,
+                "5": 23.029383291742153
+              },
+              "tokens_per_second_by_mode": {
+                "full": 8.280580103657295,
+                "probe": 37.24455056823918,
+                "reduced": 29.657693605665997
+              }
+            },
+            "cycles": 159,
+            "generation_tps": 25.715607567548314,
+            "logical_ctx_tokens": 144,
+            "memory_end": {
+              "mlx_active_gb": 11.528951772,
+              "mlx_cache_gb": 0.003310152,
+              "mlx_peak_gb": 12.516199656,
+              "phys_footprint_gb": 13.783737776,
+              "rss_gb": 11.60077312,
+              "untracked_gb": 0.068511196
+            },
+            "peak_memory_gb": 12.516199656,
+            "phase_timings_us": {
+              "commit": 1011625.632,
+              "draft": 2828323.418,
+              "draft_incremental": 1968974.709,
+              "draft_prefill": 859348.709,
+              "prefill": 1639659.875,
+              "replay": 24187.788,
+              "verify": 428668.879
+            },
+            "prefill_tok_s_apparent": 87.82309196899753,
+            "prefill_tok_s_physical": 87.82309196899753,
+            "prefill_tokens_computed": 144,
+            "prefill_tokens_physical": 144,
+            "prefill_tokens_restored": 0,
+            "tokens_per_cycle": 3.220125786163522,
+            "ttft_ms": 1684.127
+          },
+          "run": 1,
+          "speedup": null,
+          "thermal_pressure": "unknown"
+        },
+        {
+          "baseline": {
+            "generation_tps": null,
+            "memory_end": null,
+            "peak_memory_gb": null,
+            "prefill_tok_s": null,
+            "prefill_tok_s_apparent": null,
+            "prefill_tok_s_physical": null,
+            "prefill_tokens_physical": null,
+            "ttft_ms": null
+          },
+          "dflash": {
+            "acceptance_first_20_avg": 2.15,
+            "acceptance_last_20_avg": 2.0,
+            "acceptance_ratio": 0.689453125,
+            "accepted_from_draft": 353,
+            "adaptive_metrics": {
+              "acceptance_by_block": {
+                "2": 1.0,
+                "3": 0.0,
+                "4": 0.7092198581560284,
+                "5": 0.8125
+              },
+              "cycles_by_block": {
+                "2": 1,
+                "3": 1,
+                "4": 141,
+                "5": 16
+              },
+              "cycles_by_mode": {
+                "full": 4,
+                "probe": 12,
+                "reduced": 143
+              },
+              "early_probe_cycles": 4,
+              "early_probe_full_acceptance": 0.75,
+              "early_probe_min_cycles": 16,
+              "early_probe_window": 8,
+              "full_accept_rate_by_block": {
+                "2": 1.0,
+                "3": 0.0,
+                "4": 0.6170212765957447,
+                "5": 0.6875
+              },
+              "full_accepts_by_block": {
+                "2": 1,
+                "4": 87,
+                "5": 11
+              },
+              "probe_cycles": 8,
+              "reduced_burst_cycles": 64,
+              "resume_speed_ratio": 1.0,
+              "tokens_per_cycle_by_block": {
+                "2": 2.0,
+                "3": 1.0,
+                "4": 3.127659574468085,
+                "5": 4.25
+              },
+              "tokens_per_cycle_by_mode": {
+                "full": 3.0,
+                "probe": 4.666666666666667,
+                "reduced": 3.104895104895105
+              },
+              "tokens_per_second_by_block": {
+                "2": 28.651088830910226,
+                "3": 11.284829653408687,
+                "4": 29.753118273081185,
+                "5": 25.938648026085115
+              },
+              "tokens_per_second_by_mode": {
+                "full": 10.730328100893605,
+                "probe": 37.252739019277875,
+                "reduced": 29.638736348446518
+              }
+            },
+            "cycles": 159,
+            "generation_tps": 26.22716959713126,
+            "logical_ctx_tokens": 144,
+            "memory_end": {
+              "mlx_active_gb": 11.528937948,
+              "mlx_cache_gb": 0.003310152,
+              "mlx_peak_gb": 12.51621852,
+              "phys_footprint_gb": 13.901080032,
+              "rss_gb": 9.20952832,
+              "untracked_gb": 0.0
+            },
+            "peak_memory_gb": 12.51621852,
+            "phase_timings_us": {
+              "commit": 1022428.788,
+              "draft": 2360234.92,
+              "draft_incremental": 1909515.503,
+              "draft_prefill": 450719.417,
+              "prefill": 1896191.292,
+              "replay": 24696.787,
+              "verify": 456270.459
+            },
+            "prefill_tok_s_apparent": 75.94170514733068,
+            "prefill_tok_s_physical": 75.94170514733068,
+            "prefill_tokens_computed": 144,
+            "prefill_tokens_physical": 144,
+            "prefill_tokens_restored": 0,
+            "tokens_per_cycle": 3.220125786163522,
+            "ttft_ms": 1900.40375
+          },
+          "run": 2,
+          "speedup": null,
+          "thermal_pressure": "unknown"
+        }
+      ],
+      "summary": {
+        "acceptance_ratio_median": 0.689453125,
+        "baseline_correct": null,
+        "baseline_memory_end_mlx_cache_gb_median": null,
+        "baseline_memory_end_phys_footprint_gb_median": null,
+        "baseline_peak_memory_gb_median": null,
+        "baseline_prefill_tok_s_median": null,
+        "baseline_score": null,
+        "baseline_tps_median": null,
+        "dflash_correct": null,
+        "dflash_memory_end_mlx_cache_gb_median": 0.003310152,
+        "dflash_memory_end_phys_footprint_gb_median": 13.842408904,
+        "dflash_peak_memory_gb_median": 12.516209088,
+        "dflash_prefill_tok_s_apparent_median": 81.88239855816411,
+        "dflash_prefill_tok_s_physical_median": 81.88239855816411,
+        "dflash_score": null,
+        "dflash_tps_max": 26.22716959713126,
+        "dflash_tps_median": 25.971388582339788,
+        "dflash_tps_min": 25.715607567548314,
+        "score_count": null,
+        "speedup_median": null
+      }
+    }
+  ],
+  "runs": [
+    {
+      "baseline": {
+        "generation_tps": null,
+        "memory_end": null,
+        "peak_memory_gb": null,
+        "prefill_tok_s": null,
+        "prefill_tok_s_apparent": null,
+        "prefill_tok_s_physical": null,
+        "prefill_tokens_physical": null,
+        "ttft_ms": null
+      },
+      "block_tokens": 8,
+      "dflash": {
+        "acceptance_first_20_avg": 2.15,
+        "acceptance_last_20_avg": 2.0,
+        "acceptance_ratio": 0.689453125,
+        "accepted_from_draft": 353,
+        "adaptive_metrics": {
+          "acceptance_by_block": {
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.7092198581560284,
+            "5": 0.8125
+          },
+          "cycles_by_block": {
+            "2": 1,
+            "3": 1,
+            "4": 141,
+            "5": 16
+          },
+          "cycles_by_mode": {
+            "full": 4,
+            "probe": 12,
+            "reduced": 143
+          },
+          "early_probe_cycles": 4,
+          "early_probe_full_acceptance": 0.75,
+          "early_probe_min_cycles": 16,
+          "early_probe_window": 8,
+          "full_accept_rate_by_block": {
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.6170212765957447,
+            "5": 0.6875
+          },
+          "full_accepts_by_block": {
+            "2": 1,
+            "4": 87,
+            "5": 11
+          },
+          "probe_cycles": 8,
+          "reduced_burst_cycles": 64,
+          "resume_speed_ratio": 1.0,
+          "tokens_per_cycle_by_block": {
+            "2": 2.0,
+            "3": 1.0,
+            "4": 3.127659574468085,
+            "5": 4.25
+          },
+          "tokens_per_cycle_by_mode": {
+            "full": 3.0,
+            "probe": 4.666666666666667,
+            "reduced": 3.104895104895105
+          },
+          "tokens_per_second_by_block": {
+            "2": 30.15800911902801,
+            "3": 11.319900384876613,
+            "4": 29.764791580694606,
+            "5": 23.029383291742153
+          },
+          "tokens_per_second_by_mode": {
+            "full": 8.280580103657295,
+            "probe": 37.24455056823918,
+            "reduced": 29.657693605665997
+          }
+        },
+        "cycles": 159,
+        "generation_tps": 25.715607567548314,
+        "logical_ctx_tokens": 144,
+        "memory_end": {
+          "mlx_active_gb": 11.528951772,
+          "mlx_cache_gb": 0.003310152,
+          "mlx_peak_gb": 12.516199656,
+          "phys_footprint_gb": 13.783737776,
+          "rss_gb": 11.60077312,
+          "untracked_gb": 0.068511196
+        },
+        "peak_memory_gb": 12.516199656,
+        "phase_timings_us": {
+          "commit": 1011625.632,
+          "draft": 2828323.418,
+          "draft_incremental": 1968974.709,
+          "draft_prefill": 859348.709,
+          "prefill": 1639659.875,
+          "replay": 24187.788,
+          "verify": 428668.879
+        },
+        "prefill_tok_s_apparent": 87.82309196899753,
+        "prefill_tok_s_physical": 87.82309196899753,
+        "prefill_tokens_computed": 144,
+        "prefill_tokens_physical": 144,
+        "prefill_tokens_restored": 0,
+        "tokens_per_cycle": 3.220125786163522,
+        "ttft_ms": 1684.127
+      },
+      "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+      "draft_quant": null,
+      "draft_sink_size": 64,
+      "draft_window_size": 1024,
+      "git_hash": "9c675b0",
+      "max_tokens": 512,
+      "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+      "only_dflash": true,
+      "prompt_id": "smoke-default",
+      "prompt_suite": "smoke",
+      "prompt_tokenization_mode": "chat_template",
+      "run": 1,
+      "speedup": null,
+      "suite": "smoke",
+      "target_fa_window": 0,
+      "thermal_pressure": "unknown",
+      "use_chat_template": true,
+      "verify_len_cap": 0,
+      "verify_mode": "adaptive"
+    },
+    {
+      "baseline": {
+        "generation_tps": null,
+        "memory_end": null,
+        "peak_memory_gb": null,
+        "prefill_tok_s": null,
+        "prefill_tok_s_apparent": null,
+        "prefill_tok_s_physical": null,
+        "prefill_tokens_physical": null,
+        "ttft_ms": null
+      },
+      "block_tokens": 8,
+      "dflash": {
+        "acceptance_first_20_avg": 2.15,
+        "acceptance_last_20_avg": 2.0,
+        "acceptance_ratio": 0.689453125,
+        "accepted_from_draft": 353,
+        "adaptive_metrics": {
+          "acceptance_by_block": {
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.7092198581560284,
+            "5": 0.8125
+          },
+          "cycles_by_block": {
+            "2": 1,
+            "3": 1,
+            "4": 141,
+            "5": 16
+          },
+          "cycles_by_mode": {
+            "full": 4,
+            "probe": 12,
+            "reduced": 143
+          },
+          "early_probe_cycles": 4,
+          "early_probe_full_acceptance": 0.75,
+          "early_probe_min_cycles": 16,
+          "early_probe_window": 8,
+          "full_accept_rate_by_block": {
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.6170212765957447,
+            "5": 0.6875
+          },
+          "full_accepts_by_block": {
+            "2": 1,
+            "4": 87,
+            "5": 11
+          },
+          "probe_cycles": 8,
+          "reduced_burst_cycles": 64,
+          "resume_speed_ratio": 1.0,
+          "tokens_per_cycle_by_block": {
+            "2": 2.0,
+            "3": 1.0,
+            "4": 3.127659574468085,
+            "5": 4.25
+          },
+          "tokens_per_cycle_by_mode": {
+            "full": 3.0,
+            "probe": 4.666666666666667,
+            "reduced": 3.104895104895105
+          },
+          "tokens_per_second_by_block": {
+            "2": 28.651088830910226,
+            "3": 11.284829653408687,
+            "4": 29.753118273081185,
+            "5": 25.938648026085115
+          },
+          "tokens_per_second_by_mode": {
+            "full": 10.730328100893605,
+            "probe": 37.252739019277875,
+            "reduced": 29.638736348446518
+          }
+        },
+        "cycles": 159,
+        "generation_tps": 26.22716959713126,
+        "logical_ctx_tokens": 144,
+        "memory_end": {
+          "mlx_active_gb": 11.528937948,
+          "mlx_cache_gb": 0.003310152,
+          "mlx_peak_gb": 12.51621852,
+          "phys_footprint_gb": 13.901080032,
+          "rss_gb": 9.20952832,
+          "untracked_gb": 0.0
+        },
+        "peak_memory_gb": 12.51621852,
+        "phase_timings_us": {
+          "commit": 1022428.788,
+          "draft": 2360234.92,
+          "draft_incremental": 1909515.503,
+          "draft_prefill": 450719.417,
+          "prefill": 1896191.292,
+          "replay": 24696.787,
+          "verify": 456270.459
+        },
+        "prefill_tok_s_apparent": 75.94170514733068,
+        "prefill_tok_s_physical": 75.94170514733068,
+        "prefill_tokens_computed": 144,
+        "prefill_tokens_physical": 144,
+        "prefill_tokens_restored": 0,
+        "tokens_per_cycle": 3.220125786163522,
+        "ttft_ms": 1900.40375
+      },
+      "draft": "/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2",
+      "draft_quant": null,
+      "draft_sink_size": 64,
+      "draft_window_size": 1024,
+      "git_hash": "9c675b0",
+      "max_tokens": 512,
+      "model": "/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit",
+      "only_dflash": true,
+      "prompt_id": "smoke-default",
+      "prompt_suite": "smoke",
+      "prompt_tokenization_mode": "chat_template",
+      "run": 2,
+      "speedup": null,
+      "suite": "smoke",
+      "target_fa_window": 0,
+      "thermal_pressure": "unknown",
+      "use_chat_template": true,
+      "verify_len_cap": 0,
+      "verify_mode": "adaptive"
+    }
+  ],
+  "summary": {
+    "acceptance_ratio_median": 0.689453125,
+    "baseline_correct": null,
+    "baseline_memory_end_mlx_cache_gb_median": null,
+    "baseline_memory_end_phys_footprint_gb_median": null,
+    "baseline_peak_memory_gb_median": null,
+    "baseline_prefill_tok_s_median": null,
+    "baseline_score": null,
+    "baseline_tps_median": null,
+    "baseline_ttft_ms_median": null,
+    "dflash_correct": null,
+    "dflash_memory_end_mlx_cache_gb_median": 0.003310152,
+    "dflash_memory_end_phys_footprint_gb_median": 13.842408904,
+    "dflash_peak_memory_gb_median": 12.516209088,
+    "dflash_prefill_tok_s_apparent_median": 81.88239855816411,
+    "dflash_prefill_tok_s_physical_median": 81.88239855816411,
+    "dflash_score": null,
+    "dflash_tps_median": 25.971388582339788,
+    "dflash_ttft_ms_median": 1792.265375,
+    "prefill_tps_baseline": null,
+    "prefill_tps_dflash": 81.88239855816411,
+    "prefix_cache_stats": null,
+    "prefix_saved_tokens": null,
+    "prompt_tok_avg": 144.0,
+    "score_count": null,
+    "speedup_median": null
+  }
+}

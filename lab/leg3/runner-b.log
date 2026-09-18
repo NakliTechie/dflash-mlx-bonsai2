@@ -1,0 +1,55 @@
+[03:14:28] benchmark v4b (DFLASH_PRISM_VERIFY=v4b )
+[03:15:26] v4b exit 0
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+Summary:
+  suite                         : smoke
+  prompts                       : 1
+  baseline generation_tps median: None
+  dflash generation_tps median  : 25.971388582339788
+  speedup median                : None
+  baseline prefill tok/s median : None
+  dflash prefill tok/s median  : 81.88239855816411 physical / 81.88239855816411 apparent
+  acceptance median             : 0.689453125
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.516209088
+  memory end phys footprint     : None baseline / 13.842408904 dflash
+  memory end mlx cache          : None baseline / 0.003310152 dflash
+Artifacts written to: /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-v4b
+[03:15:26] benchmark off (DFLASH_PRISM_VERIFY=off )
+[03:17:08] off exit 0
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+Summary:
+  suite                         : smoke
+  prompts                       : 1
+  baseline generation_tps median: None
+  dflash generation_tps median  : 12.197169308669675
+  speedup median                : None
+  baseline prefill tok/s median : None
+  dflash prefill tok/s median  : 85.64974424506346 physical / 85.64974424506346 apparent
+  acceptance median             : 0.677734375
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.516324214
+  memory end phys footprint     : None baseline / 14.274848536 dflash
+  memory end mlx cache          : None baseline / 0.003310152 dflash
+Artifacts written to: /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-off
+[03:17:08] benchmark nospec-v4b (DFLASH_PRISM_VERIFY=v4b --verify-mode off)
+[03:18:06] nospec-v4b exit 0
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+Summary:
+  suite                         : smoke
+  prompts                       : 1
+  baseline generation_tps median: None
+  dflash generation_tps median  : 25.585118597632484
+  speedup median                : None
+  baseline prefill tok/s median : None
+  dflash prefill tok/s median  : 96.27646325721128 physical / 96.27646325721128 apparent
+  acceptance median             : 0.7265625
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.524842591999999
+  memory end phys footprint     : None baseline / 13.843121715999999 dflash
+  memory end mlx cache          : None baseline / 0.003310152 dflash
+Artifacts written to: /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg3/bench-nospec-v4b
+[03:18:06] done

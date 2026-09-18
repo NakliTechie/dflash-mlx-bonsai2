@@ -1,0 +1,19 @@
+[03:19:36] benchmark fixed8-v4b (DFLASH_PRISM_VERIFY=v4b --verify-mode dflash)
+[03:20:33] fixed8-v4b exit 0
+  dflash generation_tps median  : 25.65354576159138
+  acceptance median             : 0.7265625
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.524842542
+[03:20:33] benchmark bf16draft-v4b (DFLASH_PRISM_VERIFY=v4b --draft-quant none)
+[03:21:30] bf16draft-v4b exit 0
+  dflash generation_tps median  : 26.035387503728444
+  acceptance median             : 0.689453125
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.516184372000001
+[03:21:30] benchmark fixed8-bf16draft-v4b (DFLASH_PRISM_VERIFY=v4b --verify-mode dflash --draft-quant none)
+[03:22:28] fixed8-bf16draft-v4b exit 0
+  dflash generation_tps median  : 24.964815852302088
+  acceptance median             : 0.7265625
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.524818016000001
+[03:22:28] done
