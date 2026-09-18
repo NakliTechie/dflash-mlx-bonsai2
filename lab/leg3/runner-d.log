@@ -1,0 +1,20 @@
+[03:23:44] benchmark chat (--prompt Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.)
+[03:24:17] chat exit 0
+  dflash generation_tps median  : 17.3764535494052
+  acceptance median             : 0.59375
+[03:24:17] benchmark code (--prompt Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.)
+[03:24:44] code exit 0
+  dflash generation_tps median  : 21.503906463382858
+  acceptance median             : 0.673828125
+[03:24:45] benchmark math-raw (--no-chat-template --prompt Question: The function f satisfies f(x) + f(y) = f(x + y) - xy - 1 for all real x, y, and f(1) = 1. Find all integers n with f(n) = n.
+Answer: Let us reason step by step.)
+[03:25:09] math-raw exit 0
+  dflash generation_tps median  : 24.599433420276153
+  acceptance median             : 0.71875
+[03:25:09] benchmark code-raw (--no-chat-template --prompt def lru_cache_class():
+    """Return a class LRUCache(capacity) with O(1) get(key) and put(key, value), implemented with a dict and a doubly linked list."""
+)
+[03:25:29] code-raw exit 0
+  dflash generation_tps median  : 30.277049193671598
+  acceptance median             : 0.7734375
+[03:25:29] done
