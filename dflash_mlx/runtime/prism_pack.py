@@ -39,6 +39,10 @@ def load_text_model(directory):
     text_weights = [(k[len(prefix):], v) for k, v in weights.items() if k.startswith(prefix) and not k.startswith('vision_tower.')]
     model.load_weights(text_weights, strict=True)
     model.eval(); mx.eval(model.parameters())
+    from runtime import fwht
+    from dflash_mlx.runtime.prism_qmm import install_prism_verify_linears
+    config = dict(config)
+    config['dflash_prism_verify'] = install_prism_verify_linears(Packed, fwht)
     return model, config
 
 def load_pack_tokenizer(directory):
