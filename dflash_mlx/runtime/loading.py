@@ -173,6 +173,30 @@ def _raise_if_unsupported_draft_lm_head(model_path: Path, model_ref: str) -> Non
     )
 
 
+def _try_load_prism_pack(resolved_ref: str):
+    """PrismML Hadamard MLX packs (model_type prism_hadamard_qwen35) need their own loader:
+    stock mlx_lm.load cannot build them. Returns (model, tokenizer, config) or None."""
+    path = Path(resolved_ref).expanduser()
+    config_path = path / "config.json"
+    if not config_path.exists():
+        return None
+    try:
+        config = json.loads(config_path.read_text())
+    except (OSError, ValueError):
+        return None
+    if config.get("model_type") != "prism_hadamard_qwen35":
+        return None
+    from mlx_lm.utils import load_tokenizer
+
+    from dflash_mlx.runtime.prism_pack import load_text_model
+
+    model, pack_config = load_text_model(path)
+    tokenizer = load_tokenizer(path)
+    text_config = dict(pack_config["text_config"])
+    text_config["prism_pack"] = {k: pack_config.get(k) for k in ("schema_version", "model_type", "quantization", "hadamard_config") if k in pack_config}
+    return model, tokenizer, text_config
+
+
 def load_target_bundle(
     model_ref: str | Path | None = None,
     *,
@@ -181,7 +205,11 @@ def load_target_bundle(
     verify_config: VerifyConfig | None = None,
 ) -> LoadedTargetBundle:
     resolved_ref = resolve_model_ref(model_ref, kind="target")
-    model, tokenizer, config = load(resolved_ref, lazy=lazy, return_config=True)
+    prism = _try_load_prism_pack(resolved_ref)
+    if prism is not None:
+        model, tokenizer, config = prism
+    else:
+        model, tokenizer, config = load(resolved_ref, lazy=lazy, return_config=True)
     target_ops = resolve_target_ops(model)
     target_family = target_ops.family(model)
     target_capabilities = target_ops.capabilities_for(model)
