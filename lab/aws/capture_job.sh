@@ -3,6 +3,7 @@
 # shard to S3 in a 5-minute sync loop. Idempotent: re-running after a reclaim continues where S3 left off.
 #   bash /work/lab/aws/capture_job.sh [budget_tokens]
 set -uo pipefail
+export PATH="$HOME/.local/bin:$HOME/venv/bin:$PATH"
 BUDGET="${1:-4000000}"; S3="s3://skypilot-cairn-artifacts/localmind-dflash"; OUT=~/shards; CORPUS=/work/lab/aws/corpus/mix.jsonl
 MODEL=~/models/bonsai2/Ternary-Bonsai-2-27B-PTQ1_0.gguf; BIN=~/llama.cpp/build/bin/llama-tap-dump
 log() { echo "[$(date '+%F %T')] $*" | tee -a ~/capture_job.log; }

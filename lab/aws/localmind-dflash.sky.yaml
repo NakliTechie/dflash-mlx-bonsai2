@@ -27,7 +27,7 @@ setup: |
   echo ">>> GPU:"; nvidia-smi || true
   sudo apt-get update -qq && sudo apt-get install -y -qq build-essential cmake git-lfs libcurl4-openssl-dev > /dev/null
   curl -LsSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1; export PATH="$HOME/.local/bin:$PATH"
-  uv venv -q ~/venv --python 3.12 && ~/venv/bin/pip install -q "huggingface_hub[cli]" numpy safetensors
+  uv venv -q ~/venv --python 3.12 && ~/venv/bin/pip install -q "huggingface_hub[cli]" numpy safetensors awscli && mkdir -p ~/.local/bin && ln -sf ~/venv/bin/aws ~/.local/bin/aws
   echo ">>> PrismML llama.cpp fork (PTQ1_0/PQ2_0 kernels; stock llama.cpp rejects these files)"
   git clone -q https://github.com/PrismML-Eng/llama.cpp.git ~/llama.cpp && cd ~/llama.cpp && \
     cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
