@@ -27,18 +27,18 @@ setup: |
   echo ">>> GPU:"; nvidia-smi || true
   sudo apt-get update -qq && sudo apt-get install -y -qq build-essential cmake git-lfs libcurl4-openssl-dev > /dev/null
   curl -LsSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1; export PATH="$HOME/.local/bin:$PATH"
-  uv venv -q ~/venv --python 3.12 && ~/venv/bin/pip install -q "huggingface_hub[cli]" numpy safetensors awscli && mkdir -p ~/.local/bin && ln -sf ~/venv/bin/aws ~/.local/bin/aws
+  uv venv -q ~/venv --python 3.12 && uv pip install -q --python ~/venv/bin/python "huggingface_hub[cli]" numpy safetensors awscli && mkdir -p ~/.local/bin && ln -sf ~/venv/bin/aws ~/.local/bin/aws   # uv venvs ship without pip
   echo ">>> PrismML llama.cpp fork (PTQ1_0/PQ2_0 kernels; stock llama.cpp rejects these files)"
   git clone -q https://github.com/PrismML-Eng/llama.cpp.git ~/llama.cpp && cd ~/llama.cpp && \
-    cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
+    cmake -B build -DGGML_CUDA=ON -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=89 -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \   # nvcc is not on PATH on the SkyPilot AMI
     cp -r /work/lab/aws/tap-dump examples/tap-dump && grep -q tap-dump examples/CMakeLists.txt || echo 'add_subdirectory(tap-dump)' >> examples/CMakeLists.txt; \
-    cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
+    cmake -B build -DGGML_CUDA=ON -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=89 -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \   # nvcc is not on PATH on the SkyPilot AMI
     cmake --build build --target llama llama-common llama-cli llama-tap-dump -j 8 > ~/llamacpp-build.log 2>&1 && echo ">>> llama.cpp + tap-dump built" || echo ">>> llama.cpp BUILD FAILED (see ~/llamacpp-build.log; the fork may predate the mainline API used by tap-dump)"
   echo ">>> weights"
   mkdir -p ~/models && ~/venv/bin/hf download prism-ml/Ternary-Bonsai-2-27B-gguf Ternary-Bonsai-2-27B-PTQ1_0.gguf --local-dir ~/models/bonsai2 > /dev/null 2>&1 && echo ">>> PTQ1_0 GGUF ready" || echo ">>> GGUF download failed"
   ~/venv/bin/hf download z-lab/Qwen3.8-27B-DFlash2 --local-dir ~/models/Qwen3.8-27B-DFlash2 > /dev/null 2>&1 && echo ">>> drafter ready" || echo ">>> drafter download failed"
   echo ">>> torch (cu124 wheels; L40S is sm_89)"
-  ~/venv/bin/pip install -q torch --index-url https://download.pytorch.org/whl/cu124 transformers accelerate > /dev/null 2>&1 && ~/venv/bin/python -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available())"
+  uv pip install -q --python ~/venv/bin/python torch --index-url https://download.pytorch.org/whl/cu124 > /dev/null 2>&1 && uv pip install -q --python ~/venv/bin/python transformers accelerate dflash > /dev/null 2>&1 && ~/venv/bin/python -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available())"
   df -h / | tail -1
 
 envs:

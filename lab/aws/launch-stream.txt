@@ -1,0 +1,50 @@
+[launch] 2026-09-20 20:11:40 cluster=localmind-dflash profile=cairn-skypilot idle-autodown=90m
+YAML to run: lab/aws/localmind-dflash.sky.yaml
+Running on cluster: localmind-dflash
+Considered resources (1 node):
+--------------------------------------------------------------------------------
+ INFRA             INSTANCE      vCPUs   Mem(GB)   GPUS     COST ($)   CHOSEN   
+--------------------------------------------------------------------------------
+ AWS (us-west-2)   g6e.2xlarge   8       64        L40S:1   2.24       [32m   ✔[0m     
+--------------------------------------------------------------------------------
+[2m🔍 Multiple AWS instances satisfy L40S:1. The cheapest (gpus=L40S:1, g6e.2xlarge, ...) is considered among: g6e.4xlarge, g6e.2xlarge.[0m
+To list more details, run: sky gpus list L40S
+
+[0m⚙︎ Launching on AWS us-west-2[0m (us-west-2a,us-west-2b,us-west-2c,us-west-2d).
+[2mW 09-20 20:11:51.668 PID=99960 instance.py:288] create_instances: Attempt failed with An error occurred (InsufficientInstanceCapacity) when calling the RunInstances operation (reached max retries: 0): We currently do not have sufficient g6e.2xlarge capacity in the Availability Zone you requested (us-west-2a). Our system will be working on provisioning additional capacity. You can currently get g6e.2xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2b, us-west-2c, us-west-2d.[0m
+[2mW 09-20 20:11:53.469 PID=99960 instance.py:288] create_instances: Attempt failed with An error occurred (InsufficientInstanceCapacity) when calling the RunInstances operation (reached max retries: 0): We currently do not have sufficient g6e.2xlarge capacity in the Availability Zone you requested (us-west-2b). Our system will be working on provisioning additional capacity. You can currently get g6e.2xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2a, us-west-2c, us-west-2d.[0m
+[2mW 09-20 20:11:55.347 PID=99960 instance.py:288] create_instances: Attempt failed with An error occurred (InsufficientInstanceCapacity) when calling the RunInstances operation (reached max retries: 0): We currently do not have sufficient g6e.2xlarge capacity in the Availability Zone you requested (us-west-2c). Our system will be working on provisioning additional capacity. You can currently get g6e.2xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2a, us-west-2b, us-west-2d.[0m
+[2mW 09-20 20:11:57.184 PID=99960 instance.py:288] create_instances: Attempt failed with An error occurred (InsufficientInstanceCapacity) when calling the RunInstances operation (reached max retries: 0): We currently do not have sufficient g6e.2xlarge capacity in the Availability Zone you requested (us-west-2d). Our system will be working on provisioning additional capacity. You can currently get g6e.2xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2a, us-west-2b, us-west-2c.[0m
+AWS handler error: Failed to launch instances. Max attempts exceeded.
+sky.exceptions.ResourcesUnavailableError: Failed to acquire resources in all zones in us-west-2 for {AWS(g6e.4xlarge, mem=128.0, {'L40S': 1}, disk_size=300), AWS(g6e.2xlarge, mem=64.0, {'L40S': 1}, disk_size=300), AWS(g6e.2xlarge, mem=64.0, {'L40S': 1}, disk_size=300), AWS(g6e.4xlarge, mem=128.0, {'L40S': 1}, disk_size=300), AWS(g6e.2xlarge, mem=64.0, {'L40S': 1}, disk_size=300)}. 
+
+[0m[33m↺[0m Trying other potential resources.
+Considered resources (1 node):
+--------------------------------------------------------------------------------
+ INFRA             INSTANCE      vCPUs   Mem(GB)   GPUS     COST ($)   CHOSEN   
+--------------------------------------------------------------------------------
+ AWS (us-east-2)   g6e.2xlarge   8       64        L40S:1   2.24       [32m   ✔[0m     
+--------------------------------------------------------------------------------
+[2m🔍 Multiple AWS instances satisfy L40S:1. The cheapest (gpus=L40S:1, g6e.2xlarge, ...) is considered among: g6e.4xlarge, g6e.2xlarge.[0m
+To list more details, run: sky gpus list L40S
+
+[0m⚙︎ Launching on AWS us-east-2[0m (us-east-2a,us-east-2b,us-east-2c).
+[2m└── [0m[2mInstance is up.[0m
+[0m[32m✓ Cluster launched: localmind-dflash.[0m[0m  [2mView logs: [1msky logs --provision localmind-dflash[0m[0m
+[0m⚙︎ Syncing files.
+  [2mSyncing (to 1 node): /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab -> ~/.sky/file_mounts/work/lab[0m
+[0m[32m✓ Synced file_mounts.[0m[0m  [2mView logs: sky api logs -l sky-2026-09-20-20-11-42-745877/file_mounts.log[0m
+[0m[32m✓ Setup detached.[0m[0m
+Multiple resources are specified for the task, using: <Cloud>()
+[0m⚙︎ Job submitted, ID: 1
+
+📋 Useful Commands
+Job ID: 1
+├── To cancel the job:		sky cancel localmind-dflash 1
+├── To stream job logs:		sky logs localmind-dflash 1
+└── To view job queue:		sky queue localmind-dflash
+Cluster name: localmind-dflash
+├── To log into the head VM:	ssh localmind-dflash
+├── To submit a job:		sky exec localmind-dflash yaml_file
+├── To stop the cluster:	sky stop localmind-dflash
+└── To teardown the cluster:	sky down localmind-dflash
