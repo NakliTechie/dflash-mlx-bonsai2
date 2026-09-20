@@ -6,23 +6,25 @@ name: localmind-dflash
 
 resources:
   cloud: aws
-  use_spot: true
   disk_size: 300                  # PTQ1_0 6 GB + drafter 3.9 GB + ~100 GB of int8 shards (+54 GB F16 GGUF optional)
   labels:
     cairn: "true"
     cairn-purpose: "localmind-dflash"
   # Single L40S 48 GB (Ada, sm_89) in any size; SkyPilot picks the cheapest available. eu-south-2 spot for
   # g6e.2xlarge was unavailable in both AZs on 2026-09-20 19:40; g6e.4xlarge was $0.78/h there.
-  any_of:
-    - {region: eu-south-2, instance_type: g6e.4xlarge}
-    - {region: eu-south-2, instance_type: g6e.2xlarge}
-    - {region: eu-south-2, instance_type: g6e.xlarge}
-    - {region: us-east-2, instance_type: g6e.4xlarge}
-    - {region: us-east-2, instance_type: g6e.2xlarge}
-    - {region: us-west-2, instance_type: g6e.4xlarge}
-    - {region: us-west-2, instance_type: g6e.2xlarge}
-    - {region: ap-northeast-2, instance_type: g6e.2xlarge}
-    - {region: ap-northeast-2, instance_type: g6e.4xlarge}
+  any_of:                         # spot first (cheapest); on-demand entries last — chosen only when every spot option fails
+    - {region: eu-south-2, instance_type: g6e.4xlarge, use_spot: true}
+    - {region: eu-south-2, instance_type: g6e.2xlarge, use_spot: true}
+    - {region: eu-south-2, instance_type: g6e.xlarge, use_spot: true}
+    - {region: us-east-2, instance_type: g6e.4xlarge, use_spot: true}
+    - {region: us-east-2, instance_type: g6e.2xlarge, use_spot: true}
+    - {region: us-west-2, instance_type: g6e.4xlarge, use_spot: true}
+    - {region: us-west-2, instance_type: g6e.2xlarge, use_spot: true}
+    - {region: ap-northeast-2, instance_type: g6e.2xlarge, use_spot: true}
+    - {region: ap-northeast-2, instance_type: g6e.4xlarge, use_spot: true}
+    - {region: us-east-2, instance_type: g6e.2xlarge, use_spot: false}     # on-demand ~$2.24/h fallback (2026-09-20: spot reclaimed in minutes)
+    - {region: eu-south-2, instance_type: g6e.2xlarge, use_spot: false}
+    - {region: us-west-2, instance_type: g6e.2xlarge, use_spot: false}
 
 file_mounts:
   /work/lab: ./lab                # capture/train scripts from the worktree
