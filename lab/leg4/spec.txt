@@ -1,0 +1,34 @@
+We need to answer user's request: write detailed well-structured essay about 800 words on how speculative decoding works, why block-diffusion drafters help, and what limits acceptance on quantized targets. Use headings and end with short summary.
+
+Need produce final essay ~800 words. Need likely include headings. Need ensure content accurate. Let's think.
+
+Speculative decoding: generate draft tokens with small model, verify in parallel with large target using batched forward pass, accept longest prefix matching target, reject at first mismatch, continue from mismatch. Speedup from reducing target forward passes. Need mention acceptance rate, latency, throughput, KV cache, speculative tokens.
+
+Block-diffusion drafters: maybe drafters that generate blocks of tokens using diffusion model? Block-diffusion drafters help by producing multiple candidate tokens in parallel, not autoregressive one-by-one, enabling longer speculative sequences and better alignment? Need be careful. "block-diffusion drafters" likely refers to drafters that use diffusion over blocks of text? Could be from recent work? Need explain: diffusion models can denoise a block of tokens in parallel, producing a full block of candidate tokens, reducing sequential latency of drafting. They can be trained to predict blocks conditioned on prefix, and can be more efficient for speculative decoding because they generate multiple tokens at once, increasing chance of long accepted prefix, and can be run with target in parallel. But also may have lower per-token quality? Need discuss.
+
+Limits acceptance on quantized targets: quantization reduces precision of target model weights/activations, causing logit distribution shifts, especially for low-bit quantization, leading to more mismatches between draft and target. Also target may be quantized with different calibration, KV cache quantization, block-wise quantization, weight-only vs full. Acceptance limited by target's output distribution: if target logits are noisy, draft model (often FP16) may predict tokens that target would not accept. Quantization can change top-k, temperature, sampling, and can make target less deterministic. Also if target is quantized, its forward pass may be faster but less accurate; acceptance rate depends on distributional similarity between draft and target. Quantization errors accumulate over sequence, especially long context, and can be worse for rare tokens, low-probability tokens, code/math. Also target quantization may be used to speed up verification; if too aggressive, acceptance drops, negating speedup. Need mention limits: bit width, quantization method (GPTQ, AWQ, SmoothQuant, FP8, INT8/INT4), calibration data, activation quantization, KV cache quantization, batch size, context length, temperature/top-p, model size, task. Also acceptance limited by draft model quality and target's entropy. Quantized target may have altered logits due to rounding, so even if draft matches unquantized target, quantized target may reject. Also if target uses quantized KV cache, attention scores change. Need maybe mention "acceptance on quantized targets" specifically: acceptance rate is bounded by probability that target's quantized distribution assigns high probability to draft tokens; quantization can increase entropy or shift mass, causing lower acceptance. Also if target is quantized, it may be less able to produce exact same token sequence as FP16, so draft trained on FP16 target may mismatch.
+
+Need essay about 800 words. Let's plan structure:
+
+Title? Maybe "Speculative Decoding, Block-Diffusion Drafters, and Quantized Targets".
+
+Headings:
+1. How speculative decoding works
+2. Why block-diffusion drafters help
+3. What limits acceptance on quantized targets
+4. Summary
+
+Need ~800 words. Let's estimate: 4 headings, each ~180-220 words, summary 80. Total 800. Need detailed.
+
+Let's draft.
+
+Intro maybe under first heading.
+
+How speculative decoding works:
+- Standard autoregressive LLM generates one token at a time, each step requires full forward pass and memory bandwidth.
+- Speculative decoding uses small draft model to propose a sequence of K tokens (speculative tokens) given prefix.
+- Target model evaluates all proposed tokens in one batched forward pass (or parallel positions) and produces logits for each position.
+- Accept longest prefix where draft token equals target's sampled token (or within acceptance criterion). If mismatch at position i, discard rest, regenerate from i using target (or draft again).
+- Because target processes K tokens per forward pass, if acceptance length L, speedup approx K/L? More precisely reduces target forward passes from K to 1 per accepted block, but overhead of draft.
+- Works best when draft and target distributions align; acceptance rate high.
+- Mention batched verification, KV cache, no change to output distribution if exact sampling? Need careful: if target sampling stochastic, acceptance can be based on

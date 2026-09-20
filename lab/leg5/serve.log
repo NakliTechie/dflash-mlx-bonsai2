@@ -1,0 +1,73 @@
+2026-09-20 16:41:51 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 (explicit)           |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 2048                                                                      |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 4.0 GiB -> 4.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-20 16:41:56,243 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [20/Sep/2026 16:41:56] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:41:56] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:41:56] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 16:41:56 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-20 16:41:56 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-20 16:41:56 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 16:42:01 [dflash] prefill: 55/61 tokens | 4.8s
+2026-09-20 16:42:01,490 - INFO - Prompt processing progress: 55/61
+2026-09-20 16:42:01 [dflash] prefill: 56/61 tokens | 4.9s
+2026-09-20 16:42:01,599 - INFO - Prompt processing progress: 56/61
+2026-09-20 16:42:01 [dflash] prefill: 61/61 tokens | 5.2s
+2026-09-20 16:42:01,857 - INFO - Prompt processing progress: 61/61
+2026-09-20 16:42:08 [dflash] end-of-request snapshot saved (123 tokens)
+2026-09-20 16:42:08 [dflash] decode 8.7 tok/s | prefill logical 11.8 tok/s | prefill real 11.8 tok/s | prefill restored 0.0 tok/s | 67.7% accepted | 62 tokens | 12.3s | prompt: 61 tokens
+2026-09-20 16:42:08 [dflash] req#1 mlx_active=11.74 mlx_cache=0.00 mlx_peak=12.45 rss_now=2.12 rss_peak=8.30 untracked=0.00 GB
+127.0.0.1 - - [20/Sep/2026 16:45:07] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:45:07] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:45:07] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:45:23] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:45:34] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+2026-09-20 16:45:34 [dflash] exact target AR | temperature=0.7
+127.0.0.1 - - [20/Sep/2026 16:45:35] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 16:45:35,025 - INFO - Prompt Cache: 0 sequences, 0.00 GB
+2026-09-20 16:45:35,027 - INFO - - assistant: 0 sequences, 0.00 GB
+2026-09-20 16:45:35,027 - INFO - - user: 0 sequences, 0.00 GB
+2026-09-20 16:45:35,027 - INFO - - system: 0 sequences, 0.00 GB
+2026-09-20 16:45:35,349 - INFO - Prompt processing progress: 0/1821
+127.0.0.1 - - [20/Sep/2026 16:46:47] "GET /v1/models HTTP/1.1" 200 -
+2026-09-20 16:50:58,176 - INFO - Prompt processing progress: 1820/1821
+127.0.0.1 - - [20/Sep/2026 16:51:28] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:51:37] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:51:49] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+2026-09-20 16:51:49 [dflash] exact target AR | temperature=0.7
+127.0.0.1 - - [20/Sep/2026 16:51:49] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 16:51:49,657 - INFO - Prompt Cache: 1 sequences, 0.43 GB
+2026-09-20 16:51:49,658 - INFO - - assistant: 1 sequences, 0.43 GB
+2026-09-20 16:51:49,658 - INFO - - user: 0 sequences, 0.00 GB
+2026-09-20 16:51:49,658 - INFO - - system: 0 sequences, 0.00 GB
+2026-09-20 16:51:50,379 - INFO - Prompt processing progress: 0/1844
+127.0.0.1 - - [20/Sep/2026 16:53:23] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 16:53:35] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 16:54:49] "GET /v1/models HTTP/1.1" 200 -
