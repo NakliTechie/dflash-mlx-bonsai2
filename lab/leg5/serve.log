@@ -111,3 +111,360 @@
 2026-09-20 17:11:38 [dflash] end-of-request snapshot saved (2014 tokens)
 2026-09-20 17:11:38 [dflash] decode 12.7 tok/s | prefill logical 57.0 tok/s | prefill real 57.0 tok/s | prefill restored 0.0 tok/s | 73.2% accepted | 41 tokens | 37.8s | prompt: 1973 tokens
 2026-09-20 17:11:38 [dflash] req#1 mlx_active=12.01 mlx_cache=0.04 mlx_peak=17.72 rss_now=2.55 rss_peak=8.92 untracked=0.00 GB
+--- 17:14:09 restart with DFLASH_TOOL_PARSER=off (marker cleared) ---
+2026-09-20 17:14:10 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 (explicit)           |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 2048                                                                      |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 4.0 GiB -> 4.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-20 17:14:14,471 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [20/Sep/2026 17:14:16] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:14:18] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:14:46] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:14:53] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:14:53] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:14:53 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-20 17:14:53 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-20 17:14:53 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53121)
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1716, in <lambda>
+    lambda *args, **kwargs: handler_class(
+                            ^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1073, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 292, in do_POST
+    return super().do_POST()
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1202, in do_POST
+    self.handle_completion(request, stop_words)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 452, in handle_completion
+    return super().handle_completion(request, stop_words)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1455, in handle_completion
+    for gen in response:
+               ^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 109, in _track
+    for gen in inner:
+               ^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 240, in _process_control_tokens
+    for tok in token_stream:
+               ^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1041, in _inner
+    raise response
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 265, in _serve_single
+    self.server_runtime.serve_dflash_request(
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/runtime.py", line 180, in serve_dflash_request
+    loop_result = consume_dflash_events(
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/request_loop.py", line 128, in consume_dflash_events
+    for event in event_iter:
+                 ^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/runtime/__init__.py", line 105, in stream_dflash_generate
+    yield from inner
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2924, in stream_dflash_generate_impl
+    yield from session.run_events(request)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2601, in run_events
+    prefill = yield from self._run_prefill_events(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 889, in _run_prefill_events
+    eval_logits_and_captured(state.prefill_logits, prefill_hidden_states)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/sampling.py", line 90, in eval_logits_and_captured
+    mx.eval(logits, *captured.values())
+RuntimeError: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory).
+----------------------------------------
+127.0.0.1 - - [20/Sep/2026 17:16:48] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:16:57] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:17:04] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:17:04] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:17:04 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=2 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53375)
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1716, in <lambda>
+    lambda *args, **kwargs: handler_class(
+                            ^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1073, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 292, in do_POST
+    return super().do_POST()
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1202, in do_POST
+    self.handle_completion(request, stop_words)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 452, in handle_completion
+    return super().handle_completion(request, stop_words)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1455, in handle_completion
+    for gen in response:
+               ^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 109, in _track
+    for gen in inner:
+               ^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 240, in _process_control_tokens
+    for tok in token_stream:
+               ^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1041, in _inner
+    raise response
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 265, in _serve_single
+    self.server_runtime.serve_dflash_request(
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/runtime.py", line 180, in serve_dflash_request
+    loop_result = consume_dflash_events(
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/request_loop.py", line 128, in consume_dflash_events
+    for event in event_iter:
+                 ^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/runtime/__init__.py", line 105, in stream_dflash_generate
+    yield from inner
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2924, in stream_dflash_generate_impl
+    yield from session.run_events(request)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2601, in run_events
+    prefill = yield from self._run_prefill_events(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 889, in _run_prefill_events
+    eval_logits_and_captured(state.prefill_logits, prefill_hidden_states)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/sampling.py", line 90, in eval_logits_and_captured
+    mx.eval(logits, *captured.values())
+RuntimeError: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory).
+----------------------------------------
+--- 17:18:41 restart prefill-step 512, parser off ---
+2026-09-20 17:18:43 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 (explicit)           |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 512                                                                       |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 4.0 GiB -> 4.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-20 17:18:45,560 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [20/Sep/2026 17:18:47] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:18:49] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:19:14] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:19:20] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:19:21] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:19:21 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-20 17:19:21 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-20 17:19:21 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 17:20:00 [dflash] prefill: 512/1879 tokens | 39.3s
+2026-09-20 17:20:00,505 - INFO - Prompt processing progress: 512/1879
+2026-09-20 17:20:13 [dflash] prefill: 1024/1879 tokens | 52.7s
+2026-09-20 17:20:13,903 - INFO - Prompt processing progress: 1024/1879
+2026-09-20 17:20:57 [dflash] prefill: 1536/1879 tokens | 96.5s
+2026-09-20 17:20:57,758 - INFO - Prompt processing progress: 1536/1879
+2026-09-20 17:22:03 [dflash] prefill: 1873/1879 tokens | 162.1s
+2026-09-20 17:22:03,307 - INFO - Prompt processing progress: 1873/1879
+2026-09-20 17:22:03 [dflash] prefill: 1874/1879 tokens | 162.5s
+2026-09-20 17:22:03,719 - INFO - Prompt processing progress: 1874/1879
+2026-09-20 17:22:04 [dflash] prefill: 1879/1879 tokens | 163.0s
+2026-09-20 17:22:04,182 - INFO - Prompt processing progress: 1879/1879
+2026-09-20 17:22:10 [dflash] end-of-request snapshot saved (1920 tokens)
+2026-09-20 17:22:10 [dflash] decode 6.8 tok/s | prefill logical 11.5 tok/s | prefill real 11.5 tok/s | prefill restored 0.0 tok/s | 70.7% accepted | 41 tokens | 169.1s | prompt: 1879 tokens
+2026-09-20 17:22:10 [dflash] req#1 mlx_active=12.01 mlx_cache=0.04 mlx_peak=14.33 rss_now=0.06 rss_peak=10.80 untracked=0.00 GB
+127.0.0.1 - - [20/Sep/2026 17:22:10] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:22:10] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:22:10 [dflash] prefix-cache-stats [lookup] entries=1/8 bytes=448866304/8589934592 hits=0+0 misses=2 insertions=1 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 17:22:20 [dflash] prefill: 512/1981 tokens | 9.5s
+2026-09-20 17:22:20,104 - INFO - Prompt processing progress: 512/1981
+2026-09-20 17:22:29 [dflash] prefill: 1024/1981 tokens | 19.3s
+2026-09-20 17:22:30,151 - INFO - Prompt processing progress: 1024/1981
+2026-09-20 17:22:41 [dflash] prefill: 1536/1981 tokens | 31.0s
+2026-09-20 17:22:41,468 - INFO - Prompt processing progress: 1536/1981
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53613)
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1716, in <lambda>
+    lambda *args, **kwargs: handler_class(
+                            ^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1073, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 292, in do_POST
+    return super().do_POST()
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1202, in do_POST
+    self.handle_completion(request, stop_words)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 452, in handle_completion
+    return super().handle_completion(request, stop_words)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1455, in handle_completion
+    for gen in response:
+               ^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 109, in _track
+    for gen in inner:
+               ^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 240, in _process_control_tokens
+    for tok in token_stream:
+               ^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/lib/python3.12/site-packages/mlx_lm/server.py", line 1041, in _inner
+    raise response
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/serve.py", line 265, in _serve_single
+    self.server_runtime.serve_dflash_request(
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/runtime.py", line 180, in serve_dflash_request
+    loop_result = consume_dflash_events(
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/server/request_loop.py", line 128, in consume_dflash_events
+    for event in event_iter:
+                 ^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/runtime/__init__.py", line 105, in stream_dflash_generate
+    yield from inner
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2924, in stream_dflash_generate_impl
+    yield from session.run_events(request)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2601, in run_events
+    prefill = yield from self._run_prefill_events(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 889, in _run_prefill_events
+    eval_logits_and_captured(state.prefill_logits, prefill_hidden_states)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/sampling.py", line 90, in eval_logits_and_captured
+    mx.eval(logits, *captured.values())
+RuntimeError: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory).
+----------------------------------------
+127.0.0.1 - - [20/Sep/2026 17:37:18] "GET /v1/models HTTP/1.1" 200 -
+--- 17:51:43 restart (quiet box) prefill-step 512, parser off ---
+2026-09-20 17:51:45 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 (explicit)           |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 512                                                                       |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 4.0 GiB -> 4.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-20 17:51:48,444 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [20/Sep/2026 17:51:49] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:51:52] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:52:16] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:52:22] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:52:22] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:52:22 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-20 17:52:22 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-20 17:52:22 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 17:52:31 [dflash] prefill: 512/1879 tokens | 8.6s
+2026-09-20 17:52:31,430 - INFO - Prompt processing progress: 512/1879
+2026-09-20 17:52:37 [dflash] prefill: 1024/1879 tokens | 15.0s
+2026-09-20 17:52:37,832 - INFO - Prompt processing progress: 1024/1879
+2026-09-20 17:52:44 [dflash] prefill: 1536/1879 tokens | 21.3s
+2026-09-20 17:52:44,170 - INFO - Prompt processing progress: 1536/1879
+2026-09-20 17:52:48 [dflash] prefill: 1873/1879 tokens | 25.8s
+2026-09-20 17:52:48,664 - INFO - Prompt processing progress: 1873/1879
+2026-09-20 17:52:48 [dflash] prefill: 1874/1879 tokens | 25.9s
+2026-09-20 17:52:48,745 - INFO - Prompt processing progress: 1874/1879
+2026-09-20 17:52:48 [dflash] prefill: 1879/1879 tokens | 26.0s
+2026-09-20 17:52:48,892 - INFO - Prompt processing progress: 1879/1879
+2026-09-20 17:52:51 [dflash] end-of-request snapshot saved (1920 tokens)
+2026-09-20 17:52:51 [dflash] decode 15.3 tok/s | prefill logical 72.2 tok/s | prefill real 72.2 tok/s | prefill restored 0.0 tok/s | 70.7% accepted | 41 tokens | 28.7s | prompt: 1879 tokens
+2026-09-20 17:52:51 [dflash] req#1 mlx_active=12.01 mlx_cache=0.04 mlx_peak=14.36 rss_now=3.51 rss_peak=9.68 untracked=0.00 GB
+127.0.0.1 - - [20/Sep/2026 17:52:51] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:52:51] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:52:51 [dflash] prefix-cache-stats [lookup] entries=1/8 bytes=448866304/8589934592 hits=0+0 misses=2 insertions=1 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 17:52:58 [dflash] prefill: 512/1981 tokens | 6.4s
+2026-09-20 17:52:58,034 - INFO - Prompt processing progress: 512/1981
+2026-09-20 17:53:04 [dflash] prefill: 1024/1981 tokens | 13.1s
+2026-09-20 17:53:04,658 - INFO - Prompt processing progress: 1024/1981
+2026-09-20 17:53:11 [dflash] prefill: 1536/1981 tokens | 19.7s
+2026-09-20 17:53:11,318 - INFO - Prompt processing progress: 1536/1981
+2026-09-20 17:53:17 [dflash] prefill: 1975/1981 tokens | 25.7s
+2026-09-20 17:53:17,287 - INFO - Prompt processing progress: 1975/1981
+2026-09-20 17:53:17 [dflash] prefill: 1976/1981 tokens | 25.8s
+2026-09-20 17:53:17,375 - INFO - Prompt processing progress: 1976/1981
+2026-09-20 17:53:17 [dflash] prefill: 1981/1981 tokens | 26.0s
+2026-09-20 17:53:17,550 - INFO - Prompt processing progress: 1981/1981
+2026-09-20 17:53:21 [dflash] end-of-request snapshot saved (2047 tokens)
+2026-09-20 17:53:21 [dflash] decode 15.3 tok/s | prefill logical 76.3 tok/s | prefill real 76.3 tok/s | prefill restored 0.0 tok/s | 69.7% accepted | 66 tokens | 30.3s | prompt: 1981 tokens
+2026-09-20 17:53:21 [dflash] req#2 mlx_active=12.53 mlx_cache=0.04 mlx_peak=14.84 rss_now=3.48 rss_peak=9.68 untracked=0.00 GB
