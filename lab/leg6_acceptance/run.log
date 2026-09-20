@@ -1,0 +1,14 @@
+[17:54:01] capture pack
+pack captured {'L47': (768, 5120), 'L33': (768, 5120), 'L19': (768, 5120), 'L5': (768, 5120), 'L61': (768, 5120)} peak GB 9.92
+[17:54:16] capture ref
+ref captured {'L47': (768, 5120), 'L33': (768, 5120), 'L19': (768, 5120), 'L5': (768, 5120), 'L61': (768, 5120)} peak GB 16.11
+[17:54:42] compare
+ layer  cos mean  cos p10  cos min  rel-L2 mean   (gen positions only, n=668)
+    L5    0.9933   0.9894   0.9754       0.2367
+   L19    0.9721   0.9610   0.9283       0.2873
+   L33    0.9186   0.8873   0.7533       0.3997
+   L47    0.8746   0.8161   0.6028       0.4819
+   L61    0.8184   0.7822   0.2651       0.5818
+concat    0.8341   0.8043   0.3593   <- what the drafter's fc sees
+next-token argmax agreement on the tail chunk: 0.7734375
+[17:54:43] done
