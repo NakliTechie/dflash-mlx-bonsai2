@@ -60,21 +60,18 @@ def load_shard(base):
                 top=np.fromfile(base + '.top_ids.i32', dtype=np.int32).reshape(n, 8))
 bases = sorted(f[:-5] for f in glob.glob(os.path.join(args.shards, 'shard_*.json')))
 if args.max_shards: bases = bases[:args.max_shards]
-docs = {}
-for b in bases:
-    z = load_shard(b)
+def docs_of(base):                      # stream one shard (~0.5 GB) -> list of (doc_id, arrays); doc fragments at shard edges are fine
+    z = load_shard(base); out = []
     for d in np.unique(z['doc']):
         m = z['doc'] == d; order = np.argsort(z['pos'][m], kind='stable')
-        entry = docs.setdefault(int(d), {'feat': [], 'scale': [], 'ids': [], 'top': [], 'pos': []})
-        for k in ('feat', 'scale', 'ids', 'top', 'pos'): entry[k].append(z[k][m][order])
-all_docs = []
-for d, e in docs.items():
-    cat = {k: np.concatenate(v) for k, v in e.items()}
-    keep = np.r_[True, np.diff(cat['pos']) > 0]           # drop duplicated positions from a resumed doc
-    cat = {k: v[keep] for k, v in cat.items()}
-    if len(cat['ids']) >= args.window + BLOCK + 1: all_docs.append((d, cat))
-all_docs.sort(key=lambda x: x[0]); eval_docs = all_docs[-args.eval_docs:]; train_docs = all_docs[:-args.eval_docs]
-say(f'{len(bases)} shards, {len(all_docs)} usable docs, {sum(len(d["ids"]) for _, d in all_docs)} tokens, eval {len(eval_docs)} docs')
+        cat = {k: z[k][m][order] for k in ('feat', 'scale', 'ids', 'top', 'pos')}
+        keep = np.r_[True, np.diff(cat['pos']) > 0]; cat = {k: v[keep] for k, v in cat.items()}
+        if len(cat['ids']) >= args.window + BLOCK + 1: out.append((int(d), cat))
+    return out
+n_eval_shards = max(1, min(3, len(bases) // 20)); eval_bases = bases[-n_eval_shards:]; train_bases = bases[:-n_eval_shards]
+eval_docs = [x for b in eval_bases for x in docs_of(b)][-args.eval_docs:]
+tok_total = sum(json.load(open(b + '.json'))['n'] for b in train_bases)
+say(f'{len(bases)} shards ({tok_total} train tokens in {len(train_bases)} shards), eval {len(eval_docs)} docs from the last {n_eval_shards} shard(s)')
 
 def feats_of(doc):
     f = torch.from_numpy(doc['feat']).to(dev).float() * torch.from_numpy(doc['scale'].astype(np.float32)).to(dev)[..., None]
@@ -105,26 +102,30 @@ def evaluate(tag):
 evaluate('init' if args.init else 'baseline')
 if args.eval_only: sys.exit(0)
 opt = torch.optim.AdamW(trainable, lr=args.lr, weight_decay=0.0, betas=(0.9, 0.95))
-total_blocks = sum(len(anchors(d, args.stride)) for _, d in train_docs); total = int(args.epochs * total_blocks / args.batch)
-say(f'train: {total_blocks} blocks/epoch, {total} steps, batch {args.batch}, lr {args.lr}')
+total = int(args.epochs * tok_total / args.stride / args.batch)          # ~blocks per epoch / batch
+say(f'train: ~{total} steps ({args.epochs} epoch(s), stride {args.stride}, batch {args.batch}, lr {args.lr})')
 rng = np.random.default_rng(0); step = 0; t0 = time.time(); ema = None
 def save(tag):
     sd = {k: v.detach().cpu() for k, v in draft.state_dict().items() if args.full or k.startswith(('fc.', 'hidden_norm.'))}
     save_file(sd, os.path.join(args.out, f'adapter_{tag}.safetensors')); say('saved', tag, f'{len(sd)} tensors')
 while step < total:
-    for di in rng.permutation(len(train_docs)):
-        _, doc = train_docs[di]; F_ = feats_of(doc); ps = anchors(doc, args.stride); rng.shuffle(ps)
-        for i in range(0, len(ps), args.batch):
+    for bi in rng.permutation(len(train_bases)):
+        shard_docs = docs_of(train_bases[bi]); rng.shuffle(shard_docs)
+        for _, doc in shard_docs:
+            F_ = feats_of(doc); ps = anchors(doc, args.stride); rng.shuffle(ps)
+            for i in range(0, len(ps), args.batch):
+                if step >= total: break
+                ctx, nid, lab, pos = batch_of(F_, doc, ps[i:i + args.batch])
+                lr = args.lr * min(1.0, (step + 1) / 100) * (0.1 + 0.9 * 0.5 * (1 + math.cos(math.pi * step / max(total, 1))))
+                for g in opt.param_groups: g['lr'] = lr
+                logits = forward(ctx, nid, pos)
+                ce = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), lab.reshape(-1), reduction='none').view(lab.shape)
+                loss = (ce * w).sum(-1).mean(); opt.zero_grad(set_to_none=True); loss.backward(); torch.nn.utils.clip_grad_norm_(trainable, 1.0); opt.step()
+                ema = float(loss) if ema is None else 0.98 * ema + 0.02 * float(loss); step += 1
+                if step % args.log_every == 0:
+                    el = time.time() - t0; say(f'step {step}/{total} loss {float(loss):.3f} ema {ema:.3f} lr {lr:.2e} | {el / step:.2f} s/step | ETA {(total - step) * el / step / 60:.0f} min | mem {torch.cuda.max_memory_allocated() / 1e9:.1f} GB')
+                if step % args.ckpt_every == 0: save('ckpt')
             if step >= total: break
-            ctx, nid, lab, pos = batch_of(F_, doc, ps[i:i + args.batch])
-            lr = args.lr * min(1.0, (step + 1) / 100) * (0.1 + 0.9 * 0.5 * (1 + math.cos(math.pi * step / max(total, 1))))
-            for g in opt.param_groups: g['lr'] = lr
-            logits = forward(ctx, nid, pos)
-            ce = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), lab.reshape(-1), reduction='none').view(lab.shape)
-            loss = (ce * w).sum(-1).mean(); opt.zero_grad(set_to_none=True); loss.backward(); torch.nn.utils.clip_grad_norm_(trainable, 1.0); opt.step()
-            ema = float(loss) if ema is None else 0.98 * ema + 0.02 * float(loss); step += 1
-            if step % args.log_every == 0:
-                el = time.time() - t0; say(f'step {step}/{total} loss {float(loss):.3f} ema {ema:.3f} lr {lr:.2e} | {el / step:.2f} s/step | ETA {(total - step) * el / step / 60:.0f} min | mem {torch.cuda.max_memory_allocated() / 1e9:.1f} GB')
-            if step % args.ckpt_every == 0: save('ckpt')
+        del shard_docs
         if step >= total: break
 save('final'); evaluate('after')
