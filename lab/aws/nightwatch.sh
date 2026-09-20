@@ -17,7 +17,10 @@ while true; do
       jobs_running="$("$SKY" queue "$CLUSTER" 2>/dev/null | grep -c -E 'RUNNING|PENDING|SETTING_UP' || echo 0)"
       gpu="$(timeout 40 ssh -o ConnectTimeout=10 "$CLUSTER" 'nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader 2>/dev/null; df -h / | tail -1 | awk "{print \$4}"; tail -1 ~/capture_job.log 2>/dev/null' 2>/dev/null | tr '\n' ' ' || echo ssh-fail)"
       say "UP jobs=$jobs_running s3_progress=$done_flag gpu=[$gpu]"
-      if [ "$jobs_running" = "0" ] && [ "$done_flag" != "done" ]; then say "no job running and capture not done: submitting capture_job"; "$SKY" exec "$CLUSTER" -d --gpus L40S:1 "bash /work/lab/aws/capture_job.sh $BUDGET" >> "$LOG" 2>&1; fi ;;
+      if [ "$jobs_running" = "0" ] && [ "$done_flag" != "done" ]; then say "no job running and capture not done: submitting capture_job"; "$SKY" exec "$CLUSTER" -d --gpus L40S:1 "bash /work/lab/aws/capture_job.sh $BUDGET" >> "$LOG" 2>&1; fi
+      post_done="$(aws s3 ls "$S3/adapter/" 2>/dev/null | grep -c 'adapter_final' || echo 0)"
+      if [ "$jobs_running" = "0" ] && [ "$done_flag" = "done" ] && [ "$post_done" = "0" ]; then say "capture done, no adapter yet: submitting post_capture"; "$SKY" exec "$CLUSTER" -d --gpus L40S:1 "bash /work/lab/aws/post_capture.sh" >> "$LOG" 2>&1; fi
+      if [ "$done_flag" = "done" ] && [ "$post_done" != "0" ] && [ "$jobs_running" = "0" ]; then say "capture + adapter done; box idles to auto-down"; fi ;;
     INIT) say "INIT (provisioning/setup)";;
     GONE|STOPPED|"")
       if [ "$done_flag" = "done" ]; then say "cluster ${st:-gone} and capture done; nothing to do"; else say "cluster ${st:-gone} and capture at $done_flag tokens: relaunching"; "$SKY" down "$CLUSTER" -y --purge >> "$LOG" 2>&1 || true; CONFIRM_GPU_SPEND=1 bash lab/aws/launch.sh >> "$LOG" 2>&1 || say "relaunch failed"; fi ;;
