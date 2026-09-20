@@ -11,6 +11,7 @@ sys.path.insert(0, 'lab')
 import numpy as np
 import mlx.core as mx, mlx.nn as nn, mlx.optimizers as optim
 from mlx.utils import tree_flatten
+mx.set_cache_limit(1 << 30)
 from dflash_mlx.runtime.prism_pack import load_text_model
 from dflash_mlx.runtime.loading import load_draft_bundle
 from dflash_mlx.engine.target_ops import resolve_target_ops
