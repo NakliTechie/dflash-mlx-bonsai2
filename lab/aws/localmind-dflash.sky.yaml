@@ -26,7 +26,9 @@ setup: |
   echo ">>> PrismML llama.cpp fork (PTQ1_0/PQ2_0 kernels; stock llama.cpp rejects these files)"
   git clone -q https://github.com/PrismML-Eng/llama.cpp.git ~/llama.cpp && cd ~/llama.cpp && \
     cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
-    cmake --build build --target llama common llama-cli -j 8 > ~/llamacpp-build.log 2>&1 && echo ">>> llama.cpp built" || echo ">>> llama.cpp BUILD FAILED (see ~/llamacpp-build.log)"
+    cp -r /work/lab/aws/tap-dump examples/tap-dump && grep -q tap-dump examples/CMakeLists.txt || echo 'add_subdirectory(tap-dump)' >> examples/CMakeLists.txt; \
+    cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
+    cmake --build build --target llama llama-common llama-cli llama-tap-dump -j 8 > ~/llamacpp-build.log 2>&1 && echo ">>> llama.cpp + tap-dump built" || echo ">>> llama.cpp BUILD FAILED (see ~/llamacpp-build.log; the fork may predate the mainline API used by tap-dump)"
   echo ">>> weights"
   mkdir -p ~/models && ~/venv/bin/hf download prism-ml/Ternary-Bonsai-2-27B-gguf Ternary-Bonsai-2-27B-PTQ1_0.gguf --local-dir ~/models/bonsai2 > /dev/null 2>&1 && echo ">>> PTQ1_0 GGUF ready" || echo ">>> GGUF download failed"
   ~/venv/bin/hf download z-lab/Qwen3.8-27B-DFlash2 --local-dir ~/models/Qwen3.8-27B-DFlash2 > /dev/null 2>&1 && echo ">>> drafter ready" || echo ">>> drafter download failed"
