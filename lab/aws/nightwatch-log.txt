@@ -2,3 +2,5 @@
 [2026-09-20 20:15:00] UP jobs=1 s3_progress=0 gpu=[0 %, 0 MiB 271G ssh-fail]
 [2026-09-20 20:31:58] UP jobs=1 s3_progress=0 gpu=[0 %, 0 MiB 243G [2026-09-20 15:01:15] resume at doc 0 shard 0 (budget 4000000) ]
 [2026-09-20 20:36:05] UP jobs=1 s3_progress=0 gpu=[34 %, 6718 MiB 242G [2026-09-20 15:04:59] resume at doc 0 shard 0 (budget 4000000) ]
+[2026-09-20 20:36:31] UP jobs=1 s3_progress=0 gpu=[46 %, 6718 MiB 242G [2026-09-20 15:04:59] resume at doc 0 shard 0 (budget 4000000) ]
+[2026-09-20 20:48:54] UP jobs=1 s3_progress=232382 gpu=[0 %, 6720 MiB 235G [2026-09-20 15:15:12] s3 sync ok (12 shard headers) ]
