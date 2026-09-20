@@ -58,8 +58,9 @@ def load_shard(base):
     return dict(feat=np.fromfile(base + '.feat.i8', dtype=np.int8).reshape(n, T, E), scale=np.fromfile(base + '.scale.f16', dtype=np.float16).reshape(n, T),
                 ids=np.fromfile(base + '.ids.i32', dtype=np.int32), doc=np.fromfile(base + '.doc.i32', dtype=np.int32), pos=np.fromfile(base + '.pos.i32', dtype=np.int32),
                 top=np.fromfile(base + '.top_ids.i32', dtype=np.int32).reshape(n, 8))
-bases = sorted(f[:-5] for f in glob.glob(os.path.join(args.shards, 'shard_*.json')))
-if args.max_shards: bases = bases[:args.max_shards]
+dirs = [os.path.expanduser(d) for d in args.shards.split(',') if d]     # one or more shard directories (e.g. general,chat)
+bases_by_dir = [sorted(f[:-5] for f in glob.glob(os.path.join(d, 'shard_*.json'))) for d in dirs]
+if args.max_shards: bases_by_dir = [b[:args.max_shards] for b in bases_by_dir]
 def docs_of(base):                      # stream one shard (~0.5 GB) -> list of (doc_id, arrays); doc fragments at shard edges are fine
     z = load_shard(base); out = []
     for d in np.unique(z['doc']):
@@ -68,10 +69,13 @@ def docs_of(base):                      # stream one shard (~0.5 GB) -> list of 
         keep = np.r_[True, np.diff(cat['pos']) > 0]; cat = {k: v[keep] for k, v in cat.items()}
         if len(cat['ids']) >= args.window + BLOCK + 1: out.append((int(d), cat))
     return out
-n_eval_shards = max(1, min(3, len(bases) // 20)); eval_bases = bases[-n_eval_shards:]; train_bases = bases[:-n_eval_shards]
-eval_docs = [x for b in eval_bases for x in docs_of(b)][-args.eval_docs:]
+eval_bases, train_bases = [], []
+for b in bases_by_dir:                                                  # hold out the last shard(s) of EACH directory
+    k = max(1, min(2, len(b) // 20)); eval_bases += b[-k:]; train_bases += b[:-k]
+per_dir_eval = args.eval_docs // max(1, len(bases_by_dir))
+eval_docs = [x for eb in eval_bases for x in docs_of(eb)[-per_dir_eval:]]
 tok_total = sum(json.load(open(b + '.json'))['n'] for b in train_bases)
-say(f'{len(bases)} shards ({tok_total} train tokens in {len(train_bases)} shards), eval {len(eval_docs)} docs from the last {n_eval_shards} shard(s)')
+say(f'{sum(len(b) for b in bases_by_dir)} shards in {len(dirs)} dir(s) ({tok_total} train tokens in {len(train_bases)} shards), eval {len(eval_docs)} docs from {len(eval_bases)} held-out shard(s)')
 
 def feats_of(doc):
     f = torch.from_numpy(doc['feat']).to(dev).float() * torch.from_numpy(doc['scale'].astype(np.float32)).to(dev)[..., None]
