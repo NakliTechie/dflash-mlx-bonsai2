@@ -6,13 +6,23 @@ name: localmind-dflash
 
 resources:
   cloud: aws
-  region: eu-south-2
-  instance_type: g6e.2xlarge      # 1x L40S 48 GB (Ada, sm_89), 8 vCPU, 64 GB RAM — spot ~$0.89/h (2026-09-20)
   use_spot: true
-  disk_size: 300                  # F16 GGUF 54 GB (optional) + PTQ1_0 6 GB + drafter 3.9 GB + ~100 GB of int8 shards
+  disk_size: 300                  # PTQ1_0 6 GB + drafter 3.9 GB + ~100 GB of int8 shards (+54 GB F16 GGUF optional)
   labels:
     cairn: "true"
     cairn-purpose: "localmind-dflash"
+  # Single L40S 48 GB (Ada, sm_89) in any size; SkyPilot picks the cheapest available. eu-south-2 spot for
+  # g6e.2xlarge was unavailable in both AZs on 2026-09-20 19:40; g6e.4xlarge was $0.78/h there.
+  any_of:
+    - {region: eu-south-2, instance_type: g6e.4xlarge}
+    - {region: eu-south-2, instance_type: g6e.2xlarge}
+    - {region: eu-south-2, instance_type: g6e.xlarge}
+    - {region: us-east-2, instance_type: g6e.4xlarge}
+    - {region: us-east-2, instance_type: g6e.2xlarge}
+    - {region: us-west-2, instance_type: g6e.4xlarge}
+    - {region: us-west-2, instance_type: g6e.2xlarge}
+    - {region: ap-northeast-2, instance_type: g6e.2xlarge}
+    - {region: ap-northeast-2, instance_type: g6e.4xlarge}
 
 file_mounts:
   /work/lab: ./lab                # capture/train scripts from the worktree
