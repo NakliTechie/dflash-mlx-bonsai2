@@ -10,6 +10,7 @@ os.environ.setdefault('DFLASH_PRISM_VERIFY', 'fp16')   # stock qmm keeps gradien
 sys.path.insert(0, 'lab')
 import numpy as np
 import mlx.core as mx, mlx.nn as nn, mlx.optimizers as optim
+from mlx.utils import tree_flatten
 from dflash_mlx.runtime.prism_pack import load_text_model
 from dflash_mlx.runtime.loading import load_draft_bundle
 from dflash_mlx.engine.target_ops import resolve_target_ops
@@ -45,7 +46,7 @@ ddtype = draft.hidden_norm.weight.dtype
 MASK = int(draft.mask_token_id); B_LEN = args.block; ROWS = B_LEN - 1
 w = np.exp(-np.arange(ROWS) / float(B_LEN)); w = w / w.sum(); W = mx.array(w, dtype=mx.float32)
 say(f'draft dtype {ddtype} mask {MASK} block {B_LEN} trainable params: '
-    f'{sum(v.size for _, v in nn.utils.tree_flatten(draft.trainable_parameters()))/1e6:.1f} M')
+    f'{sum(v.size for _, v in tree_flatten(draft.trainable_parameters()))/1e6:.1f} M')
 
 # ---- data ----
 shards = sorted(glob.glob(DATA + '/shard_*.npz'))
@@ -119,7 +120,7 @@ while step < total_steps:
             if step % args.log_every == 0:
                 el = time.time() - t0; say(f'step {step}/{total_steps} loss {float(loss):.3f} ema {run:.3f} lr {lr:.2e} | {el/step:.2f} s/step | ETA {(total_steps-step)*el/step/3600:.2f} h | peak {mx.get_peak_memory()/1e9:.1f} GB')
             if step % 500 == 0:
-                mx.save_safetensors(args.out, dict(nn.utils.tree_flatten(draft.trainable_parameters()))); say('checkpoint', args.out)
+                mx.save_safetensors(args.out, dict(tree_flatten(draft.trainable_parameters()))); say('checkpoint', args.out)
         if step >= total_steps: break
-mx.save_safetensors(args.out, dict(nn.utils.tree_flatten(draft.trainable_parameters()))); say('saved', args.out)
+mx.save_safetensors(args.out, dict(tree_flatten(draft.trainable_parameters()))); say('saved', args.out)
 evaluate('after')
