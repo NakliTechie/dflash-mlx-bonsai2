@@ -4,6 +4,7 @@ Shards of ~20K tokens -> ~/Code/models/bonsai2-drafter-data/shard_XXXX.npz. Resu
 import sys, os, json, time, glob, numpy as np
 sys.path.insert(0, 'lab')
 import mlx.core as mx
+mx.set_cache_limit(1 << 30)   # MLX buffer cache balloons across big transient allocations; 1 GB cap
 from dflash_mlx.runtime.prism_pack import load_text_model, load_pack_tokenizer
 from dflash_mlx.engine.target_ops import resolve_target_ops
 PACK = '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit'
@@ -44,7 +45,7 @@ for di in range(doc_start, len(mix)):
         chunk = ids[pos:pos + CHUNK]
         lg, cap = ops.forward_with_hidden_capture(model, input_ids=mx.array([chunk]), cache=cache, capture_layer_ids=CAP)
         # top-8 next-token distribution from the ternary model itself
-        lg32 = lg[0].astype(mx.float32); lp = lg32 - mx.logsumexp(lg32, axis=-1, keepdims=True)
+        lg32 = lg[0].astype(mx.float32); lp = lg32 - mx.logsumexp(lg32, axis=-1, keepdims=True); del lg
         top = mx.argpartition(-lp, 8, axis=-1)[:, :8]; top_lp = mx.take_along_axis(lp, top, axis=-1)
         order = mx.argsort(-top_lp, axis=-1); top = mx.take_along_axis(top, order, axis=-1); top_lp = mx.take_along_axis(top_lp, order, axis=-1)
         feats = mx.stack([cap[k][0] for k in ORDER], axis=1).astype(mx.float32)          # [T, 5, 5120]
@@ -59,5 +60,5 @@ for di in range(doc_start, len(mix)):
         if in_shard >= SHARD:
             flush(); in_shard = 0; json.dump({'next_doc': di + 1}, open(state_path, 'w'))
             rate = (tokens_done - tok_at_t0) / (time.time() - t0); say(f'{tokens_done} tokens | {rate:.1f} tok/s | ETA {(BUDGET - tokens_done) / max(rate, 1e-6) / 3600:.1f} h | peak {mx.get_peak_memory()/1e9:.1f} GB')
-    del cache
+    del cache; mx.clear_cache()
 flush(); json.dump({'next_doc': di + 1}, open(state_path, 'w')); say(f'done: {tokens_done} tokens in {(time.time()-t0)/3600:.2f} h')
