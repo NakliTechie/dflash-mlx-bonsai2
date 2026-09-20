@@ -104,6 +104,11 @@ class DFlashModelProvider(mlx_server.ModelProvider):
             # content themselves (LocalMind) need the raw text; the strict parser would reject a call
             # to an undeclared tool and cut the stream.
             tokenizer.tool_parser = None
+            # mlx_lm.server also scans the stream for the template's tool_call_start marker and
+            # parses the span itself; clearing the marker makes has_tool_calling False.
+            if hasattr(tokenizer, "_tool_call_start"):
+                tokenizer._tool_call_start = None
+                tokenizer._tool_call_start_tokens = None
 
         try:
             mx.eval(model.parameters())

@@ -61,3 +61,53 @@
 2026-09-20 17:06:39 [dflash] end-of-request snapshot saved (1965 tokens)
 2026-09-20 17:06:39 [dflash] decode 12.8 tok/s | prefill logical 64.2 tok/s | prefill real 64.2 tok/s | prefill restored 0.0 tok/s | 68.3% accepted | 41 tokens | 33.2s | prompt: 1924 tokens
 2026-09-20 17:06:39 [dflash] req#2 mlx_active=12.49 mlx_cache=0.04 mlx_peak=18.05 rss_now=0.06 rss_peak=4.38 untracked=0.00 GB
+--- 17:10:16 restart with DFLASH_TOOL_PARSER=off ---
+2026-09-20 17:10:17 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2 (explicit)           |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 2048                                                                      |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 4.0 GiB -> 4.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-20 17:10:21,167 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [20/Sep/2026 17:10:23] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:10:27] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:10:54] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 17:11:00] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [20/Sep/2026 17:11:00] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-20 17:11:00 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-20 17:11:00 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-20 17:11:00 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-20 17:11:34 [dflash] prefill: 1967/1973 tokens | 34.1s
+2026-09-20 17:11:34,786 - INFO - Prompt processing progress: 1967/1973
+2026-09-20 17:11:34 [dflash] prefill: 1968/1973 tokens | 34.2s
+2026-09-20 17:11:34,916 - INFO - Prompt processing progress: 1968/1973
+2026-09-20 17:11:35 [dflash] prefill: 1973/1973 tokens | 34.6s
+2026-09-20 17:11:35,285 - INFO - Prompt processing progress: 1973/1973
+2026-09-20 17:11:38,471 - WARNING - Failed to parse tool call (ValueError: No function provided.) — tool text was likely truncated mid-generation.
+2026-09-20 17:11:38 [dflash] end-of-request snapshot saved (2014 tokens)
+2026-09-20 17:11:38 [dflash] decode 12.7 tok/s | prefill logical 57.0 tok/s | prefill real 57.0 tok/s | prefill restored 0.0 tok/s | 73.2% accepted | 41 tokens | 37.8s | prompt: 1973 tokens
+2026-09-20 17:11:38 [dflash] req#1 mlx_active=12.01 mlx_cache=0.04 mlx_peak=17.72 rss_now=2.55 rss_peak=8.92 untracked=0.00 GB
