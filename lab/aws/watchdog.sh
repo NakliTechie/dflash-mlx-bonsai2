@@ -4,7 +4,7 @@
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT"
 export AWS_PROFILE="${AWS_PROFILE_LAUNCH:-cairn-skypilot}"; CLUSTER="${CLUSTER:-localmind-dflash}"; INT="${1:-600}"
-SKY="${SKY:-$HOME/.cairn-sky-venv/bin/sky}"; LOG=lab/aws/watchdog-log.txt; START=$(date +%s); CAP_H="${CAP_HOURS:-14}"   # hard cost cap: ~$0.89/h x 14 h < $13
+SKY="${SKY:-$HOME/.cairn-sky-venv/bin/sky}"; LOG=lab/aws/watchdog-log.txt; START=$(date +%s); CAP_H="${CAP_HOURS:-8}"   # hard cost cap: ~$0.89/h x 14 h < $13
 while true; do
   st="$("$SKY" status "$CLUSTER" 2>/dev/null | grep -E "^$CLUSTER" | awk '{print $NF}' || true)"
   q="$("$SKY" queue "$CLUSTER" 2>/dev/null | grep -c -E 'RUNNING|PENDING|SETTING_UP' || echo 0)"

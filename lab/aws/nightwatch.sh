@@ -5,7 +5,7 @@
 #   CONFIRM_GPU_SPEND=1 nohup bash lab/aws/nightwatch.sh 720 > /dev/null 2>&1 &
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT"
-export AWS_PROFILE="${AWS_PROFILE_LAUNCH:-cairn-skypilot}"; CLUSTER="${CLUSTER:-localmind-dflash}"; INT="${1:-720}"; CAP_H="${CAP_HOURS:-14}"
+export AWS_PROFILE="${AWS_PROFILE_LAUNCH:-cairn-skypilot}"; CLUSTER="${CLUSTER:-localmind-dflash}"; INT="${1:-720}"; CAP_H="${CAP_HOURS:-8}"
 SKY="${SKY:-$HOME/.cairn-sky-venv/bin/sky}"; LOG=lab/aws/nightwatch-log.txt; START=$(date +%s); BUDGET="${CAPTURE_BUDGET:-4000000}"; S3="s3://skypilot-cairn-artifacts/localmind-dflash"
 say() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 while true; do
