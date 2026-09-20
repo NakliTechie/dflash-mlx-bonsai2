@@ -1,0 +1,38 @@
+# LocalMind / DFlash2-on-Ternary-Bonsai-2 — leg 6 capture + drafter fit box.
+# Launched under the cairn-skypilot key (reused by Chirag's call, 2026-09-20); the cairn=true label is the
+# IAM destructive-action gate AND the cost-allocation tag, so this run bills under cairn with purpose
+# localmind-dflash. Setup only: the box idles for `sky exec -d` / ssh work and auto-downs on idle.
+name: localmind-dflash
+
+resources:
+  cloud: aws
+  region: eu-south-2
+  instance_type: g6e.2xlarge      # 1x L40S 48 GB (Ada, sm_89), 8 vCPU, 64 GB RAM — spot ~$0.89/h (2026-09-20)
+  use_spot: true
+  disk_size: 300                  # F16 GGUF 54 GB (optional) + PTQ1_0 6 GB + drafter 3.9 GB + ~100 GB of int8 shards
+  labels:
+    cairn: "true"
+    cairn-purpose: "localmind-dflash"
+
+file_mounts:
+  /work/lab: ./lab                # capture/train scripts from the worktree
+
+setup: |
+  set -uo pipefail
+  echo ">>> GPU:"; nvidia-smi || true
+  sudo apt-get update -qq && sudo apt-get install -y -qq build-essential cmake git-lfs libcurl4-openssl-dev > /dev/null
+  curl -LsSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1; export PATH="$HOME/.local/bin:$PATH"
+  uv venv -q ~/venv --python 3.12 && ~/venv/bin/pip install -q "huggingface_hub[cli]" numpy safetensors
+  echo ">>> PrismML llama.cpp fork (PTQ1_0/PQ2_0 kernels; stock llama.cpp rejects these files)"
+  git clone -q https://github.com/PrismML-Eng/llama.cpp.git ~/llama.cpp && cd ~/llama.cpp && \
+    cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release > ~/llamacpp-cmake.log 2>&1 && \
+    cmake --build build --target llama common llama-cli -j 8 > ~/llamacpp-build.log 2>&1 && echo ">>> llama.cpp built" || echo ">>> llama.cpp BUILD FAILED (see ~/llamacpp-build.log)"
+  echo ">>> weights"
+  mkdir -p ~/models && ~/venv/bin/hf download prism-ml/Ternary-Bonsai-2-27B-gguf Ternary-Bonsai-2-27B-PTQ1_0.gguf --local-dir ~/models/bonsai2 > /dev/null 2>&1 && echo ">>> PTQ1_0 GGUF ready" || echo ">>> GGUF download failed"
+  ~/venv/bin/hf download z-lab/Qwen3.8-27B-DFlash2 --local-dir ~/models/Qwen3.8-27B-DFlash2 > /dev/null 2>&1 && echo ">>> drafter ready" || echo ">>> drafter download failed"
+  echo ">>> torch (cu124 wheels; L40S is sm_89)"
+  ~/venv/bin/pip install -q torch --index-url https://download.pytorch.org/whl/cu124 transformers accelerate > /dev/null 2>&1 && ~/venv/bin/python -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available())"
+  df -h / | tail -1
+
+envs:
+  HF_TOKEN: ""
