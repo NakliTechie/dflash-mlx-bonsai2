@@ -10,7 +10,7 @@ SKY="${SKY:-$HOME/.cairn-sky-venv/bin/sky}"; LOG=lab/aws/nightwatch-log.txt; STA
 say() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 while true; do
   hrs=$(( ($(date +%s) - START) / 3600 )); if [ "$hrs" -ge "$CAP_H" ]; then say "wall-clock cap ${CAP_H}h: "$SKY" down"; "$SKY" down "$CLUSTER" -y >> "$LOG" 2>&1; exit 0; fi
-  st="$("$SKY" status "$CLUSTER" 2>/dev/null | grep -E "^$CLUSTER" | awk '{print $NF}' || true)"
+  st="$("$SKY" status "$CLUSTER" 2>/dev/null | grep -E "^$CLUSTER" | grep -oE '\b(UP|INIT|STOPPED|AUTOSTOPPING)\b' | head -1 || true)"
   done_flag="$(aws s3 cp "$S3/shards/progress.json" - 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print("done" if d.get("done") else d.get("tokens",0))' 2>/dev/null || echo 0)"
   case "${st:-GONE}" in
     UP)
