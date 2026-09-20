@@ -38,7 +38,7 @@ def say(*a):
 
 # ---- models ----
 model, _ = load_text_model(PACK); ops = resolve_target_ops(model)
-draft, dmeta = load_draft_bundle(DRAFT, draft_quant='none'); draft.bind_target_model(model, target_ops=ops)
+draft, dmeta = load_draft_bundle(DRAFT, draft_quant=None); draft.bind_target_model(model, target_ops=ops)
 if args.init:
     draft.load_weights(list(mx.load(args.init).items()), strict=False); say('loaded adapter init', args.init)
 draft.freeze(); draft.fc.unfreeze(); draft.hidden_norm.unfreeze()
