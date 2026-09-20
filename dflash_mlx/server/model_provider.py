@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import os
+
 import sys
 import time
 
@@ -95,7 +97,13 @@ class DFlashModelProvider(mlx_server.ModelProvider):
             tokenizer.chat_template = self.cli_args.chat_template
         if self.cli_args.use_default_chat_template and tokenizer.chat_template is None:
             tokenizer.chat_template = tokenizer.default_chat_template
-        install_tool_parser(tokenizer)
+        if os.environ.get("DFLASH_TOOL_PARSER", "on").lower() != "off":
+            install_tool_parser(tokenizer)
+        else:
+            # LAB: clients that describe tools in the system prompt and parse <tool_call> XML from
+            # content themselves (LocalMind) need the raw text; the strict parser would reject a call
+            # to an undeclared tool and cut the stream.
+            tokenizer.tool_parser = None
 
         try:
             mx.eval(model.parameters())
