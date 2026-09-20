@@ -19,6 +19,7 @@ ap.add_argument('--window', type=int, default=256); ap.add_argument('--stride', 
 ap.add_argument('--batch', type=int, default=16); ap.add_argument('--eval-docs', type=int, default=40)
 ap.add_argument('--max-shards', type=int, default=0); ap.add_argument('--eval-only', action='store_true')
 ap.add_argument('--full', action='store_true', help='fine-tune the whole drafter (not just fc + hidden_norm)')
+ap.add_argument('--gen-only', action='store_true', help='score/train only blocks whose drafted positions are the model\'s own greedy generations (gen.i8 == 1)')
 ap.add_argument('--init', default=None); ap.add_argument('--log-every', type=int, default=50); ap.add_argument('--ckpt-every', type=int, default=500)
 args = ap.parse_args(); os.makedirs(args.out, exist_ok=True)
 logf = open(os.path.join(args.out, 'train.log'), 'a')
@@ -57,7 +58,8 @@ def load_shard(base):
     h = json.load(open(base + '.json')); n, T, E = h['n'], h['taps'], h['n_embd']
     return dict(feat=np.fromfile(base + '.feat.i8', dtype=np.int8).reshape(n, T, E), scale=np.fromfile(base + '.scale.f16', dtype=np.float16).reshape(n, T),
                 ids=np.fromfile(base + '.ids.i32', dtype=np.int32), doc=np.fromfile(base + '.doc.i32', dtype=np.int32), pos=np.fromfile(base + '.pos.i32', dtype=np.int32),
-                top=np.fromfile(base + '.top_ids.i32', dtype=np.int32).reshape(n, 8))
+                top=np.fromfile(base + '.top_ids.i32', dtype=np.int32).reshape(n, 8),
+                gen=np.fromfile(base + '.gen.i8', dtype=np.int8) if os.path.exists(base + '.gen.i8') else np.zeros(n, np.int8))
 dirs = [os.path.expanduser(d) for d in args.shards.split(',') if d]     # one or more shard directories (e.g. general,chat)
 bases_by_dir = [sorted(f[:-5] for f in glob.glob(os.path.join(d, 'shard_*.json'))) for d in dirs]
 if args.max_shards: bases_by_dir = [b[:args.max_shards] for b in bases_by_dir]
@@ -65,7 +67,7 @@ def docs_of(base):                      # stream one shard (~0.5 GB) -> list of 
     z = load_shard(base); out = []
     for d in np.unique(z['doc']):
         m = z['doc'] == d; order = np.argsort(z['pos'][m], kind='stable')
-        cat = {k: z[k][m][order] for k in ('feat', 'scale', 'ids', 'top', 'pos')}
+        cat = {k: z[k][m][order] for k in ('feat', 'scale', 'ids', 'top', 'pos', 'gen')}
         keep = np.r_[True, np.diff(cat['pos']) > 0]; cat = {k: v[keep] for k, v in cat.items()}
         if len(cat['ids']) >= args.window + BLOCK + 1: out.append((int(d), cat))
     return out
@@ -75,12 +77,15 @@ for b in bases_by_dir:                                                  # hold o
 per_dir_eval = args.eval_docs // max(1, len(bases_by_dir))
 eval_docs = [x for eb in eval_bases for x in docs_of(eb)[-per_dir_eval:]]
 tok_total = sum(json.load(open(b + '.json'))['n'] for b in train_bases)
-say(f'{sum(len(b) for b in bases_by_dir)} shards in {len(dirs)} dir(s) ({tok_total} train tokens in {len(train_bases)} shards), eval {len(eval_docs)} docs from {len(eval_bases)} held-out shard(s)')
+say(f'{sum(len(b) for b in bases_by_dir)} shards in {len(dirs)} dir(s) ({tok_total} train tokens in {len(train_bases)} shards), eval {len(eval_docs)} docs from {len(eval_bases)} held-out shard(s)' + (f' | gen-only: {sum(int(d["gen"].sum()) for _, d in eval_docs)} generated eval tokens' if args.gen_only else ''))
 
 def feats_of(doc):
     f = torch.from_numpy(doc['feat']).to(dev).float() * torch.from_numpy(doc['scale'].astype(np.float32)).to(dev)[..., None]
     return f.reshape(f.shape[0], -1).to(torch.bfloat16)                                        # [T, 5H]
-def anchors(doc, stride): return list(range(args.window, len(doc['ids']) - BLOCK, stride))    # anchor p: ctx = [p-C, p)
+def anchors(doc, stride):                                                                      # anchor p: ctx = [p-C, p)
+    ps = range(args.window, len(doc['ids']) - BLOCK, stride)
+    if not args.gen_only: return list(ps)
+    g = doc['gen']; return [p for p in ps if g[p + 1:p + 1 + ROWS].all()]                         # drafted rows p+1..p+ROWS all generated
 def batch_of(F_, doc, ps):
     C = args.window
     ctx = torch.stack([F_[p - C:p] for p in ps])                                                # [B, C, 5H]

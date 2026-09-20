@@ -12,3 +12,5 @@
 [2026-09-20 21:53:24] UP jobs=1 s3_progress=1768440 gpu=[0 %, 6720 MiB 200G 73.33.205.219 I shard 84 written: 20000 tokens [2026-09-20 16:21:37] s3 sync ok (89 shard headers) ]
 [2026-09-20 22:05:55] UP jobs=1 s3_progress=2004600 gpu=[0 %, 6720 MiB 192G [2026-09-20 16:31:50] s3 sync ok (101 shard headers) ]
 [2026-09-20 22:18:59] UP jobs=1 s3_progress=done gpu=[0 %, 0 MiB 190G [2026-09-20 16:41:07] tap-dump exit 127; final s3 sync done ]
+[2026-09-20 22:31:20] UP jobs=3 s3_progress=done gpu=[0 %, 23888 MiB 182G [2026-09-20 16:41:07] tap-dump exit 127; final s3 sync done ]
+[2026-09-20 22:43:38] UP jobs=3 s3_progress=done gpu=[0 %, 0 MiB 182G [2026-09-20 16:41:07] tap-dump exit 127; final s3 sync done ]

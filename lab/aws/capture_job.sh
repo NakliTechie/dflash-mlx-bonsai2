@@ -5,12 +5,15 @@
 set -uo pipefail
 export PATH="$HOME/.local/bin:$HOME/venv/bin:/usr/local/cuda/bin:$PATH"; export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}"; export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 BUDGET="${1:-4000000}"; S3="s3://skypilot-cairn-artifacts/localmind-dflash"; OUT="${OUT:-$HOME/shards}"; CORPUS="${CORPUS:-/work/lab/aws/corpus/mix.jsonl}"; S3SUB="${S3SUB:-shards}"
+GEN="${GEN:-0}"; SEQS="${SEQS:-16}"; PROMPT_MAX="${PROMPT_MAX:-768}"      # GEN>0 → self-generation mode (see tap-dump.cpp header)
 MODEL=~/models/bonsai2/Ternary-Bonsai-2-27B-PTQ1_0.gguf; BIN=~/llama.cpp/build/bin/llama-tap-dump
+if [ /work/lab/aws/tap-dump/tap-dump.cpp -nt "$BIN" ]; then cp /work/lab/aws/tap-dump/tap-dump.cpp ~/llama.cpp/examples/tap-dump/ && (cd ~/llama.cpp && cmake --build build --target llama-tap-dump -j 8 2>&1 | grep -E 'error|Built target llama-tap-dump'); fi
+if [ "$GEN" -gt 0 ]; then EXTRA="--gen $GEN --seqs $SEQS --prompt-max $PROMPT_MAX -np $SEQS -c $(( (PROMPT_MAX + GEN) * SEQS ))"; else EXTRA="-c 2048"; fi
 log() { echo "[$(date '+%F %T')] $*" | tee -a ~/capture_job.log; }
 mkdir -p "$OUT"; log "pull prior shards from $S3/shards"; aws s3 sync "$S3/$S3SUB" "$OUT" --only-show-errors
 SD=0; SS=0; if [ -f "$OUT/progress.json" ]; then SD=$(python3 -c "import json;print(json.load(open('$OUT/progress.json'))['next_doc'])"); SS=$(python3 -c "import json;print(json.load(open('$OUT/progress.json'))['next_shard'])"); fi
 if python3 -c "import json,sys; sys.exit(0 if json.load(open('$OUT/progress.json')).get('done') else 1)" 2>/dev/null; then log "capture already complete per progress.json"; exit 0; fi
 log "resume at doc $SD shard $SS (budget $BUDGET)"
 ( while true; do sleep 300; aws s3 sync "$OUT" "$S3/$S3SUB" --only-show-errors && echo "[$(date '+%F %T')] s3 sync ok ($(ls $OUT | grep -c '\.json$') shard headers)" >> ~/capture_job.log; done ) & SYNC=$!
-"$BIN" -m "$MODEL" --corpus "$CORPUS" --out "$OUT" --taps 5,19,33,47,61 --budget "$BUDGET" --start-doc "$SD" --start-shard "$SS" -c 2048 -b 512 -ub 512 -ngl 99 -fa on 2>&1 | grep --line-buffered -E 'shard|done|doc [0-9]+/|error|failed|offloaded|CUDA|ggml_backend|device' | tee -a ~/capture_job.log
+"$BIN" -m "$MODEL" --corpus "$CORPUS" --out "$OUT" --taps 5,19,33,47,61 --budget "$BUDGET" --start-doc "$SD" --start-shard "$SS" $EXTRA -b 512 -ub 512 -ngl 99 -fa on 2>&1 | grep --line-buffered -E 'shard|done|doc [0-9]+/|prompt [0-9]+|error|failed|align|fingerprint|offloaded|CUDA|ggml_backend|device' | tee -a ~/capture_job.log
 RC=${PIPESTATUS[0]}; kill $SYNC 2>/dev/null; aws s3 sync "$OUT" "$S3/$S3SUB" --only-show-errors; log "tap-dump exit $RC; final s3 sync done"; exit $RC
