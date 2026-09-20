@@ -87,11 +87,11 @@ static std::vector<std::string> read_corpus(const std::string & path) {   // JSO
 
 int main(int argc, char ** argv) {
     // our own flags first, then hand the rest to common
-    std::string corpus, out = "tap-shards"; std::vector<int> taps = {5, 19, 33, 47, 61}; long budget = 600000; int doc_max = 1536, per_shard = 20000;
+    std::string corpus, out = "tap-shards"; std::vector<int> taps = {5, 19, 33, 47, 61}; long budget = 600000; int doc_max = 1536, per_shard = 20000; int start_doc = 0, start_shard = 0;
     std::vector<char *> rest; rest.push_back(argv[0]);
     for (int i = 1; i < argc; ++i) { std::string a = argv[i];
         if (a == "--corpus" && i + 1 < argc) corpus = argv[++i]; else if (a == "--out" && i + 1 < argc) out = argv[++i]; else if (a == "--budget" && i + 1 < argc) budget = atol(argv[++i]);
-        else if (a == "--doc-max" && i + 1 < argc) doc_max = atoi(argv[++i]); else if (a == "--per-shard" && i + 1 < argc) per_shard = atoi(argv[++i]);
+        else if (a == "--doc-max" && i + 1 < argc) doc_max = atoi(argv[++i]); else if (a == "--start-doc" && i + 1 < argc) start_doc = atoi(argv[++i]); else if (a == "--start-shard" && i + 1 < argc) start_shard = atoi(argv[++i]); else if (a == "--per-shard" && i + 1 < argc) per_shard = atoi(argv[++i]);
         else if (a == "--taps" && i + 1 < argc) { taps.clear(); std::stringstream ss(argv[++i]); std::string x; while (std::getline(ss, x, ',')) taps.push_back(atoi(x.c_str())); }
         else rest.push_back(argv[i]); }
     common_params params; common_init();
@@ -105,10 +105,10 @@ int main(int argc, char ** argv) {
     if (!model || !ctx) { LOG_ERR("init failed\n"); return 1; }
     const llama_vocab * vocab = llama_model_get_vocab(model); const int n_vocab = llama_vocab_n_tokens(vocab);
     auto docs = read_corpus(corpus); LOG_INF("corpus: %zu docs; taps:", docs.size()); for (int t : taps) LOG_INF(" %d", t); LOG_INF("; budget %ld tokens\n", budget);
-    shard_writer w; w.dir = out; w.per_shard = per_shard; w.taps = (int) taps.size(); std::string mk = "mkdir -p " + out; if (system(mk.c_str()) != 0) return 1;
+    shard_writer w; w.dir = out; w.per_shard = per_shard; w.idx = start_shard; w.total = (long) start_shard * per_shard; w.taps = (int) taps.size(); std::string mk = "mkdir -p " + out; if (system(mk.c_str()) != 0) return 1;
     const int n_batch = params.n_batch;
     std::vector<int32_t> tid(8); std::vector<float> tlp(8); std::vector<std::pair<float,int>> cand;
-    for (size_t d = 0; d < docs.size() && w.total < budget; ++d) {
+    for (size_t d = (size_t) start_doc; d < docs.size() && w.total < budget; ++d) {
         std::vector<llama_token> toks = common_tokenize(ctx, docs[d], false, true); if ((int) toks.size() > doc_max) toks.resize(doc_max); if (toks.size() < 64) continue;
         llama_memory_clear(llama_get_memory(ctx), true);
         for (int p0 = 0; p0 < (int) toks.size(); p0 += n_batch) {
@@ -131,8 +131,10 @@ int main(int argc, char ** argv) {
             llama_batch_free(batch);
             if (w.total >= budget) break;
         }
+        { std::ofstream pj(out + "/progress.json"); pj << "{\"next_doc\":" << (d + 1) << ",\"next_shard\":" << w.idx << ",\"tokens\":" << w.total << "}\n"; }
         if (d % 20 == 0) LOG_INF("doc %zu/%zu, %ld tokens\n", d, docs.size(), w.total);
     }
-    w.flush(); LOG_INF("done: %ld tokens in %d shards\n", w.total, w.idx);
+    w.flush(); { std::ofstream pj(out + "/progress.json"); pj << "{\"next_doc\":" << docs.size() << ",\"next_shard\":" << w.idx << ",\"tokens\":" << w.total << ",\"done\":true}\n"; }
+    LOG_INF("done: %ld tokens in %d shards\n", w.total, w.idx);
     llama_perf_context_print(ctx); llama_backend_free(); return 0;
 }
