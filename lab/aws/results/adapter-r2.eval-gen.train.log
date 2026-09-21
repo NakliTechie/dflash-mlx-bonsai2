@@ -1,0 +1,5 @@
+03:53:02 loaded init /home/ubuntu/adapter-r2/adapter_final.safetensors
+03:53:02 drafter block 8 mask 248070 H 5120 | trainable 131.1 M (fc+hidden_norm)
+03:53:08 pack embed (248320, 5120) block 1024 | lm_head (248320, 5120) block 1024
+03:53:09 126 shards in 1 dir(s) (2480000 train tokens in 124 shards), eval 39 docs from 2 held-out shard(s) | gen-only: 12649 generated eval tokens
+03:53:11 [eval init] blocks 626 | per-position match [0.791, 0.599, 0.505, 0.417, 0.335, 0.305, 0.264] | tokens/cycle 3.50 (ratio 0.357)
