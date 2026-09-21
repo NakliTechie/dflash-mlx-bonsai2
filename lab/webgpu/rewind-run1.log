@@ -1,0 +1,424 @@
+[console] [vs] imported
+23:22:51 {"state":"imported","prog":"weights 992514048/5935527936"}
+23:22:56 {"state":"imported","prog":"weights /"}
+[console] [vs] loaded
+[console] [vs] prompt 57 tokens, greedy [71093,12305,198,12237,198,75,2585,11198,6971,271,1378,4522,264,11088,436,34810,318]
+23:23:01 {"state":"prompt 57 tokens, greedy [71093,12305,198,12237,198,75,2585,11198,6971,271,1378,4522,264,11088,436,34810,318]","prog":"ready /"}
+[console] [vs] sessions built {"verify8":155,"replay1":163,"replay2":116,"replay4":124,"rewind":3}; rewind graph 96 nodes / 144 steps over 48 linear layers
+[console] [vs] verify(8): 8/8 rows match, next 6971 (expect 6971)
+[console] [vs] n=1: state bitwise 1673018/39223296 maxAbs 0.010714054107666016 maxRel 1.9958056584649069; next cycle identical true (greedy 8/8); rewind 7.3 ms vs replay 50.3 ms
+[console] [vs] n=2: state bitwise 491525/39223296 maxAbs 43.50115346908569 maxRel 1.9999999078864066; next cycle identical true (greedy 8/8); rewind 7.7 ms vs replay 55.2 ms
+[console] [vs] n=4: state bitwise 10245/39223296 maxAbs 32.464656829833984 maxRel 1.9999999358336027; next cycle identical false (greedy 4/8); rewind 8.4 ms vs replay 74.5 ms
+23:23:06 {"state":"n=4: state bitwise 10245/39223296 maxAbs 32.464656829833984 maxRel 1.9999999358336027; next cycle identical false (greedy 4/8); rewind 8.4 ms vs replay 74.5 ms","prog":"ready /"}
+[console] [vs] n=8: state bitwise 4/39223296 maxAbs 36.227643966674805 maxRel 1.999999901634355; next cycle identical false (greedy 6/8); rewind 9.9 ms vs replay 118.8 ms
+[console] [vs] done
+23:23:11 {"state":"done","prog":"ready /"}
+RESULTS {
+ "results": {
+  "prompt": "code",
+  "promptTokens": 57,
+  "greedy": [
+   71093,
+   12305,
+   198,
+   12237,
+   198,
+   75,
+   2585,
+   11198,
+   6971,
+   271,
+   1378,
+   4522,
+   264,
+   11088,
+   436,
+   34810,
+   318
+  ],
+  "smallM": "f16",
+  "buildMs": {
+   "verify8": 155,
+   "replay1": 163,
+   "replay2": 116,
+   "replay4": 124,
+   "rewind": 3
+  },
+  "dims": {
+   "convDim": 10240,
+   "convState": 3,
+   "numHeads": 48,
+   "headDimK": 128,
+   "headDimV": 128,
+   "linearLayers": 48,
+   "rewindNodes": 96,
+   "rewindSteps": 144,
+   "stateElementsPerSnapshot": 39223296
+  },
+  "verify8": {
+   "next_token": 6971,
+   "expect": 6971,
+   "verify_tokens": [
+    12305,
+    198,
+    12237,
+    198,
+    75,
+    2585,
+    11198,
+    6971
+   ],
+   "expectRows": [
+    12305,
+    198,
+    12237,
+    198,
+    75,
+    2585,
+    11198,
+    6971
+   ],
+   "matches": 8
+  },
+  "byN": {
+   "1": {
+    "n": 1,
+    "replayNext": {
+     "got": 12305,
+     "expect": 12305,
+     "ok": true
+    },
+    "state": {
+     "elements": 39223296,
+     "bitwiseEqual": 1673018,
+     "bitwiseFrac": 0.042654,
+     "maxAbs": 0.010714054107666016,
+     "maxRel": 1.9958056584649069,
+     "maxAt": {
+      "layer": 60,
+      "kind": "conv",
+      "j": 30248,
+      "a": -2.3470592498779297,
+      "b": -2.3577733039855957
+     }
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 271,
+      "tokens": [
+       198,
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271
+      ]
+     },
+     "replay": {
+      "next": 271,
+      "tokens": [
+       198,
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271
+      ]
+     },
+     "identical": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    },
+    "timing": {
+     "rewindMs": [
+      7.5,
+      7.3,
+      7.2,
+      7.4,
+      7.2,
+      7.3,
+      7.3,
+      7.1
+     ],
+     "rewindMedian": 7.3,
+     "replayMs": [
+      50.3,
+      50.3,
+      50,
+      50,
+      50.4,
+      50.3,
+      51.3,
+      54.7
+     ],
+     "replayMedian": 50.3,
+     "speedup": 6.9
+    }
+   },
+   "2": {
+    "n": 2,
+    "replayNext": {
+     "got": 198,
+     "expect": 198,
+     "ok": true
+    },
+    "state": {
+     "elements": 39223296,
+     "bitwiseEqual": 491525,
+     "bitwiseFrac": 0.012531,
+     "maxAbs": 43.50115346908569,
+     "maxRel": 1.9999999078864066,
+     "maxAt": {
+      "layer": 0,
+      "kind": "conv",
+      "j": 11078,
+      "a": -46.45477294921875,
+      "b": -2.9536194801330566
+     }
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 1378,
+      "tokens": [
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378
+      ]
+     },
+     "replay": {
+      "next": 1378,
+      "tokens": [
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378
+      ]
+     },
+     "identical": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    },
+    "timing": {
+     "rewindMs": [
+      8.2,
+      7.8,
+      7.7,
+      7.3,
+      7.6,
+      7.7,
+      7.6,
+      7.5
+     ],
+     "rewindMedian": 7.7,
+     "replayMs": [
+      54.7,
+      54.6,
+      55,
+      55.3,
+      55.2,
+      55.1,
+      55.8,
+      56.5
+     ],
+     "replayMedian": 55.2,
+     "speedup": 7.2
+    }
+   },
+   "4": {
+    "n": 4,
+    "replayNext": {
+     "got": 198,
+     "expect": 198,
+     "ok": true
+    },
+    "state": {
+     "elements": 39223296,
+     "bitwiseEqual": 10245,
+     "bitwiseFrac": 0.000261,
+     "maxAbs": 32.464656829833984,
+     "maxRel": 1.9999999358336027,
+     "maxAt": {
+      "layer": 0,
+      "kind": "conv",
+      "j": 14462,
+      "a": 7.583408355712891,
+      "b": 40.048065185546875
+     }
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 449,
+      "tokens": [
+       81,
+       2585,
+       11198,
+       6971,
+       198,
+       2014,
+       4522,
+       449
+      ]
+     },
+     "replay": {
+      "next": 264,
+      "tokens": [
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378,
+       4522,
+       264
+      ]
+     },
+     "identical": false,
+     "greedyMatches": 4,
+     "nextOk": false
+    },
+    "timing": {
+     "rewindMs": [
+      8.4,
+      8.4,
+      8.4,
+      8.3,
+      8.3,
+      8.2,
+      8.4,
+      8.4
+     ],
+     "rewindMedian": 8.4,
+     "replayMs": [
+      74.4,
+      74.6,
+      74.4,
+      74.3,
+      75,
+      74.4,
+      74.5,
+      74.6
+     ],
+     "replayMedian": 74.5,
+     "speedup": 8.9
+    }
+   },
+   "8": {
+    "n": 8,
+    "replayNext": {
+     "got": 6971,
+     "expect": 6971,
+     "ok": true
+    },
+    "state": {
+     "elements": 39223296,
+     "bitwiseEqual": 4,
+     "bitwiseFrac": 0,
+     "maxAbs": 36.227643966674805,
+     "maxRel": 1.999999901634355,
+     "maxAt": {
+      "layer": 0,
+      "kind": "conv",
+      "j": 11076,
+      "a": -41.724491119384766,
+      "b": -5.496847152709961
+     }
+    },
+    "stateVsVerify8": {
+     "elements": 39223296,
+     "bitwiseEqual": 4,
+     "bitwiseFrac": 0,
+     "maxAbs": 36.227643966674805,
+     "maxRel": 1.999999901634355,
+     "maxAt": {
+      "layer": 0,
+      "kind": "conv",
+      "j": 11076,
+      "a": -41.724491119384766,
+      "b": -5.496847152709961
+     }
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 318,
+      "tokens": [
+       198,
+       71093,
+       4522,
+       264,
+       11088,
+       436,
+       34810,
+       318
+      ]
+     },
+     "replay": {
+      "next": 318,
+      "tokens": [
+       271,
+       1378,
+       4522,
+       264,
+       11088,
+       436,
+       34810,
+       318
+      ]
+     },
+     "identical": false,
+     "greedyMatches": 6,
+     "nextOk": true
+    },
+    "timing": {
+     "rewindMs": [
+      10.1,
+      10.1,
+      9.8,
+      9.6,
+      9.9,
+      10,
+      9.7,
+      9.7
+     ],
+     "rewindMedian": 9.9,
+     "replayMs": [
+      117.6,
+      118.8,
+      118.9,
+      119,
+      119.2,
+      118.5,
+      118.2,
+      117.9
+     ],
+     "replayMedian": 118.8,
+     "speedup": 12
+    }
+   }
+  }
+ },
+ "log": [
+  "imported",
+  "loaded",
+  "prompt 57 tokens, greedy [71093,12305,198,12237,198,75,2585,11198,6971,271,1378,4522,264,11088,436,34810,318]",
+  "sessions built {\"verify8\":155,\"replay1\":163,\"replay2\":116,\"replay4\":124,\"rewind\":3}; rewind graph 96 nodes / 144 steps over 48 linear layers",
+  "verify(8): 8/8 rows match, next 6971 (expect 6971)",
+  "n=1: state bitwise 1673018/39223296 maxAbs 0.010714054107666016 maxRel 1.9958056584649069; next cycle identical true (greedy 8/8); rewind 7.3 ms vs replay 50.3 ms",
+  "n=2: state bitwise 491525/39223296 maxAbs 43.50115346908569 maxRel 1.9999999078864066; next cycle identical true (greedy 8/8); rewind 7.7 ms vs replay 55.2 ms",
+  "n=4: state bitwise 10245/39223296 maxAbs 32.464656829833984 maxRel 1.9999999358336027; next cycle identical false (greedy 4/8); rewind 8.4 ms vs replay 74.5 ms",
+  "n=8: state bitwise 4/39223296 maxAbs 36.227643966674805 maxRel 1.999999901634355; next cycle identical false (greedy 6/8); rewind 9.9 ms vs replay 118.8 ms",
+  "done"
+ ]
+}

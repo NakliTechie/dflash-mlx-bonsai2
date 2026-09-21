@@ -1,0 +1,538 @@
+[console] [vs] imported
+23:26:45 {"state":"imported","prog":"weights 1536387584/5935527936"}
+23:26:50 {"state":"imported","prog":"weights /"}
+[console] [vs] loaded
+[console] [vs] prompt 57 tokens, greedy [71093,12305,198,12237,198,75,2585,11198,6971,271,1378,4522,264,11088,436,34810,318]
+[console] [vs] sessions built {"verify8":151,"replay1":128,"replay2":159,"replay4":128,"rewind":3}; rewind graph 96 nodes / 144 steps over 48 linear layers
+[console] [vs] verify(8): 8/8 rows match, next 6971 (expect 6971)
+23:26:55 {"state":"verify(8): 8/8 rows match, next 6971 (expect 6971)","prog":"ready /"}
+[console] [vs] n=1: rewind vs verify8(real_len=1) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(1) maxAbs 0.010714054107666016 maxRel 1.9958056584649069; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 7.4 ms vs replay 50.4 ms
+[console] [vs] n=2: rewind vs verify8(real_len=2) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(2) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 7.8 ms vs replay 54.8 ms
+23:27:00 {"state":"n=2: rewind vs verify8(real_len=2) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(2) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 7.8 ms vs replay 54.8 ms","prog":"ready /"}
+[console] [vs] n=4: rewind vs verify8(real_len=4) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(4) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 8.4 ms vs replay 74.7 ms
+[console] [vs] n=8: rewind vs verify8(real_len=8) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(8) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 10 ms vs replay 117.8 ms
+[console] [vs] done
+23:27:05 {"state":"done","prog":"ready /"}
+RESULTS {
+ "results": {
+  "prompt": "code",
+  "promptTokens": 57,
+  "greedy": [
+   71093,
+   12305,
+   198,
+   12237,
+   198,
+   75,
+   2585,
+   11198,
+   6971,
+   271,
+   1378,
+   4522,
+   264,
+   11088,
+   436,
+   34810,
+   318
+  ],
+  "smallM": "f16",
+  "buildMs": {
+   "verify8": 151,
+   "replay1": 128,
+   "replay2": 159,
+   "replay4": 128,
+   "rewind": 3
+  },
+  "dims": {
+   "convDim": 10240,
+   "convState": 3,
+   "numHeads": 48,
+   "headDimK": 128,
+   "headDimV": 128,
+   "linearLayers": 48,
+   "rewindNodes": 96,
+   "rewindSteps": 144,
+   "stateElementsPerSnapshot": 39223296
+  },
+  "verify8": {
+   "next_token": 6971,
+   "expect": 6971,
+   "verify_tokens": [
+    12305,
+    198,
+    12237,
+    198,
+    75,
+    2585,
+    11198,
+    6971
+   ],
+   "expectRows": [
+    12305,
+    198,
+    12237,
+    198,
+    75,
+    2585,
+    11198,
+    6971
+   ],
+   "matches": 8
+  },
+  "byN": {
+   "1": {
+    "n": 1,
+    "replayNext": {
+     "got": 12305,
+     "expect": 12305,
+     "ok": true,
+     "truncated8": 12305
+    },
+    "state": {
+     "rewindVsReplayN": {
+      "elements": 39223296,
+      "bitwiseEqual": 1673018,
+      "bitwiseFrac": 0.042654,
+      "maxAbs": 0.010714054107666016,
+      "maxRel": 1.9958056584649069,
+      "maxAt": {
+       "layer": 60,
+       "kind": "conv",
+       "j": 30248,
+       "a": -2.3470592498779297,
+       "b": -2.3577733039855957
+      }
+     },
+     "rewindVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "replayNVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 1673018,
+      "bitwiseFrac": 0.042654,
+      "maxAbs": 0.010714054107666016,
+      "maxRel": 1.9958056584649069,
+      "maxAt": {
+       "layer": 60,
+       "kind": "conv",
+       "j": 30248,
+       "a": -2.3577733039855957,
+       "b": -2.3470592498779297
+      }
+     }
+    },
+    "timing": {
+     "rewindMs": [
+      13.4,
+      8.8,
+      7.4,
+      7.4,
+      7.2,
+      7.2,
+      7.4,
+      7.3
+     ],
+     "rewindMedian": 7.4,
+     "replayMs": [
+      49.7,
+      49.9,
+      50.9,
+      50.9,
+      50.4,
+      49.8,
+      50.4,
+      50.2
+     ],
+     "replayMedian": 50.4,
+     "speedup": 6.8
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 271,
+      "tokens": [
+       198,
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271
+      ]
+     },
+     "replayN": {
+      "next": 271,
+      "tokens": [
+       198,
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271
+      ]
+     },
+     "verify8TruncN": {
+      "next": 271,
+      "tokens": [
+       198,
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271
+      ]
+     },
+     "rewindEqReplayN": true,
+     "rewindEqTruncN": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    }
+   },
+   "2": {
+    "n": 2,
+    "replayNext": {
+     "got": 198,
+     "expect": 198,
+     "ok": true,
+     "truncated8": 198
+    },
+    "state": {
+     "rewindVsReplayN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "rewindVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "replayNVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     }
+    },
+    "timing": {
+     "rewindMs": [
+      19.4,
+      7.8,
+      7.6,
+      7.5,
+      7.8,
+      7.7,
+      7.8,
+      7.7
+     ],
+     "rewindMedian": 7.8,
+     "replayMs": [
+      55.4,
+      55,
+      54.6,
+      54.4,
+      54.6,
+      54.8,
+      54.8,
+      55
+     ],
+     "replayMedian": 54.8,
+     "speedup": 7
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 1378,
+      "tokens": [
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378
+      ]
+     },
+     "replayN": {
+      "next": 1378,
+      "tokens": [
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378
+      ]
+     },
+     "verify8TruncN": {
+      "next": 1378,
+      "tokens": [
+       12237,
+       198,
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378
+      ]
+     },
+     "rewindEqReplayN": true,
+     "rewindEqTruncN": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    }
+   },
+   "4": {
+    "n": 4,
+    "replayNext": {
+     "got": 198,
+     "expect": 198,
+     "ok": true,
+     "truncated8": 198
+    },
+    "state": {
+     "rewindVsReplayN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "rewindVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "replayNVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     }
+    },
+    "timing": {
+     "rewindMs": [
+      9.1,
+      8.4,
+      8.5,
+      8.3,
+      8.3,
+      8.4,
+      8.3,
+      8.4
+     ],
+     "rewindMedian": 8.4,
+     "replayMs": [
+      74.9,
+      74.8,
+      74.3,
+      74.5,
+      74.2,
+      74.7,
+      74.9,
+      74.2
+     ],
+     "replayMedian": 74.7,
+     "speedup": 8.9
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 264,
+      "tokens": [
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378,
+       4522,
+       264
+      ]
+     },
+     "replayN": {
+      "next": 264,
+      "tokens": [
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378,
+       4522,
+       264
+      ]
+     },
+     "verify8TruncN": {
+      "next": 264,
+      "tokens": [
+       75,
+       2585,
+       11198,
+       6971,
+       271,
+       1378,
+       4522,
+       264
+      ]
+     },
+     "rewindEqReplayN": true,
+     "rewindEqTruncN": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    }
+   },
+   "8": {
+    "n": 8,
+    "replayNext": {
+     "got": 6971,
+     "expect": 6971,
+     "ok": true,
+     "truncated8": 6971
+    },
+    "state": {
+     "rewindVsReplayN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "rewindVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "replayNVsVerify8TruncN": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     },
+     "rewindVsVerify8Full": {
+      "elements": 39223296,
+      "bitwiseEqual": 39223296,
+      "bitwiseFrac": 1,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "maxAt": null
+     }
+    },
+    "timing": {
+     "rewindMs": [
+      10,
+      10.5,
+      10,
+      10,
+      9.9,
+      10,
+      10,
+      10
+     ],
+     "rewindMedian": 10,
+     "replayMs": [
+      117.8,
+      117.2,
+      117.4,
+      118,
+      117.8,
+      116.9,
+      117.6,
+      118
+     ],
+     "replayMedian": 117.8,
+     "speedup": 11.8
+    },
+    "nextCycle": {
+     "rewind": {
+      "next": 318,
+      "tokens": [
+       271,
+       1378,
+       4522,
+       264,
+       11088,
+       436,
+       34810,
+       318
+      ]
+     },
+     "replayN": {
+      "next": 318,
+      "tokens": [
+       271,
+       1378,
+       4522,
+       264,
+       11088,
+       436,
+       34810,
+       318
+      ]
+     },
+     "verify8TruncN": {
+      "next": 318,
+      "tokens": [
+       271,
+       1378,
+       4522,
+       264,
+       11088,
+       436,
+       34810,
+       318
+      ]
+     },
+     "rewindEqReplayN": true,
+     "rewindEqTruncN": true,
+     "greedyMatches": 8,
+     "nextOk": true
+    }
+   }
+  }
+ },
+ "log": [
+  "imported",
+  "loaded",
+  "prompt 57 tokens, greedy [71093,12305,198,12237,198,75,2585,11198,6971,271,1378,4522,264,11088,436,34810,318]",
+  "sessions built {\"verify8\":151,\"replay1\":128,\"replay2\":159,\"replay4\":128,\"rewind\":3}; rewind graph 96 nodes / 144 steps over 48 linear layers",
+  "verify(8): 8/8 rows match, next 6971 (expect 6971)",
+  "n=1: rewind vs verify8(real_len=1) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(1) maxAbs 0.010714054107666016 maxRel 1.9958056584649069; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 7.4 ms vs replay 50.4 ms",
+  "n=2: rewind vs verify8(real_len=2) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(2) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 7.8 ms vs replay 54.8 ms",
+  "n=4: rewind vs verify8(real_len=4) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(4) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 8.4 ms vs replay 74.7 ms",
+  "n=8: rewind vs verify8(real_len=8) bitwise 39223296/39223296 maxAbs 0; rewind vs replay(8) maxAbs 0 maxRel 0; next cycle: rewind==replay true, rewind==trunc true, greedy 8/8; rewind 10 ms vs replay 117.8 ms",
+  "done"
+ ]
+}

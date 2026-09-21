@@ -179,3 +179,81 @@ output, so its margins are not measured; its argmax agrees with both tiers on al
   of the 72 ms) is GDN recurrence / attention / norms / Hadamards at T=4 — not profiled per op.
 - not run: the f32 tier at block 6-7; `kSplits` overrides; a second prompt; the normal (non-verify) prefill graph with
   `globalThis.__dflashSmallM` set (the route is wired for it but only the verify graph was exercised).
+
+## Stage-2 step 3 — recurrence-only rewind for the runner (2026-09-21, late)
+
+Goal: replace the runner's per-cycle tape replay (52–111 ms: restore + a (k+1)-row verify session) by a rewind that
+only re-advances what the checkpoint restore made stale — the 48 linear-attention layers' conv windows and
+recurrent states — using the rows the verify run already computed. The attention KV rows are position-indexed and
+already correct. Patch: `patch-internals.mjs` section (f); harness `rewind-harness.js` / `index-rewind.html`; run
+`rewind-run2.log` (`rewind-run1.log` / `rewind-diag1.log` are the first attempt, whose harness ran the rewind after the
+tee had been overwritten by a later verify — superseded).
+
+### What the patch adds
+
+- **f1 tee** — `lh(model, cache, T, { ..., teeRecurrence: true })`: for every linear-attention layer `L`, the conv
+  input rows `Ae` (in_proj_qkv output, `[T, convDim=10240]` f32) and the per-row recurrence gates `xt`
+  (`[T, 2*numHeads=96]` f32: beta | decay) become graph outputs `rw.bcx.L` / `rw.gate.L` (own buffers, 48 x 8 x 10240
+  x 4 B = 15.7 MB at T = 8). No copy op: the existing scratches are re-declared as outputs, so the verify step's cost
+  is unchanged (the node count is the same; the buffers just leave the pool). Everything else the recurrence needs
+  (q/k/v) is recomputed from `bcx` in the rewind, so the in-place q/k normalization done by the linear-attention op
+  never leaks into the tee.
+- **f2 `RewindSession`** (`TernaryBonsai2.__dflashInternals.RewindSession`):
+  ```js
+  const R = new I.RewindSession(model /* m.model */, cache /* m.generationState.cache */, T /* the verify session's blockLen */, verifySession /* built with teeRecurrence:true */);
+  await R.build();      // graph "qwen35-rewind": per linear layer Qwen35PrefillConv + Qwen35LinearAttention over the
+                        // teed rows, bound to the SAME conv/recurrent state tensors the verify graph updates; 96 nodes,
+                        // 144 prepared steps, build 3 ms (all pipelines already cached by the verify session)
+  R.run(n);             // 1 <= n <= T: enqueue only (no readback). Precondition: the verify session's last run was the
+                        // block whose rows 0..n-1 are being accepted, and the checkpoint taken before that run has been
+                        // restored (slot.checkpoint.restore()). Effect: conv + recurrent states of every linear layer
+                        // advance by rows 0..n-1 of that verify run, exactly as the verify graph with real_len = n.
+                        // The caller then sets cache.seqLength = pos + n. Rows n..T-1 of the KV cache are stale but
+                        // position-indexed; the next verify overwrites them.
+  R.layers, R.dims;     // the linear layer indices and {convDim, convState, numHeads, headDimK, headDimV}
+  R.dispose();
+  ```
+  One `RewindSession` per verify session (it binds that session's tee outputs). `real_len` is a uniform, so one
+  rewind graph serves every n. Also exposed: `I.ht(tensor, elementOffset, elementCount)` (the engine's tensor view)
+  for reading the state slices `cache.linearConvStates[L]` / `cache.linearRecurrentStates[L]`.
+- Runner integration (not done here — the runner agent owns `runner/`): replace `restore + replay session (k+1)` by
+  `slot.checkpoint.restore(); R.run(k + 1); cache.seqLength = pos + k + 1;` with the verify sessions built with
+  `teeRecurrence: true` and one `RewindSession` per block length. When k+1 == Lv nothing is needed (as today).
+
+### Check (`rewind-run2.log`, code prompt = the runner's LRUCache prompt, 57 tokens, smallm f16, taps [6,20,34,48,62])
+
+Greedy `g0..g16 = [71093, 12305, 198, 12237, 198, 75, 2585, 11198, 6971, 271, 1378, 4522, 264, 11088, 436, 34810, 318]`;
+verify(8) of `g0..g7` from the checkpoint: 8/8 rows match, next_token 6971 == g8. For n = k+1 in {1, 2, 4, 8} (accept
+k in {0, 1, 3, 7}), three states are compared over all 48 linear layers (39,223,296 f32 elements per snapshot:
+conv 10240x3 + recurrent 48x128x128 per layer):
+
+| n | rewind vs verify8 run with real_len = n (same kernels) | rewind vs replay through the n-row session (today's runner path) | next-cycle verify(8) tokens: rewind == replay == truncated | rewind ms (median of 8) | replay ms | speedup |
+|---|---|---|---|---|---|---|
+| 1 | **bitwise identical** (39,223,296 / 39,223,296) | max abs 1.07e-2 (conv, layer 60: -2.3471 vs -2.3578), 4.3 % bitwise equal | yes; 8/8 == greedy | **7.4** | 50.4 | 6.8x |
+| 2 | **bitwise identical** | **bitwise identical** | yes; 8/8 == greedy | **7.8** | 54.8 | 7.0x |
+| 4 | **bitwise identical** | **bitwise identical** | yes; 8/8 == greedy | **8.4** | 74.7 | 8.9x |
+| 8 | **bitwise identical** (also == the untruncated verify(8) state) | **bitwise identical** | yes; 8/8 == greedy | **10.0** | 117.8 | 11.8x |
+
+Reading: the rewind reproduces, bit for bit, the state the 8-row verify graph itself produces after n real rows —
+which is the state consistent with the KV rows the verify wrote. The n-row replay sessions for n >= 2 land on the
+same bits; the 1-row session does not (T = 1 selects the engine's single-token conv / decode-attention variants, so
+its residual stream differs at the 1e-2 level from the 8-row graph's row 0) — the rewind is therefore *more*
+consistent than today's replay at k = 0, and the next cycle's 8 verify tokens are identical either way on this
+prompt. "rewind ms" = `restore + R.run(n) + queueIdle`; "replay ms" = `restore + session.run()` incl. its
+`next_token` readback, as the runner does. The rewind is ~7 ms + 0.4 ms/row: 144 small dispatches (48 x (conv +
+l2norm + recurrence)); dispatch count, not work, sets its floor.
+
+Expected runner effect (inferred from `runner/RESULTS.md`'s breakdown, not run): replay mean 59.3 -> ~8 ms at
+block 8 (220.6 -> ~170 ms/cycle, 49.5 -> ~38 ms/token, 0.73x -> ~0.95x); block 5: 33.9 -> ~5 ms mean
+(160.5 -> ~132 ms/cycle, 43.8 -> ~36 ms/token, 0.81x -> ~1.0x).
+
+### What is verified vs not
+
+- verified: the four rows of the table (bitwise state identity vs the truncated verify graph for n = 1, 2, 4, 8; bitwise
+  identity vs the n-row replay for n = 2, 4, 8; identical next-cycle tokens and next_token for all n; timings).
+- observed: build times (rewind 3 ms; the verify session with the tee 151 ms).
+- inferred: the runner-level speedup above; that the tee adds no measurable cost to the verify step (same node count;
+  not re-timed).
+- not run: the lighthouse prompt; block lengths other than 8 for the tee/rewind (the class takes any T); the runner
+  itself with the rewind (owned by the runner agent); a rewind after a verify whose block had padding rows
+  (real_len < T) — `R.run(n)` with n <= real_len is the intended use.

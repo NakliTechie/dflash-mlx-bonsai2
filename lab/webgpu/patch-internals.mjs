@@ -94,5 +94,36 @@ out = out.replace(kiLoop,
   'let $am=J.op("ai.onnx.ArgMax",{x:$lg},{attrs:{axis:1,keepdims:0}}).y;' +
   'J.op("com.xenova.StridedCopy",{srcT:J.storageView($am,{dtype:"uint32",shape:[a],name:"V.head.tokens"}),dstT:$t},{args:{rows:a,srcStride:1,dstStride:1,copyCols:1}});' +
   'J.output($lg,"verify_logits")}else ' + kiLoop);
+// (f) recurrence-only rewind for the DFlash runner (RESULTS-verify-qwen35.md "Stage-2 step 3"):
+//   f1. tee: with lh's 4th-arg `teeRecurrence: true`, every linear-attention layer's conv input rows (`Ae`, the
+//       in_proj_qkv output [T, convDim]) and its per-row recurrence gates (`xt` [T, 2*numHeads]) become graph outputs
+//       `rw.bcx.<layer>` / `rw.gate.<layer>` (own buffers, readable after the run, stable for the session's lifetime).
+//   f2. `RewindSession(model, cache, T, verifySession)`: a graph that binds those outputs as inputs and, per linear
+//       layer, re-runs the engine's own Qwen35PrefillConv (rebuilds the conv window from the teed rows) and
+//       Qwen35LinearAttention (re-applies the recurrence) over the first `real_len` rows, on the SAME conv/recurrent
+//       state tensors the verify graph uses. run(n) = advance the checkpointed states by rows 0..n-1 of the last verify.
+const teeMark = 'let jt=J.op("com.xenova.Qwen35LinearAttention",{stateT:xe,qT:It,kT:it,vT:St,gateT:qt,';
+once(new RegExp(teeMark.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'lh linear-attention op site (tee)');
+out = out.replace(teeMark, '$v?.teeRecurrence&&(J.output(Ae,`rw.bcx.${te}`),J.output(xt,`rw.gate.${te}`));' + teeMark);
+once(/,su=e=>Number\(Math\.pow\(e,-\.5\)\.toPrecision\(9\)\),/, 'su (linear-attention scale helper)');
+for (const id of ['ht', 'f2']) once(new RegExp(`function ${id}\\(`), `internal function ${id}`);
+const rewindClass = 'class $RewindSession{constructor(e,t,r,u){this.model=e,this.cache=t,this.T=r,this.verify=u,this.steps=[],this.compiled=null,this.emission=null,this.pack=null}' +
+  'async build(){wi();let e=this.model,t=this.cache,a=this.T,u=e.config,v=u.layer_types,g=u.linear_key_dim,w=u.linear_value_dim,M=u.linear_conv_dim,D=u.linear_conv_kernel_dim,q=D-1,x=u.linear_num_key_heads,y=u.linear_num_value_heads,P=u.linear_key_head_dim,R=u.linear_value_head_dim,W=su(P),U=Math.max(64,ku(P)),B=Math.max(64,ku(P)),' +
+  'J=new ba,{w:re,state:H,boundWeights:me,states:ne}=_i(J),ee=pi(re,e),Z=J.uniform("params",16),ins={},layers=[];' +
+  'for(let te=0;te<u.num_hidden_layers;++te){if(v[te]!=="linear_attention")continue;if(!t.linearConvStates?.[te]||!t.linearRecurrentStates?.[te])throw new Error(`RewindSession: linear layer ${te} is missing conv/recurrent state`);layers.push(te);let ge=e.offsets.layers[te],' +
+  'Be=H(`linear.conv.${te}`,ht(t.linearConvStates[te],0,M*q)),xe=H(`linear.rec.${te}`,ht(t.linearRecurrentStates[te],0,y*P*R)),' +
+  'bcx=J.input(`rw.bcx.${te}`,"float32",[a,M]),gate=J.input(`rw.gate.${te}`,"float32",[a,2*y]);' +
+  'ins[`rw.bcx.${te}`]=this.verify.compiled.tensor(`rw.bcx.${te}`),ins[`rw.gate.${te}`]=this.verify.compiled.tensor(`rw.gate.${te}`);' +
+  'let It=J.scratch(`L${te}.lq`,"float32",[a,g]),it=J.scratch(`L${te}.lk`,"float32",[a,g]),St=J.scratch(`L${te}.lv`,"float32",[a,w]);' +
+  'J.op("com.xenova.Qwen35PrefillConv",{bcxT:bcx,weightsT:ee(te),convStatesT:Be,qT:It,kT:it,vT:St,params:Z},{args:{keyDim:g,valueDim:w,convDim:M,convKernel:D,convWeightOffset:ge.linear_conv_weight,seqLen:a}});' +
+  'J.op("com.xenova.Qwen35LinearAttention",{stateT:xe,qT:It,kT:it,vT:St,gateT:gate,outT:J.scratch(`L${te}.lattn`,"float32",[a,w]),params:Z},{args:{numHeads:y,numKeyHeads:x,headDimK:P,headDimV:R,scale:W,seqLen:a,workgroupSize:B,l2WorkgroupSize:U}})}' +
+  'this.layers=layers,this.dims={convDim:M,convState:q,numHeads:y,headDimK:P,headDimV:R},this.emission={graph:J.finish({name:"qwen35-rewind",params:{T:a}}),weights:me,states:ne,inputs:ins,paramsName:"params"};' +
+  'let c=Xs(this.emission.graph,e.runtime,{weights:me,states:ne,inputs:ins});this.compiled=c;try{this.steps=await c.buildSteps()}catch(err){this.steps=[],this.compiled=null,o0(err,c)}this.pack=f2(this.emission.graph,"params",c.nodeVariants);return this}' +
+  'run(n){if(!this.compiled)throw new Error("RewindSession is not built");if(!Number.isInteger(n)||n<1||n>this.T)throw new Error(`RewindSession.run: rows ${n} outside 1..${this.T}`);' +
+  'this.model.runtime.host.writeBuffer(this.compiled.uniformBuffer("params"),0,this.pack({past_len:0,cache_len:this.cache.maxLength,seq_len:this.T,real_len:n})),this.compiled.collector.enqueue(this.steps)}' +
+  'dispose(){this.compiled?.dispose(),this.compiled=null,this.steps=[]}}';
+once(/function o0\(/, 'internal function o0 (compile error unwrap)');
+out = out.replace(exportLine, rewindClass + exportLine);
+out = out.replace('get N2(){return N2}};', 'get N2(){return N2},get ht(){return ht},get RewindSession(){return $RewindSession}};');
 writeFileSync('engine.dflash.js', out);
-console.log('wrote engine.dflash.js', out.length, 'bytes; features-output patch + internals hook + qwen35 verify-mode (lh 4th arg) + Lut2SmallMGemm op/route/head applied');
+console.log('wrote engine.dflash.js', out.length, 'bytes; features-output patch + internals hook + qwen35 verify-mode (lh 4th arg) + Lut2SmallMGemm op/route/head + recurrence tee/RewindSession applied');
