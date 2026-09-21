@@ -1,0 +1,201 @@
+[console] [vs] imported
+22:56:39 {"state":"imported","prog":"weights 1612166272/5935527936"}
+22:56:44 {"state":"imported","prog":"weights /"}
+[console] [vs] loaded
+[console] [vs] greedy 6 tokens: [43,21204,19154,2418,430,50032], prompt 21, seq 26
+[console] [vs] verify session built in 390 ms: 1357 nodes vs 1351 default; outputs dspark.features,verify_tokens,verify_logits,next_token
+[console] [vs] done: 5/5 rows match, verify step 106.1/92.4/92.1/92/92.1/92.2 ms vs decode 35.8 ms/token (ratio 2.57); features shape ok nonzero 1
+22:56:49 {"state":"done: 5/5 rows match, verify step 106.1/92.4/92.1/92/92.1/92.2 ms vs decode 35.8 ms/token (ratio 2.57); features shape ok nonzero 1","prog":"ready /","buildMs":390}
+RESULTS {
+ "results": {
+  "greedy": [
+   43,
+   21204,
+   19154,
+   2418,
+   430,
+   50032
+  ],
+  "verify_tokens": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032
+  ],
+  "expect": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032
+  ],
+  "match": [
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "matches": 5,
+  "next_token_from_verify": 50032,
+  "next_token_expected": 50032,
+  "normalPrefillTok": 50032,
+  "normalPrefillMatch": true,
+  "stepMs": [
+   106.1,
+   92.4,
+   92.1,
+   92,
+   92.1,
+   92.2
+  ],
+  "stepMinMs": 92,
+  "readbackMs": 4.1,
+  "decodeMs": 35.8,
+  "ratio": 2.57,
+  "features": {
+   "dtype": "float32",
+   "shape": [
+    5,
+    25600
+   ],
+   "length": 128000,
+   "expectLength": 128000,
+   "shapeOk": true,
+   "nonZero": 128000,
+   "nonZeroFrac": 1,
+   "perTap": [
+    {
+     "layer": 6,
+     "meanAbs": 0.1142,
+     "maxAbs": 33.478,
+     "nonZero": 25600,
+     "of": 25600,
+     "finite": true
+    },
+    {
+     "layer": 20,
+     "meanAbs": 0.4246,
+     "maxAbs": 49.232,
+     "nonZero": 25600,
+     "of": 25600,
+     "finite": true
+    },
+    {
+     "layer": 34,
+     "meanAbs": 0.5552,
+     "maxAbs": 46.35,
+     "nonZero": 25600,
+     "of": 25600,
+     "finite": true
+    },
+    {
+     "layer": 48,
+     "meanAbs": 0.8826,
+     "maxAbs": 48.125,
+     "nonZero": 25600,
+     "of": 25600,
+     "finite": true
+    },
+    {
+     "layer": 62,
+     "meanAbs": 3.1155,
+     "maxAbs": 45.278,
+     "nonZero": 25600,
+     "of": 25600,
+     "finite": true
+    }
+   ],
+   "sampleRow0Tap0": [
+    -0.1102,
+    0.0127,
+    0.0304,
+    0.0809,
+    -0.0827,
+    -0.0044
+   ],
+   "rowsDistinct": 5
+  },
+  "head": {
+   "packsQ1": false,
+   "lmHeadQ4": true,
+   "lmHeadQ8": false,
+   "lmHeadFormat": null,
+   "lmHeadLut": 9,
+   "lmHeadScanBits": null,
+   "lmHeadRescoreFormat": null,
+   "prismHeadRotated": true,
+   "hidden": 5120,
+   "layers": 64,
+   "vocab": 248320,
+   "f16": true,
+   "smallM": {
+    "precision": "f32"
+   },
+   "kiRoute": "prism.head (LlamaPrefillMatmul M=1 + ArgMax)"
+  },
+  "graph": {
+   "defaultNodes": 1351,
+   "emptyOptsNodes": 1351,
+   "defaultOutputs": [
+    "next_token"
+   ],
+   "defaultHasPick": false,
+   "verifyNodes": 1357,
+   "verifyOutputs": [
+    "dspark.features",
+    "verify_tokens",
+    "verify_logits",
+    "next_token"
+   ],
+   "verifyTail": 6,
+   "defaultTail": 5
+  },
+  "taps": [
+   6,
+   20,
+   34,
+   48,
+   62
+  ],
+  "smallM": {
+   "precision": "f32"
+  },
+  "margins": [
+   {
+    "argmax": 21204,
+    "top1": 29.165,
+    "margin": 10.6196
+   },
+   {
+    "argmax": 19154,
+    "top1": 22.8104,
+    "margin": 6.3518
+   },
+   {
+    "argmax": 2418,
+    "top1": 18.3186,
+    "margin": 1.1093
+   },
+   {
+    "argmax": 430,
+    "top1": 21.6177,
+    "margin": 6.0917
+   },
+   {
+    "argmax": 50032,
+    "top1": 17.524,
+    "margin": 0.525
+   }
+  ],
+  "minMargin": 0.525
+ },
+ "log": [
+  "imported",
+  "loaded",
+  "greedy 6 tokens: [43,21204,19154,2418,430,50032], prompt 21, seq 26",
+  "verify session built in 390 ms: 1357 nodes vs 1351 default; outputs dspark.features,verify_tokens,verify_logits,next_token",
+  "done: 5/5 rows match, verify step 106.1/92.4/92.1/92/92.1/92.2 ms vs decode 35.8 ms/token (ratio 2.57); features shape ok nonzero 1"
+ ]
+}

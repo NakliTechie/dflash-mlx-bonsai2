@@ -1,0 +1,91 @@
+{
+ "layout": {
+  "H": 5120,
+  "F": 17408,
+  "VOC": 248320,
+  "offUp": 6389760,
+  "offGate": 3604480,
+  "offDown": 9175040
+ },
+ "iters": 21,
+ "warm": 60,
+ "MS": [
+  4
+ ],
+ "engine": {
+  "gateUp2": 0.2057,
+  "upPerMatrix": 0.1028,
+  "down": 0.1065,
+  "head1": 1.4115
+ },
+ "enginePrefill": {
+  "up_M4": 0.6939
+ },
+ "runs": {
+  "M4/up_proj": {
+   "decodeMs": 0.1028,
+   "refRows": 17408,
+   "refMs": 306.6,
+   "variants": [
+    {
+     "label": "engine op Lut2SmallMGemm precision=f16 kSplits=auto",
+     "cfg": {
+      "op": true,
+      "precision": "f16",
+      "kSplits": 0
+     },
+     "steps": 1,
+     "gpuMedian": 0.1905,
+     "gpuMin": 0.1897,
+     "wallMsPerIter": 0.2048,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 1.8531
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1,
+      "dequant": "alu"
+     },
+     "nWG": 272,
+     "gpuMedian": 0.1922,
+     "gpuMin": 0.1903,
+     "wallMsPerIter": 0.219,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 1.8696
+    }
+   ],
+   "best": "engine op Lut2SmallMGemm precision=f16 kSplits=auto",
+   "bestRatio": 1.8531
+  }
+ }
+}

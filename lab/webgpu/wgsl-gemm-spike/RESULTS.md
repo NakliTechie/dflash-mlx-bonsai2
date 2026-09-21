@@ -218,3 +218,12 @@ Applies because the M=4 ratio is <= 2 on gate/up-sized matrices (section 7). No 
 6. **Precision choice**: default `precision: "f16"` (max abs 1.7e-3 on up_proj, 2.5e-2 on down_proj at |ref| up to 31;
    argmax preserved in every run); switch to `"f32"` math (+12% time, error identical to the engine's current
    prefill route) if verify-vs-greedy mismatches appear in the live check.
+
+## 9. Wired in (2026-09-21, later): `com.xenova.Lut2SmallMGemm` + route + all-rows head
+
+Section 8 is implemented as marker-guarded patches in `../patch-internals.mjs` section (e) with the op package in
+`smallm-op.mjs` (manifest + jinja templates generated from the same kernel structure as `gemmWgslM(unroll: true)`).
+Through the engine's own compile path the op reproduces the standalone numbers (`op2.log`, 21 samples): M=4 up_proj
+0.189 ms (ratio 1.86), down_proj 0.192 ms with kSplits=4 (1.81), lm_head 2.34 ms (1.70); errors identical to §7.
+Full verify-session results (block 4 / 5 / 8 at ratio 2.07 / 2.34 / 3.29 vs decode, parity 4/4, 5/5, 8/8) are in
+`../RESULTS-verify-qwen35.md`, "Stage-2 step 2".

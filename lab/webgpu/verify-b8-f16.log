@@ -1,0 +1,228 @@
+[console] [vs] imported
+22:55:05 {"state":"imported","prog":"weights 1301213824/5935527936"}
+22:55:10 {"state":"imported","prog":"weights /"}
+[console] [vs] loaded
+[console] [vs] greedy 9 tokens: [43,21204,19154,2418,430,50032,17210,314,55394], prompt 21, seq 29
+[console] [vs] verify session built in 439 ms: 1357 nodes vs 1351 default; outputs dspark.features,verify_tokens,verify_logits,next_token
+[console] [vs] done: 8/8 rows match, verify step 123.2/114.3/114.4/114.1/114.3/114.4 ms vs decode 34.7 ms/token (ratio 3.29); features shape ok nonzero 1
+22:55:15 {"state":"done: 8/8 rows match, verify step 123.2/114.3/114.4/114.1/114.3/114.4 ms vs decode 34.7 ms/token (ratio 3.29); features shape ok nonzero 1","prog":"ready /","buildMs":439}
+RESULTS {
+ "results": {
+  "greedy": [
+   43,
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "verify_tokens": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "expect": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "match": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "matches": 8,
+  "next_token_from_verify": 55394,
+  "next_token_expected": 55394,
+  "normalPrefillTok": 55394,
+  "normalPrefillMatch": true,
+  "stepMs": [
+   123.2,
+   114.3,
+   114.4,
+   114.1,
+   114.3,
+   114.4
+  ],
+  "stepMinMs": 114.1,
+  "readbackMs": 5.2,
+  "decodeMs": 34.7,
+  "ratio": 3.29,
+  "features": {
+   "dtype": "float32",
+   "shape": [
+    8,
+    25600
+   ],
+   "length": 204800,
+   "expectLength": 204800,
+   "shapeOk": true,
+   "nonZero": 204800,
+   "nonZeroFrac": 1,
+   "perTap": [
+    {
+     "layer": 6,
+     "meanAbs": 0.1053,
+     "maxAbs": 33.479,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 20,
+     "meanAbs": 0.4062,
+     "maxAbs": 49.232,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 34,
+     "meanAbs": 0.5363,
+     "maxAbs": 49.698,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 48,
+     "meanAbs": 0.8755,
+     "maxAbs": 52.132,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 62,
+     "meanAbs": 3.1618,
+     "maxAbs": 53.812,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    }
+   ],
+   "sampleRow0Tap0": [
+    -0.1102,
+    0.0127,
+    0.0305,
+    0.081,
+    -0.0827,
+    -0.0043
+   ],
+   "rowsDistinct": 8
+  },
+  "head": {
+   "packsQ1": false,
+   "lmHeadQ4": true,
+   "lmHeadQ8": false,
+   "lmHeadFormat": null,
+   "lmHeadLut": 9,
+   "lmHeadScanBits": null,
+   "lmHeadRescoreFormat": null,
+   "prismHeadRotated": true,
+   "hidden": 5120,
+   "layers": 64,
+   "vocab": 248320,
+   "f16": true,
+   "smallM": {
+    "precision": "f16"
+   },
+   "kiRoute": "prism.head (LlamaPrefillMatmul M=1 + ArgMax)"
+  },
+  "graph": {
+   "defaultNodes": 1351,
+   "emptyOptsNodes": 1351,
+   "defaultOutputs": [
+    "next_token"
+   ],
+   "defaultHasPick": false,
+   "verifyNodes": 1357,
+   "verifyOutputs": [
+    "dspark.features",
+    "verify_tokens",
+    "verify_logits",
+    "next_token"
+   ],
+   "verifyTail": 6,
+   "defaultTail": 5
+  },
+  "taps": [
+   6,
+   20,
+   34,
+   48,
+   62
+  ],
+  "smallM": {
+   "precision": "f16"
+  },
+  "margins": [
+   {
+    "argmax": 21204,
+    "top1": 29.1691,
+    "margin": 10.6275
+   },
+   {
+    "argmax": 19154,
+    "top1": 22.8118,
+    "margin": 6.3546
+   },
+   {
+    "argmax": 2418,
+    "top1": 18.3191,
+    "margin": 1.1121
+   },
+   {
+    "argmax": 430,
+    "top1": 21.6188,
+    "margin": 6.0945
+   },
+   {
+    "argmax": 50032,
+    "top1": 17.5264,
+    "margin": 0.5288
+   },
+   {
+    "argmax": 17210,
+    "top1": 18.8321,
+    "margin": 0.3539
+   },
+   {
+    "argmax": 314,
+    "top1": 22.5111,
+    "margin": 9.9313
+   },
+   {
+    "argmax": 55394,
+    "top1": 19.3944,
+    "margin": 1.2601
+   }
+  ],
+  "minMargin": 0.3539
+ },
+ "log": [
+  "imported",
+  "loaded",
+  "greedy 9 tokens: [43,21204,19154,2418,430,50032,17210,314,55394], prompt 21, seq 29",
+  "verify session built in 439 ms: 1357 nodes vs 1351 default; outputs dspark.features,verify_tokens,verify_logits,next_token",
+  "done: 8/8 rows match, verify step 123.2/114.3/114.4/114.1/114.3/114.4 ms vs decode 34.7 ms/token (ratio 3.29); features shape ok nonzero 1"
+ ]
+}

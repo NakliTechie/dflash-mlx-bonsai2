@@ -121,3 +121,61 @@ rows into one M=8 head matmul is the obvious next cut and belongs with the small
   other than the one above; f16-activation checkpoints (features would come back as `Uint16Array` bits; the harness
   decodes them, untested here).
 
+
+## Stage-2 step 2 — small-M GEMM route + all-rows head (2026-09-21, later session)
+
+The `wgsl-gemm-spike` kernel is now an engine op and the verify graph's projection + head path
+(`patch-internals.mjs` section (e), building on section (d); op package in `wgsl-gemm-spike/smallm-op.mjs`):
+
+| change | where |
+|---|---|
+| `com.xenova.Lut2SmallMGemm` registered in the engine's op override map (`Lf`, resolved first by `_8`) — manifest + two jinja assets (main, split-K reduce); M 1..8 baked per program, `precision` f16 / f32 / exact, `kSplits` | `Df();Lf.set(...)` before the export line |
+| `G2.R()` (the single emitter for every packed projection in `lh`: q/k/v, in_proj_qkv/z, o, out_proj, gate+up, down) takes the new op for lut2 / lut 9 weights when `n <= 8` and a small-M option is active (`lh` 4th-arg `smallM: {precision, headPrecision?, kSplits?}` or `globalThis.__dflashSmallM`); K-splits auto: smallest divisor of K/256 giving >= 256 workgroups (1 for gate/up + head, 4 for N=5120, 20 for k/v) | marker `R=(k,b,T,I,$,X,Q,V)=>{let K=` + `G2({...,smallM:$smallM})` + `G2({transformInput:Se,smallM:$v?.smallM,` |
+| verify head: with smallM active, section (d)'s T per-row `ki` heads become one rotated final norm (`s0`) over all T rows + one `Lut2SmallMGemm` (M = T) on `lmHeadQ4`/`lmHeadQ4Scales` + `ai.onnx.ArgMax(axis 1)` + `StridedCopy` into `verify_tokens`; logits declared as output `verify_logits` | marker = section (d)'s `for(let $r=0;$r<a;++$r)ki(...)` |
+
+Without a small-M option nothing changes: `lh(model, cache, 8)` still emits 1351 nodes / `next_token` only, and the
+section (d) verify graph still emits 1385 nodes (runs `verify-b8-off.log`, `verify-b4-off.log`, `verify-b5-off.log`).
+
+### Run matrix (`run-verify-matrix.sh`; logs `verify-b<block>-<smallm>.log`; GPU gate cleared, idle GPU, taps [6,20,34,48,62])
+
+Same prompt and greedy tokens as the step-1 run (`[43, 21204, 19154, 2418, 430, 50032, 17210, 314, 55394]`).
+`stepMin` = min of reps 2-6 of `s.run()` (incl. `next_token` readback); decode = 24 tokens after the block.
+
+| block | route | parity `verify_tokens[i] == g[i+1]` | next_token | step ms (min) | decode ms/tok | **ratio** | nodes |
+|---|---|---|---|---|---|---|---|
+| 8 | off (section d) | 8/8 | 55394 ok | 289.6 | 34.8 | 8.32 | 1385 |
+| 8 | smallM f16 | **8/8** | ok | **114.1** | 34.7 | **3.29** | 1357 |
+| 8 | smallM f32 | 8/8 | ok | 489.7 | 35.3 | 13.87 (M=8 f32 tier spills, as in the spike) | 1357 |
+| 4 | off | 4/4 | 430 ok | 242.3 | 34.7 | 6.98 | 1369 |
+| 4 | smallM f16 | **4/4** | ok | **72.1** | 34.8 | **2.07** | 1357 |
+| 4 | smallM f32 | 4/4 | ok | 79.1 | 35.5 | 2.23 | 1357 |
+| 5 | off | 5/5 | 50032 ok | 259.5 | 34.7 | 7.48 | 1373 |
+| 5 | smallM f16 | **5/5** | ok | **82.1** | 35.1 | **2.34** | 1357 |
+| 5 | smallM f32 | 5/5 | ok | 92.0 | 35.8 | 2.57 | 1357 |
+
+Step-1's 373 ms / ratio 8.85 for block 8 (measured with a concurrent Chrome) is 289.6 / 8.32 on the idle GPU.
+Verify-session build with the new op: 328-439 ms (vs 117 ms; the op compiles one pipeline per (M, K, N, kSplits)).
+`dspark.features` unchanged in shape / non-zero fraction (1.0) in every run; the normal 8-token prefill from the
+rewound state still reproduces g8 in every run.
+
+### Precision / tie-flip check (observed: `verify_logits` top-1 minus top-2 per row)
+
+| row | f16 tier margin | f32 tier margin |
+|---|---|---|
+| 0..7 (block 8) | 10.628, 6.355, 1.112, 6.095, 0.529, 0.354, 9.931, 1.260 | 10.620, 6.352, 1.109, 6.092, 0.525, 0.352, 9.934, 1.266 |
+
+The two tiers move each logit by <= ~0.008 on this prompt; the smallest top-2 margin (row 5, 0.354) is ~45x the
+f16 tier's max-abs logit error measured against the float64 reference on 2048 head rows (2.4e-3, spike RESULTS §7)
+and ~450x the f32 tier's (7.8e-4). No row flipped in any run. The current (section d / `ki`) path has no logits
+output, so its margins are not measured; its argmax agrees with both tiers on all 8 rows.
+
+### What is verified vs not
+
+- verified: parity 8/8, 4/4, 5/5 and next_token on every route (logs above); ratios per block length on an idle GPU;
+  op numerics vs the float64 CPU reference through the engine op (`wgsl-gemm-spike/op2.log`: same errors as the
+  standalone kernel, argmax preserved at M = 4/5/8 on up_proj, down_proj, lm_head).
+- observed: build times; margins (one prompt).
+- inferred: the ~25 ms not spent in projections at block 4 (64 layers x ~0.7 ms of projections + 2.3 ms head ≈ 47 ms
+  of the 72 ms) is GDN recurrence / attention / norms / Hadamards at T=4 — not profiled per op.
+- not run: the f32 tier at block 6-7; `kSplits` overrides; a second prompt; the normal (non-verify) prefill graph with
+  `globalThis.__dflashSmallM` set (the route is wired for it but only the verify graph was exercised).

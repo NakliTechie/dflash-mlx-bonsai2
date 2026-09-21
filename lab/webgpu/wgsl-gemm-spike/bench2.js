@@ -11,8 +11,8 @@ const fmt = (x) => Number(x.toFixed(4));
 function f16ToF32(h) { const s = (h & 0x8000) ? -1 : 1, e = (h >> 10) & 0x1f, f = h & 0x3ff; if (e === 0) return s * f * 2 ** -24; if (e === 31) return f ? NaN : s * Infinity; return s * (1 + f / 1024) * 2 ** (e - 15); }
 function randn(n, seed) { let s = seed >>> 0; const out = new Float32Array(n); const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; }; for (let i = 0; i < n; ++i) { const u = rnd(), v = rnd(); out[i] = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); } return out; }
 // variant syntax: m<TN>x<RN><math f|h><tile f|h>[u][k<ksplit>]   e.g. m64x4hh = f16 math, f16 tile; m64x4fhu = f32 math, f16 tile, unrolled; k4 = 4 K-splits
-const parseVariant = (v) => { const r = /^m(\d+)x(\d+)([fh])([fh])(u?)(?:k(\d+))?(?:d([ws]))?$/.exec(v); if (!r) throw new Error('bad variant ' + v); return { TN: +r[1], RN: +r[2], math: r[3] === 'h' ? 'f16' : 'f32', aStore: r[4] === 'h' ? 'f16' : 'f32', unroll: r[5] === 'u', ksplit: r[6] ? +r[6] : 1, dequant: r[7] === 'w' ? 'lutw' : r[7] === 's' ? 'luts' : 'alu' }; };
-const label = (cfg) => `TN=${cfg.TN} RN=${cfg.RN} math=${cfg.math} tile=${cfg.aStore}${cfg.unroll ? ' unrolled' : ''}${cfg.ksplit > 1 ? ` ksplit=${cfg.ksplit}` : ''}${cfg.dequant && cfg.dequant !== 'alu' ? ` dequant=${cfg.dequant}` : ''}`;
+const parseVariant = (v) => { const o = /^o(f16|f32|exact)(?:k(\d+))?$/.exec(v); if (o) return { op: true, precision: o[1], kSplits: o[2] ? +o[2] : 0 }; const r = /^m(\d+)x(\d+)([fh])([fh])(u?)(?:k(\d+))?(?:d([ws]))?$/.exec(v); if (!r) throw new Error('bad variant ' + v); return { TN: +r[1], RN: +r[2], math: r[3] === 'h' ? 'f16' : 'f32', aStore: r[4] === 'h' ? 'f16' : 'f32', unroll: r[5] === 'u', ksplit: r[6] ? +r[6] : 1, dequant: r[7] === 'w' ? 'lutw' : r[7] === 's' ? 'luts' : 'alu' }; };
+const label = (cfg) => cfg.op ? `engine op Lut2SmallMGemm precision=${cfg.precision} kSplits=${cfg.kSplits || 'auto'}` : `TN=${cfg.TN} RN=${cfg.RN} math=${cfg.math} tile=${cfg.aStore}${cfg.unroll ? ' unrolled' : ''}${cfg.ksplit > 1 ? ` ksplit=${cfg.ksplit}` : ''}${cfg.dequant && cfg.dequant !== 'alu' ? ` dequant=${cfg.dequant}` : ''}`;
 (async () => {
   try {
     const { gemmWgslM, reduceWgslM, lutTable } = await import('./kernel.wgsl.js?v=' + Date.now());
@@ -67,6 +67,18 @@ const label = (cfg) => `TN=${cfg.TN} RN=${cfg.RN} math=${cfg.math} tile=${cfg.aS
       const ms = []; for (let i = 0; i < ITERS; ++i) ms.push(Number(ts[2 * i + 1] - ts[2 * i]) / 1e6); return { ms, wall };
     };
     const readBuf = async (buf, byteOff, byteLen, Ctor) => { const s = dev.createBuffer({ size: byteLen, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST }); const e = dev.createCommandEncoder(); e.copyBufferToBuffer(buf, byteOff, s, 0, byteLen); dev.queue.submit([e.finish()]); await s.mapAsync(GPUMapMode.READ); const out = new Ctor(s.getMappedRange().slice(0)); s.unmap(); s.destroy(); return out; };
+    const runOp = async (M, cfg, pj, A) => {
+      const s = await micro(`op-${pj.name}-${M}-${cfg.precision}`, (S, b) => {
+        const bitsT = b.w(`${pj.name}.bits`, pj.bitsTensor), scalesT = b.w(`${pj.name}.scales`, pj.scalesTensor);
+        const a = S.stepInput('a', 'float32', [M, pj.K]); const y = S.scratch('y', 'float32', [M, pj.N]);
+        S.op('com.xenova.Lut2SmallMGemm', { aT: a, bitsT, scalesT, yT: y }, { args: { M, inFeatures: pj.K, outFeatures: pj.N, blockOffset: pj.off, outStride: pj.N, dstColStart: 0, lut: 9, precision: cfg.precision, ...(cfg.kSplits ? { kSplits: cfg.kSplits } : {}) } });
+        S.output(y, 'out'); return {};
+      });
+      write(s, 'a', A); s.compiled.collector.enqueue(s.steps); const Y = await rt.readTensor(s.compiled.tensor('out'));
+      const g = await gpuMs(s); const wall = await wallMs(s); s.dispose();
+      return { label: label(cfg), cfg, steps: s.steps.length, gpuMedian: fmt(median(g)), gpuMin: fmt(Math.min(...g)), wallMsPerIter: fmt(wall), Y };
+    };
+    const wallMs = async (s, n = ITERS) => { await rt.queueIdle(); const t0 = performance.now(); for (let i = 0; i < n; ++i) s.compiled.collector.enqueue(s.steps); await rt.queueIdle(); return (performance.now() - t0) / n; };
     const runKernel = async (M, cfg, { bits, scales, N, K, off, Abuf }) => {
       const pipe = await compile(gemmWgslM({ M, ...cfg }));
       const nWG = Math.ceil(N / cfg.TN), nChunks = K / 256; if (nChunks % cfg.ksplit) throw new Error('ksplit must divide K/256');
@@ -101,9 +113,9 @@ const label = (cfg) => `TN=${cfg.TN} RN=${cfg.RN} math=${cfg.math} tile=${cfg.aS
     // ---- projections ----
     const headRows = Number(q.get('rows') || 2048);
     const projs = [
-      { name: 'up_proj', bits: pack.bits.buffer, scales: pack.scales.buffer, N: F, K: H, off: offUp, rot: 'layers.0.up_proj', decodeMs: R.engine.upPerMatrix, refRows: F },
-      { name: 'down_proj', bits: pack.bits.buffer, scales: pack.scales.buffer, N: H, K: F, off: offDown, rot: 'layers.0.down_proj', decodeMs: R.engine.down, refRows: H },
-      { name: 'lm_head', bits: inner.lmHeadQ4.buffer, scales: inner.lmHeadQ4Scales.buffer, N: VOC, K: H, off: 0, rot: 'layers.0.up_proj', decodeMs: R.engine.head1, refRows: headRows },
+      { name: 'up_proj', bitsTensor: pack.bits, scalesTensor: pack.scales, bits: pack.bits.buffer, scales: pack.scales.buffer, N: F, K: H, off: offUp, rot: 'layers.0.up_proj', decodeMs: R.engine.upPerMatrix, refRows: F },
+      { name: 'down_proj', bitsTensor: pack.bits, scalesTensor: pack.scales, bits: pack.bits.buffer, scales: pack.scales.buffer, N: H, K: F, off: offDown, rot: 'layers.0.down_proj', decodeMs: R.engine.down, refRows: H },
+      { name: 'lm_head', bitsTensor: inner.lmHeadQ4, scalesTensor: inner.lmHeadQ4Scales, bits: inner.lmHeadQ4.buffer, scales: inner.lmHeadQ4Scales.buffer, N: VOC, K: H, off: 0, rot: 'layers.0.up_proj', decodeMs: R.engine.head1, refRows: headRows },
     ].filter(p => (q.get('projs') || 'up_proj,down_proj,lm_head').split(',').includes(p.name));
     const defaultVariants = { up_proj: 'm64x4hhu,m64x4hh,m64x4fhu,m64x4ffu', down_proj: 'm64x4hhuk4,m64x4hhk4,m64x4fhuk4,m64x4ffuk4,m64x4hhu', lm_head: 'm64x4hhu,m64x8hh,m64x4hh,m64x4fhu,m64x4ffu' };   // the sweep winners (m45.log / m45b.log / m45c.log hold the full sweeps)
     R.runs = {};
@@ -118,7 +130,7 @@ const label = (cfg) => `TN=${cfg.TN} RN=${cfg.RN} math=${cfg.math} tile=${cfg.aS
         const key = `M${M}/${pj.name}`; R.runs[key] = { decodeMs: pj.decodeMs, refRows: pj.refRows, refMs, variants: [] };
         for (const cfg of variants) {
           try {
-            const r = await runKernel(M, cfg, { bits: pj.bits, scales: pj.scales, N: pj.N, K: pj.K, off: pj.off, Abuf });
+            const r = cfg.op ? await runOp(M, cfg, pj, A) : await runKernel(M, cfg, { bits: pj.bits, scales: pj.scales, N: pj.N, K: pj.K, off: pj.off, Abuf });
             r.vsCpu = compare(r.Y, ref, M, pj.N, pj.refRows); delete r.Y; r.ratio = fmt(r.gpuMedian / pj.decodeMs);
             R.runs[key].variants.push(r); mark(`${key} ${r.label}: ${r.gpuMedian} ms ratio ${r.ratio} maxAbs ${r.vsCpu.maxAbs} argmax ${r.vsCpu.argmaxMatch}`);
           } catch (e) { R.runs[key].variants.push({ label: label(cfg), cfg, error: String(e.message || e).slice(0, 400) }); mark(`${key} ${label(cfg)} FAILED ${String(e.message || e).slice(0, 120)}`); }

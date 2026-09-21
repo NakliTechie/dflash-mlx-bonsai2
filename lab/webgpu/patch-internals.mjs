@@ -2,6 +2,7 @@
 // pieces so a harness can build the verify graph (I0 with the dspark config) and read `verify_tokens` +
 // `dspark.features` back. Marker-guarded like scripts/extract-ternary-bonsai-2-27b.mjs.
 import { readFileSync, writeFileSync } from 'node:fs';
+import { smallMOpPackage, SMALLM_OP_ID } from './wgsl-gemm-spike/smallm-op.mjs';
 const src = readFileSync(process.argv[2] ?? '/Users/chiragpatnaik/Code/naklios-universe/LocalMind/ternary_bonsai_2_27b.js', 'utf8');
 let out = src;
 const once = (re, what) => { const m = out.match(new RegExp(re.source, re.flags + 'g')); if (!m || m.length !== 1) throw new Error(`${what}: expected 1 match, got ${m ? m.length : 0}`); };
@@ -55,5 +56,43 @@ out = out.replace(lhTail,
   'J.output($t,"verify_tokens"),$p={tokens:$t,uni:J.uniform("next_token_pick_uni",32)}}' +
   'let st=E0({g:J,w:re,weights:ke,model:e,hidden:Je,act:G,H:s,vocab:o,T:a,eps:l,finalNormOffset:ie.model_norm,lmHeadOffset:ie.lm_head,...$p?{nextTokenPick:$p}:{}});' +
   'return{graph:J.finish({name:"qwen35-prefill",params:{T:a}}),weights:me,states:ne,paramsName:"params",lastRowUniform:st,...$p?{nextTokenPickUniform:$p.uni.name}:{},...L?{realRowsInput:L.name}:{},nextTokenTailNodeCount:J.nodeCount-Ze}}');
+// (e) wgsl-gemm-spike small-M GEMM as the verify path (RESULTS.md section 8 of wgsl-gemm-spike):
+//   e1. register `com.xenova.Lut2SmallMGemm` (manifest + jinja assets from wgsl-gemm-spike/smallm-op.mjs) in the
+//       engine's op override map `Lf` (checked first by the package resolver `_8`), initialised by its lazy wrapper `Df`.
+//   e2. route: G2's packed-projection emitter `R()` takes the new op for lut2 / lut 9 weights when the block length
+//       n <= 8 and a small-M option is active — either lh's 4th-arg `smallM` ({precision, headPrecision}) or the
+//       global `globalThis.__dflashSmallM` (so the normal prefill graph can be switched too). Without either the
+//       emitted graph is unchanged.
+//   e3. verify head: with smallM active, the per-row `ki` heads of section (d) become one rotated final norm over all
+//       T rows + one Lut2SmallMGemm (M = T) over the lm_head pack + ArgMax(axis 1) + StridedCopy into verify_tokens;
+//       the logits are also declared as output `verify_logits` (tie-margin diagnostics).
+const wrapDf = 'var Ds,Lf,Df=A(';
+once(new RegExp(wrapDf.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'lazy init wrapper Df for the op override map Lf');
+const pkg = smallMOpPackage();
+out = out.replace(exportLine, `Df();Lf.set(${JSON.stringify(SMALLM_OP_ID)},${JSON.stringify(pkg)});` + exportLine);
+const g2Sig = 'function G2({g:e,model:t,denseW:r,q4w:u,q1w:a,q1RealLenT:s,realRowsT:i,T:n,H:o,inter:l,eps:c,actGemm:d,fusedQ4:f,q1Activation:p,transformInput:h}){';
+once(new RegExp(g2Sig.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'G2 signature');
+out = out.replace(g2Sig, g2Sig.replace('transformInput:h}){', 'transformInput:h,smallM:$smallM}){'));
+const rHead = 'R=(k,b,T,I,$,X,Q,V)=>{let K=';
+once(new RegExp(rHead.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'G2 packed projection emitter R');
+out = out.replace(rHead,
+  'R=(k,b,T,I,$,X,Q,V)=>{let $sm=$smallM??globalThis.__dflashSmallM;' +
+  'if($sm&&x(b)&&b.lut===9&&n>=1&&n<=8&&$%256===0&&I%64===0&&T%8===0){' +
+  'let $tiles=Math.ceil(I/64),$ch=$/256,$ks=1;for(const $d of[1,2,4,5,8,10,16,20]){if($ch%$d===0){$ks=$d;if($tiles*$d>=256)break}}' +
+  'return e.op("com.xenova.Lut2SmallMGemm",{aT:k,bitsT:b.bitsT,scalesT:b.scalesT,yT:X},{args:{M:n,inFeatures:$,outFeatures:I,blockOffset:T,outStride:Q,dstColStart:V,lut:b.lut,precision:$sm.precision??"f16",kSplits:$sm.kSplits??$ks}}).yT}' +
+  'let K=');
+const g2Call = '{projInto:ce,proj:ae,mlpInto:Ee}=G2({transformInput:Se,g:J,';
+once(new RegExp(g2Call.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'lh call into G2');
+out = out.replace(g2Call, '{projInto:ce,proj:ae,mlpInto:Ee}=G2({transformInput:Se,smallM:$v?.smallM,g:J,');
+const kiLoop = 'for(let $r=0;$r<a;++$r)ki(J,{w:re,model:e,hidden:J.view(Je,$r*s,G,[s],`V.row${$r}`),weights:ke,ids:$t,hiddenSize:s,vocabSize:o,rmsEps:l,finalNormOffset:ie.model_norm,lmHeadOffset:ie.lm_head,q1:O,normedDtype:O&&S?"float16":"float32",nameSuffix:`V.r${$r}.`,outputOffset:$r});';
+once(new RegExp(kiLoop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'section (d) per-row ki head loop');
+out = out.replace(kiLoop,
+  'let $sm=$v.smallM??globalThis.__dflashSmallM;' +
+  'if($sm&&e.lmHeadQ4&&e.lmHeadQ4Scales&&e.lmHeadLut===9&&e.config.prismHadamard?.weights.includes("output.weight")){' +
+  'let $nrm=s0(J,e,re)(Je,"lm_head",{weights:ke,eps:l,offset:ie.model_norm},"V.head.normed"),$lg=J.scratch("V.head.logits","float32",[a,o]);' +
+  'J.op("com.xenova.Lut2SmallMGemm",{aT:J.view($nrm,0,"float32",[a,s],"V.head.input"),bitsT:re("V.head.bits",e.lmHeadQ4),scalesT:re("V.head.scales",e.lmHeadQ4Scales),yT:$lg},{args:{M:a,inFeatures:s,outFeatures:o,blockOffset:0,outStride:o,dstColStart:0,lut:9,precision:$sm.headPrecision??$sm.precision??"f16",kSplits:1}});' +
+  'let $am=J.op("ai.onnx.ArgMax",{x:$lg},{attrs:{axis:1,keepdims:0}}).y;' +
+  'J.op("com.xenova.StridedCopy",{srcT:J.storageView($am,{dtype:"uint32",shape:[a],name:"V.head.tokens"}),dstT:$t},{args:{rows:a,srcStride:1,dstStride:1,copyCols:1}});' +
+  'J.output($lg,"verify_logits")}else ' + kiLoop);
 writeFileSync('engine.dflash.js', out);
-console.log('wrote engine.dflash.js', out.length, 'bytes; features-output patch + internals hook + qwen35 verify-mode (lh 4th arg) applied');
+console.log('wrote engine.dflash.js', out.length, 'bytes; features-output patch + internals hook + qwen35 verify-mode (lh 4th arg) + Lut2SmallMGemm op/route/head applied');

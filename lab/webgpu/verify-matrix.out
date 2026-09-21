@@ -1,0 +1,17 @@
+wrote engine.dflash.js 1445257 bytes; features-output patch + internals hook + qwen35 verify-mode (lh 4th arg) + Lut2SmallMGemm op/route/head applied
+gpu free: unused=10240M 22:55:23
+block=8 smallm=off {"matches":8,"of":8,"vt":[21204,19154,2418,430,50032,17210,314,55394],"expect":[21204,19154,2418,430,50032,17210,314,55394],"next":55394,"exp":55394,"stepMs":[298.3,289.8,289.6,289.8,289.7,289.9],"stepMin":289.6,"decodeMs":34.8,"ratio":8.32,"nodes":1385,"minMargin":null,"margins":null}
+gpu free: unused=11264M 22:55:35
+block=4 smallm=off {"matches":4,"of":4,"vt":[21204,19154,2418,430],"expect":[21204,19154,2418,430],"next":430,"exp":430,"stepMs":[254.3,242.3,242.9,246.5,242.5,242.7],"stepMin":242.3,"decodeMs":34.7,"ratio":6.98,"nodes":1369,"minMargin":null,"margins":null}
+gpu free: unused=11264M 22:55:47
+block=4 smallm=f16 {"matches":4,"of":4,"vt":[21204,19154,2418,430],"expect":[21204,19154,2418,430],"next":430,"exp":430,"stepMs":[85,72.4,72.3,72.2,72.3,72.1],"stepMin":72.1,"decodeMs":34.8,"ratio":2.07,"nodes":1357,"minMargin":1.1121,"margins":[10.6275,6.3546,1.1121,6.0945]}
+gpu free: unused=11264M 22:56:00
+block=5 smallm=off {"matches":5,"of":5,"vt":[21204,19154,2418,430,50032],"expect":[21204,19154,2418,430,50032],"next":50032,"exp":50032,"stepMs":[268.3,260.2,259.9,259.5,259.9,260.3],"stepMin":259.5,"decodeMs":34.7,"ratio":7.48,"nodes":1373,"minMargin":null,"margins":null}
+gpu free: unused=10240M 22:56:12
+block=5 smallm=f16 {"matches":5,"of":5,"vt":[21204,19154,2418,430,50032],"expect":[21204,19154,2418,430,50032],"next":50032,"exp":50032,"stepMs":[95.1,82.2,82.2,82.2,82.1,82.1],"stepMin":82.1,"decodeMs":35.1,"ratio":2.34,"nodes":1357,"minMargin":0.5288,"margins":[10.6275,6.3546,1.1121,6.0945,0.5288]}
+gpu free: unused=11264M 22:56:24
+block=4 smallm=f32 {"matches":4,"of":4,"vt":[21204,19154,2418,430],"expect":[21204,19154,2418,430],"next":430,"exp":430,"stepMs":[93,79.4,79.3,79.2,79.2,79.1],"stepMin":79.1,"decodeMs":35.5,"ratio":2.23,"nodes":1357,"minMargin":1.1093,"margins":[10.6196,6.3518,1.1093,6.0917]}
+gpu free: unused=10240M 22:56:37
+block=5 smallm=f32 {"matches":5,"of":5,"vt":[21204,19154,2418,430,50032],"expect":[21204,19154,2418,430,50032],"next":50032,"exp":50032,"stepMs":[106.1,92.4,92.1,92,92.1,92.2],"stepMin":92,"decodeMs":35.8,"ratio":2.57,"nodes":1357,"minMargin":0.525,"margins":[10.6196,6.3518,1.1093,6.0917,0.525]}
+gpu free: unused=10240M 22:56:49
+block=8 smallm=f32 {"matches":8,"of":8,"vt":[21204,19154,2418,430,50032,17210,314,55394],"expect":[21204,19154,2418,430,50032,17210,314,55394],"next":55394,"exp":55394,"stepMs":[501.4,490.1,490.1,490.3,489.7,489.9],"stepMin":489.7,"decodeMs":35.3,"ratio":13.87,"nodes":1357,"minMargin":0.3524,"margins":[10.6196,6.3518,1.1093,6.0917,0.525,0.3524,9.9342,1.2656]}

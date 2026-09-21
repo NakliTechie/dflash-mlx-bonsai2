@@ -31,6 +31,9 @@ window.__vs = { state: 'init', log: [] };
     const qs = new URLSearchParams(location.search);
     const TAPS = (qs.get('taps') || '5,19,33,47,61').split(',').map(Number);
     const BLOCK = Number(qs.get('block') || 8), REPS = Number(qs.get('reps') || 6);
+    // smallm=f16|f32|exact routes every lut2 projection of the verify graph and the all-rows head through
+    // com.xenova.Lut2SmallMGemm (patch-internals.mjs section (e)); absent/off = the section (d) path (per-row ki heads).
+    const SMALLM = qs.get('smallm'); const smallM = SMALLM && SMALLM !== 'off' ? { precision: SMALLM } : undefined;
     const mod = await import('/engine.dflash.js?v=' + Date.now());
     const Eng = mod.TernaryBonsai2; const I = Eng.__dflashInternals;
     if (!I || !I.lh || !I.ch) throw new Error('internals hook missing (lh/ch)');
@@ -45,6 +48,7 @@ window.__vs = { state: 'init', log: [] };
       lmHeadScanBits: inner.lmHeadScanBits ?? null, lmHeadRescoreFormat: inner.lmHeadRescoreFormat ?? null, prismHeadRotated: !!cfg.prismHadamard?.weights?.includes('output.weight'),
       hidden: cfg.hidden_size, layers: cfg.num_hidden_layers, vocab: cfg.vocab_size, f16: inner.runtime.device.features.has('shader-f16') };
     // ki's internal head route for this model (mirrors ki's own branch order): prism -> two-stage (q4+q8, !q1) -> q1 -> q4 -> q8 -> dense
+    V.head.smallM = smallM ?? 'off';
     V.head.kiRoute = V.head.prismHeadRotated ? 'prism.head (LlamaPrefillMatmul M=1 + ArgMax)' : (!V.head.packsQ1 && V.head.lmHeadQ4 && V.head.lmHeadQ8) ? 'two-stage T5 (Q4 scan + Q8 rescore)'
       : V.head.packsQ1 ? 'q1 (RMSNorm + LlamaDecodeLmHeadArgmax q1_0)' : V.head.lmHeadQ4 ? `q4 LlamaDecodeLmHeadArgmax format=${V.head.lmHeadFormat}` : V.head.lmHeadQ8 ? 'q8_rows LlamaDecodeLmHeadArgmax' : 'dense LlamaDecodeLmHeadArgmax';
     if (typeof cache.allocateCheckpointSlot !== 'function') throw new Error('cache.allocateCheckpointSlot missing (no mutable-state checkpoint API)');
@@ -70,7 +74,7 @@ window.__vs = { state: 'init', log: [] };
     const names = (g) => g.graph.tensors.filter(t => t.kind === 'output').map(t => t.name);
     V.graph = { defaultNodes: gDef.graph.nodes.length, emptyOptsNodes: gEmpty.graph.nodes.length, defaultOutputs: names(gDef), defaultHasPick: !!gDef.nextTokenPickUniform };
     // 4. verify session: ch (the qwen35 session class) with lh's 4th arg
-    const opts = { tapLayers: TAPS, allRowsHead: true };
+    const opts = { tapLayers: TAPS, allRowsHead: true, ...(smallM ? { smallM } : {}) };
     class VerifySession extends I.ch { buildEmission() { return I.lh(this.model, this.cache, this.blockLen, opts); } }
     const s = new VerifySession(inner, cache, BLOCK);
     const tb = performance.now(); await s.build(); V.buildMs = +(performance.now() - tb).toFixed(0);
@@ -84,6 +88,10 @@ window.__vs = { state: 'init', log: [] };
       if (r === 0) {
         const tr = performance.now();
         vt = Array.from(await inner.runtime.readTensor(s.compiled.tensor('verify_tokens')));
+        if (smallM) { // tie-flip diagnostics from the all-rows head logits: per-row top-1 / top-2 margin
+          const lg = await inner.runtime.readTensor(s.compiled.tensor('verify_logits')); const VV = cfg.vocab_size;
+          V.margins = Array.from({ length: BLOCK }, (_, r2) => { let b1 = -Infinity, i1 = -1, b2 = -Infinity; for (let j = 0; j < VV; ++j) { const v = lg[r2 * VV + j]; if (v > b1) { b2 = b1; b1 = v; i1 = j; } else if (v > b2) b2 = v; } return { argmax: i1, top1: +b1.toFixed(4), margin: +(b1 - b2).toFixed(4) }; });
+        }
         const fT = s.compiled.tensor('dspark.features'); const raw = await inner.runtime.readTensor(fT);
         readMs = +(performance.now() - tr).toFixed(1);
         const H = cfg.hidden_size, W = TAPS.length * H;
@@ -105,7 +113,7 @@ window.__vs = { state: 'init', log: [] };
     const decodeMs = +(((performance.now() - td) - firstMs) / (nd - 1)).toFixed(1);
     const stepMin = Math.min(...times.slice(1));
     V.results = { greedy, verify_tokens: vt, expect, match, matches: match.filter(Boolean).length, next_token_from_verify: nt, next_token_expected: greedy[BLOCK], normalPrefillTok: prefillTok, normalPrefillMatch: prefillTok === greedy[BLOCK],
-      stepMs: times, stepMinMs: stepMin, readbackMs: readMs, decodeMs, ratio: +(stepMin / decodeMs).toFixed(2), features: feat, head: V.head, graph: V.graph, taps: TAPS };
+      stepMs: times, stepMinMs: stepMin, readbackMs: readMs, decodeMs, ratio: +(stepMin / decodeMs).toFixed(2), features: feat, head: V.head, graph: V.graph, taps: TAPS, smallM: smallM ?? 'off', margins: V.margins ?? null, minMargin: V.margins ? Math.min(...V.margins.map(x => x.margin)) : null };
     mark(`done: ${V.results.matches}/${BLOCK} rows match, verify step ${times.join('/')} ms vs decode ${decodeMs} ms/token (ratio ${V.results.ratio}); features ${feat.shapeOk ? 'shape ok' : 'SHAPE BAD'} nonzero ${feat.nonZeroFrac}`);
   } catch (e) { V.error = String(e && e.stack || e); mark('error'); console.error(e); }
 })();
