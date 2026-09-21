@@ -41,3 +41,15 @@ benchmark/*.bak
 .local/
 .agents/
 skills-lock.json
+
+# --- bonsai2 fork: lab artifacts that must never be committed (weights, captures, logs).
+# Logs already tracked under lab/ stay tracked (evidence for the plan); new ones need `git add -f`.
+*.safetensors
+*.gguf
+*.npz
+*.npy
+lab/aws/corpus/
+lab/**/*.log
+lab/**/*.out
+.artifacts/
+.bonsai2.env
