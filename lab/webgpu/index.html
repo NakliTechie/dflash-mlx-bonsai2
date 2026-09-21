@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>verify harness</title>
+<body style="font:14px monospace;padding:16px"><h3>DFlash stage-2 step-1 harness</h3>
+<pre id="s">not started</pre>
+<script type="module">
+  const s = document.getElementById('s');
+  await import('./verify-session-harness.js');
+  setInterval(() => { const V = window.__vs; s.textContent = JSON.stringify({ state: V.state, prog: V.prog, buildMs: V.buildMs, results: V.results, error: V.error, featError: V.featError }, null, 1); }, 1000);
+</script>
