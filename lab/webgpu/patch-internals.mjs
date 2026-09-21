@@ -17,7 +17,9 @@ once(new RegExp(exportLine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'export line
 // I0/X2 are hoisted functions; K2/M0/f0 are assigned inside esbuild lazy-init wrappers (A(() => {...})) that run on
 // first use, so expose them through getters that resolve at access time (after the model has loaded).
 for (const id of ['I0', 'X2']) once(new RegExp(`function ${id}\\(`), `internal function ${id}`);
-for (const id of ['M0', 'K2', 'f0']) once(new RegExp(`\\b${id}=class`), `internal class ${id}`);
-out = out.replace(exportLine, 'zl.__dflashInternals={get I0(){return I0},get X2(){return X2},get M0(){return M0},get K2(){return K2},get f0(){return f0}};' + exportLine);
+for (const id of ['M0', 'K2', 'f0', 'ch']) once(new RegExp(`\\b${id}=class`), `internal class ${id}`);
+once(/function lh\(e,t,r\)\{/, 'internal function lh (qwen35 prefill emission)');
+once(/var ch,dh=A\(/, 'lazy init wrapper dh for ch');
+out = out.replace(exportLine, 'zl.__dflashInternals={get I0(){return I0},get X2(){return X2},get M0(){return M0},get K2(){return K2},get f0(){return f0},get ch(){dh();return ch},get lh(){return lh}};' + exportLine);
 writeFileSync('engine.dflash.js', out);
 console.log('wrote engine.dflash.js', out.length, 'bytes; features-output patch + internals hook applied');

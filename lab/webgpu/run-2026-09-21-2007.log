@@ -1,0 +1,5 @@
+20:07:28 {"state":"imported","prog":"weights 2170970752/5935527936"}
+20:07:33 {"state":"imported","prog":"weights /"}
+20:07:38 {"state":"8-token qwen35 prefill session built in 660 ms","prog":"ready /","buildMs":660}
+20:07:43 {"state":"done: last-row MISMATCH, 8-row step 291.6/279.3/279.6/279.1/279.4/279.3 ms vs decode 34.6 ms/token (ratio 8.07)","prog":"ready /","buildMs":660}
+RESULTS {"results":{"greedy":[43,21204,19154,2418,430,50032,17210,314,55394],"next_token_from_8row_step":43,"expect_last":55394,"lastRowMatch":false,"stepMs":[291.6,279.3,279.6,279.1,279.4,279.3],"decodeMs":34.6,"ratio":8.07,"featError":"n/a (qwen35 builder has no taps)"},"log":["imported","loaded","greedy 9 tokens, seq 29","8-token qwen35 prefill session built in 660 ms","done: last-row MISMATCH, 8-row step 291.6/279.3/279.6/279.1/279.4/279.3 ms vs decode 34.6 ms/token (ratio 8.07)"]}

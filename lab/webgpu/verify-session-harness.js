@@ -28,11 +28,12 @@ window.__vs = { state: 'init', log: [] };
 (async () => {
   const V = window.__vs; const mark = (m) => { V.log.push([Date.now(), m]); V.state = m; };
   try {
-    const mod = await import('/engine.dflash.js');
+    const mod = await import('/engine.dflash.js?v=' + Date.now());
     const Eng = mod.TernaryBonsai2; const I = Eng.__dflashInternals;
     if (!I) throw new Error('internals hook missing');
     mark('imported');
-    const m = await Eng.load(null, { maxLength: 4096, onProgress: (ev) => { if (ev && ev.status) V.prog = `${ev.status} ${ev.loaded ?? ''}/${ev.total ?? ''}`; } });
+    const modelUrl = new URLSearchParams(location.search).get('model') || null;   // e.g. a local range-capable GGUF URL
+    const m = await Eng.load(modelUrl, { maxLength: 4096, onProgress: (ev) => { if (ev && ev.status) V.prog = `${ev.status} ${ev.loaded ?? ''}/${ev.total ?? ''}`; } });
     V.model = m; mark('loaded');
     if (typeof m.warmup === 'function') await m.warmup();
     const enc = (s) => m.tokenizer.encode(s, { add_special_tokens: false }).ids;
@@ -49,20 +50,28 @@ window.__vs = { state: 'init', log: [] };
     const pos = seqAfter - 8;
     if (typeof cache.set_seq_length === 'function') cache.set_seq_length(pos); else cache.seqLength = pos;
     const block = new Uint32Array(greedy.slice(0, 8));
-    // 2. build the verify session: I0(model, cache, 8, dspark config).
-    const Sess = class extends I.K2 { buildEmission() { return I.I0(this.model, this.cache, this.blockLen, { tapLayers: [5, 19, 33, 47, 61], allRowsHead: true }); } };
-    const s = new Sess(m, cache, 8); const tb = performance.now(); await s.build(); V.buildMs = +(performance.now() - tb).toFixed(0);
-    mark(`verify session built in ${V.buildMs} ms`);
-    // 3. run it 4 times (rolling the cache back each time) and time it; read verify_tokens + features.
-    const times = []; let vt = null, feat = null;
-    for (let r = 0; r < 4; ++r) {
+    // 2. The engine's target-side verify scaffolding (taps + all-rows head) exists only in the Llama prefill
+    //    builder (I0); Bonsai 2 is a qwen35 hybrid whose prefill builder (lh) has neither. So step 1 here measures
+    //    what stage 0 could not: the cost of the engine's OWN 8-token qwen35 prefill-graph step (class ch) on top
+    //    of the live cache, versus a decode step, and checks its last-row next token against the greedy path.
+    const inner = m.model;
+    const s = new I.ch(inner, cache, 8); const tb = performance.now(); await s.build(); V.buildMs = +(performance.now() - tb).toFixed(0);
+    mark(`8-token qwen35 prefill session built in ${V.buildMs} ms`);
+    const times = []; let nt = null, feat = null, vt = null;
+    for (let r = 0; r < 6; ++r) {
       if (typeof cache.set_seq_length === 'function') cache.set_seq_length(pos); else cache.seqLength = pos;
       const t0 = performance.now();
-      s.writeInputs(block, pos); s.compiled.collector.enqueue(s.steps);
-      vt = Array.from(await m.runtime.readTensor(s.compiled.tensor('verify_tokens')));
+      nt = await s.run(block, pos);
       times.push(+(performance.now() - t0).toFixed(1));
     }
-    try { feat = await m.runtime.readTensor(s.compiled.tensor('dspark.features')); } catch (e) { V.featError = String(e); }
+    // decode-step reference: 24 tokens streamed from the same state
+    if (typeof cache.set_seq_length === 'function') cache.set_seq_length(seqAfter); else cache.seqLength = seqAfter;
+    const td = performance.now(); let nd = 0, firstMs = null;
+    for await (const tok of m.streamTokens({ suffixIds: [greedy[8]], maxNewTokens: 24, eosTokenId: eos, stopOnEos: false }, {})) { if (firstMs === null) firstMs = performance.now() - td; nd++; }
+    const decodeMs = +(((performance.now() - td) - firstMs) / (nd - 1)).toFixed(1);
+    V.results = { greedy, next_token_from_8row_step: nt, expect_last: greedy[8], lastRowMatch: nt === greedy[8], stepMs: times, decodeMs, ratio: +(Math.min(...times.slice(1)) / decodeMs).toFixed(2), featError: 'n/a (qwen35 builder has no taps)' };
+    mark(`done: last-row ${nt === greedy[8] ? 'MATCH' : 'MISMATCH'}, 8-row step ${times.join('/')} ms vs decode ${decodeMs} ms/token (ratio ${V.results.ratio})`);
+    return;
     const expect = greedy.slice(1, 9);
     V.results = { greedy, verify_tokens: vt, expect, match: vt.map((t, i) => t === expect[i]), verifyMs: times, featLen: feat ? feat.length : null,
       featSample: feat ? Array.from(feat.slice(0, 8)).map(Number) : null, featNonZero: feat ? Array.from(feat.slice(0, 4096)).some(x => x !== 0) : null };
