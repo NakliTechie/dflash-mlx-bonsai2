@@ -1,0 +1,51 @@
+0.00.494.047 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.509.042 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.00.982.486 I cmn          init: llama threadpool init, n_threads = 10
+0.01.234.096 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.02.115.393 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dflash'
+0.02.115.394 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.02.115.394 I common_speculative_impl_draft_dflash: - block_size=8, mask_token_id=248070, n_extract=5, sample_from_anchor=true, lineage=dflash
+
+
+Subject: Weekend in the Hills!
+
+Hey [Friend's Name],
+
+I hope you’re having a great week! I just wanted to share a little bit of my weekend adventure because I’ve been dying to tell you about it. I finally got out to the hills for a hike, and it was absolutely perfect. The weather was this rare, crisp kind of cool that makes you feel like you’re wrapped in a fresh blanket—sunny enough to see the whole valley stretch out below, but with just enough breeze to keep things comfortable. The trail was quiet, the air smelled like pine and damp earth, and I felt so grounded just walking through the trees.
+
+When I got back home, I was starving, so I decided to make something simple but really comforting. I threw together a big pot of tomato and basil soup with a swirl of cream, and paired it with some crusty sourdough bread that I’d baked earlier in the day. It was the kind of meal that just feels like a warm hug after being out in the fresh air. I’d love to hear what you’ve been up to lately—maybe we can plan a similar trip together soon? Let me know!
+
+Best,
+[Your Name]
+
+1.33.301.695 I encoded   39 tokens in    0.650 seconds, speed:   60.046 t/s
+1.33.301.695 I decoded  252 tokens in   90.537 seconds, speed:    2.783 t/s
+1.33.301.695 I 
+1.33.301.696 I n_draft   = 7
+1.33.301.696 I n_predict = 252
+1.33.301.696 I n_drafted = 833
+1.33.301.696 I n_accept  = 133
+1.33.301.696 I accept    = 15.966%
+1.33.301.696 I 
+1.33.301.696 I draft:
+
+1.33.301.702 I 
+1.33.301.702 I target:
+
+1.33.301.703 I common_perf_print:    sampling time =      37.07 ms
+1.33.301.704 I common_perf_print:    samplers time =      20.97 ms /   252 tokens
+1.33.301.704 I common_perf_print:        load time =     645.09 ms
+1.33.301.705 I common_perf_print: prompt eval time =   80745.13 ms /   992 tokens (   81.40 ms per token,    12.29 tokens per second)
+1.33.301.706 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+1.33.301.706 I common_perf_print:       total time =   92067.64 ms /   993 tokens
+1.33.301.706 I common_perf_print: unaccounted time =   11285.44 ms /  12.3 %      (total - sampling - prompt eval - eval) / (total)
+1.33.301.707 I common_perf_print:    graphs reused =        118
+
+

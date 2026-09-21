@@ -1,0 +1,60 @@
+0.00.488.313 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.502.875 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.00.991.945 I cmn          init: llama threadpool init, n_threads = 10
+0.01.239.776 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a complete short story of about 1500 words: a lighthouse keeper on a remote island receives a letter that changes everything. Include dialogue, a turning point, and a resolution.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.02.135.998 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dflash'
+0.02.135.999 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.02.135.999 I common_speculative_impl_draft_dflash: - block_size=8, mask_token_id=248070, n_extract=5, sample_from_anchor=true, lineage=dflash
+
+
+The wind on Blackwood Island did not blow; it screamed. It was a constant, high-pitched shriek that had worn the edges of the lighthouse keeper’s soul as smooth as the granite rocks below. For twelve years, Elias Thorne had lived in the shadow of the Great Light, a solitary figure in a world that had forgotten him.
+
+Elias was a man composed of angles and silence. His days were measured in the rotation of the lens, the polishing of the glass, and the checking of the oil reserves. He spoke to no one. The only conversation he had was with the gulls, who circled the tower like restless thoughts, and with the sea, which he regarded with a mixture of fear and respect. He was a ghost in a stone house, and he was content with it. Or so he believed.
+
+The mail boat, *The Pelican*, arrived on a Tuesday, cutting through the grey swells with a rhythmic thud of its engine. Elias stood on the jetty, his oilskin coat flapping in the gale, watching the vessel approach. He expected nothing. The island was a dead end, a place where ships went to die or to be saved, but rarely where people went to live.
+
+The boat docked with a groan of wood against stone. The captain, a broad-shouldered man named Miller, hauled the gangplank up. He didn’t look at Elias. He never did. He simply tossed a small, brown envelope onto the wet planks and turned the boat around.
+
+Elias picked up the letter. It was heavy, the paper thick and cream-colored, bearing a wax seal that had cracked in the transit. The return address was in a city he hadn’t seen in twenty years: Boston. The name on the envelope was written in a hand he knew better than his own.
+
+*Elias Thorne.*
+
+His hands trembled. He had not seen that name in two decades. He had buried it, along with his past, in the deep waters of the Atlantic. He walked back to the lighthouse, the wind trying to tear the letter from his grip. He locked the door, barred the window, and sat at his small desk. The great lens above him turned, casting a beam of white light into the dark, but Elias could not see it. He was looking at the past.
+
+He broke the seal.
+
+*My Dearest Elias,*
+
+*It is me. Sarah. I know
+
+3.14.281.464 I encoded   51 tokens in    0.660 seconds, speed:   77.249 t/s
+3.14.281.464 I decoded  515 tokens in  191.485 seconds, speed:    2.690 t/s
+3.14.281.464 I 
+3.14.281.465 I n_draft   = 7
+3.14.281.465 I n_predict = 515
+3.14.281.465 I n_drafted = 1768
+3.14.281.465 I n_accept  = 261
+3.14.281.465 I accept    = 14.762%
+3.14.281.465 I 
+3.14.281.465 I draft:
+
+3.14.281.478 I 
+3.14.281.478 I target:
+
+3.14.281.479 I common_perf_print:    sampling time =      54.30 ms
+3.14.281.480 I common_perf_print:    samplers time =      35.01 ms /   515 tokens
+3.14.281.480 I common_perf_print:        load time =     655.75 ms
+3.14.281.481 I common_perf_print: prompt eval time =  171086.22 ms /  2074 tokens (   82.49 ms per token,    12.12 tokens per second)
+3.14.281.482 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+3.14.281.482 I common_perf_print:       total time =  193041.73 ms /  2075 tokens
+3.14.281.482 I common_perf_print: unaccounted time =   21901.21 ms /  11.3 %      (total - sampling - prompt eval - eval) / (total)
+3.14.281.482 I common_perf_print:    graphs reused =        249
+
+

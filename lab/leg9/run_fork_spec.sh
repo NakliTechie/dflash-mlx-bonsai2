@@ -5,7 +5,7 @@ BIN=~/Code/llama.cpp-prism/build-metal/bin; M=~/Code/models/bonsai2-gguf/Ternary
 MD0=~/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf; MD3=~/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf
 OUT=~/Code/dflash-mlx-bonsai2/lab/leg9; N=${N:-512}
 log() { echo "[$(date '+%H:%M:%S')] $*" | tee -a $OUT/runner.log; }
-until ! pgrep -f 'dflash benchmark|llama-speculative|llama-bench' >/dev/null; do sleep 30; done
+until ! pgrep -x llama-bench >/dev/null && ! pgrep -x llama-speculative-simple >/dev/null && ! pgrep -fx '.*dflash benchmark.*' >/dev/null; do sleep 30; done
 log "leg9d start (fork $(cd ~/Code/llama.cpp-prism && git log -1 --format=%h) dflash2-port): $(top -l 1 -s 0 | grep PhysMem | sed 's/PhysMem: //')"
 $BIN/llama-bench -m $M -p 512 -n 128 -ngl 99 -fa 1 -r 3 > $OUT/fork-bench-plain.log 2>&1; log "llama-bench plain PTQ1_0 exit $? | $(grep -E 'tg128|pp512' $OUT/fork-bench-plain.log | awk -F'|' '{print $(NF-2), $(NF-1)}' | tr '\n' ' ' | tr -s ' ')"
 wrap() { printf '<|im_start|>user\n%s<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n' "$1"; }

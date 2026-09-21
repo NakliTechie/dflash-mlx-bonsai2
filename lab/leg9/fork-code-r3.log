@@ -1,0 +1,114 @@
+0.00.490.123 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.504.376 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.00.991.327 I cmn          init: llama threadpool init, n_threads = 10
+0.01.238.009 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.02.150.732 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dflash'
+0.02.150.733 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.02.150.733 I common_speculative_impl_draft_dflash: - block_size=8, mask_token_id=248070, n_extract=5, sample_from_anchor=true, lineage=dflash
+
+
+```python
+"""
+lru_cache.py
+
+Implements a classic LRU (Least Recently Used) cache with O(1) get and put.
+
+The implementation uses a doubly-linked list to maintain access order and a
+hash map for O(1) key lookup.  When the cache is full, the least-recently-used
+entry is evicted.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Optional
+
+
+class _Node:
+    """A single node in the doubly-linked list."""
+
+    __slots__ = ("key", "value", "prev", "next")
+
+    def __init__(self, key: Any, value: Any) -> None:
+        self.key: Any = key
+        self.value: Any = value
+        self.prev: Optional["_Node"] = None
+        self.next: Optional["_Node"] = None
+
+
+class LRUCache:
+    """
+    A Least-Recently-Used cache with O(1) get and put operations.
+
+    Parameters
+    ----------
+    capacity : int
+        Maximum number of entries the cache can hold. Must be >= 1.
+
+    Examples
+    --------
+    >>> cache = LRUCache(2)
+    >>> cache.put("a", 1)
+    >>> cache.put("b", 2)
+    >>> cache.get("a")
+    1
+    >>> cache.put("c", 3)          # evicts "b"
+    >>> cache.get("b")
+    -1
+    >>> cache.get("a")
+    1
+    >>> cache.get("c")
+    3
+    """
+
+    def __init__(self, capacity: int) -> None:
+        if capacity < 1:
+            raise ValueError("capacity must be >= 1")
+        self._capacity: int = capacity
+        self._size: int = 0
+        self._map: dict[Any, _Node] = {}
+
+        # Sentinel nodes simplify edge cases (empty list, head/tail access).
+        self._head: _Node = _Node(None, None)
+        self._tail: _Node = _Node(None, None)
+        self._head.next = self._tail
+        self._tail.prev = self._head
+
+    # ------------------------------------------------------------------ #
+    #  Public API
+    # ------------------------------------------------------------------ #
+
+    def get(self, key: Any) -> Any:
+        """
+        Return
+
+1.20.353.343 I encoded   56 tokens in    0.661 seconds, speed:   84.682 t/s
+1.20.353.344 I decoded  520 tokens in   77.541 seconds, speed:    6.706 t/s
+1.20.353.344 I 
+1.20.353.344 I n_draft   = 7
+1.20.353.344 I n_predict = 520
+1.20.353.345 I n_drafted = 716
+1.20.353.345 I n_accept  = 417
+1.20.353.345 I accept    = 58.240%
+1.20.353.345 I 
+1.20.353.345 I draft:
+
+1.20.353.353 I 
+1.20.353.353 I target:
+
+1.20.353.354 I common_perf_print:    sampling time =      54.64 ms
+1.20.353.354 I common_perf_print:    samplers time =      34.14 ms /   520 tokens
+1.20.353.354 I common_perf_print:        load time =     652.45 ms
+1.20.353.355 I common_perf_print: prompt eval time =   69059.10 ms /   876 tokens (   78.83 ms per token,    12.68 tokens per second)
+1.20.353.356 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+1.20.353.356 I common_perf_print:       total time =   79115.38 ms /   877 tokens
+1.20.353.357 I common_perf_print: unaccounted time =   10001.63 ms /  12.6 %      (total - sampling - prompt eval - eval) / (total)
+1.20.353.357 I common_perf_print:    graphs reused =         99
+
+

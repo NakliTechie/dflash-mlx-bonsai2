@@ -18,3 +18,22 @@ wrote /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/r3-bf16.gguf 3.860
 [16:56:23] llama-bench plain exit 0 |  pp512 129.06 ± 0.08 tg128 21.98 ± 0.05 
 [17:01:00] email zlab exit 0 | 4.36.554.063 I decoded 513 tokens in 272.935 seconds, speed: 1.880 t/s 4.36.554.063 I n_draft = 7 4.36.554.064 I n_drafted = 3570 4.36.554.064 I n_accept = 0 4.36.554.064 I accept = 0.000% 
 [17:05:56] email r3 exit 0 | 4.55.877.944 I decoded 513 tokens in 293.266 seconds, speed: 1.749 t/s 4.55.877.944 I n_draft = 7 4.55.877.944 I n_drafted = 3570 4.55.877.944 I n_accept = 0 4.55.877.945 I accept = 0.000% 
+[17:57:40] leg9d start (fork cbe495c59 dflash2-port): 22G used (2330M wired, 2389M compressor), 922M unused.
+[17:58:33] leg9d start (fork cbe495c59 dflash2-port): 22G used (2169M wired, 2389M compressor), 1555M unused.
+[17:59:14] llama-bench plain PTQ1_0 exit 0 |  pp512 104.77 ± 2.21 tg128 18.27 ± 0.53 
+[18:01:05] email zlab exit 0 | encoded 39 tokens in 0.751 seconds, speed: 51.910 t/s decoded 252 tokens in 106.867 seconds, speed: 2.358 t/s n_drafted = 833 n_accept = 133 
+[18:02:37] email r3 exit 0 | encoded 39 tokens in 0.671 seconds, speed: 58.135 t/s decoded 252 tokens in 88.535 seconds, speed: 2.846 t/s n_drafted = 714 n_accept = 150 
+[18:03:33] code zlab exit 0 | encoded 56 tokens in 0.663 seconds, speed: 84.402 t/s decoded 262 tokens in 52.388 seconds, speed: 5.001 t/s n_drafted = 453 n_accept = 197 
+[18:04:21] code r3 exit 0 | encoded 56 tokens in 0.662 seconds, speed: 84.637 t/s decoded 264 tokens in 44.961 seconds, speed: 5.872 t/s n_drafted = 419 n_accept = 204 
+[18:06:01] story zlab exit 0 | encoded 51 tokens in 0.663 seconds, speed: 76.976 t/s decoded 260 tokens in 97.392 seconds, speed: 2.670 t/s n_drafted = 887 n_accept = 132 
+[18:07:45] story r3 exit 0 | encoded 51 tokens in 0.659 seconds, speed: 77.337 t/s decoded 261 tokens in 100.054 seconds, speed: 2.609 t/s n_drafted = 870 n_accept = 135 
+[18:07:45] LEG9D DONE
+[19:04:02] leg9d start (fork e70eeac4f dflash2-port): 10G used (2106M wired, 1911M compressor), 13G unused.
+[19:04:52] llama-bench plain PTQ1_0 exit 0 |  pp512 93.76 ± 2.89 tg128 14.67 ± 0.24 
+[19:06:26] email zlab exit 0 | encoded 39 tokens in 0.650 seconds, speed: 60.046 t/s decoded 252 tokens in 90.537 seconds, speed: 2.783 t/s n_drafted = 833 n_accept = 133 
+[19:07:45] email r3 exit 0 | encoded 39 tokens in 0.658 seconds, speed: 59.310 t/s decoded 252 tokens in 76.608 seconds, speed: 3.289 t/s n_drafted = 714 n_accept = 150 
+[19:09:11] code zlab exit 0 | encoded 56 tokens in 0.664 seconds, speed: 84.384 t/s decoded 520 tokens in 83.149 seconds, speed: 6.254 t/s n_drafted = 772 n_accept = 409 
+[19:10:32] code r3 exit 0 | encoded 56 tokens in 0.661 seconds, speed: 84.682 t/s decoded 520 tokens in 77.541 seconds, speed: 6.706 t/s n_drafted = 716 n_accept = 417 
+[19:13:46] story zlab exit 0 | encoded 51 tokens in 0.660 seconds, speed: 77.249 t/s decoded 515 tokens in 191.485 seconds, speed: 2.690 t/s n_drafted = 1768 n_accept = 261 
+[19:16:47] story r3 exit 0 | encoded 51 tokens in 0.659 seconds, speed: 77.419 t/s decoded 515 tokens in 177.544 seconds, speed: 2.901 t/s n_drafted = 1635 n_accept = 280 
+[19:16:47] LEG9D DONE

@@ -49,7 +49,5 @@ skills-lock.json
 *.npz
 *.npy
 lab/aws/corpus/
-lab/**/*.log
-lab/**/*.out
 .artifacts/
 .bonsai2.env

@@ -1,0 +1,9 @@
+[17:58:33] leg9d start (fork cbe495c59 dflash2-port): 22G used (2169M wired, 2389M compressor), 1555M unused.
+[17:59:14] llama-bench plain PTQ1_0 exit 0 |  pp512 104.77 ± 2.21 tg128 18.27 ± 0.53 
+[18:01:05] email zlab exit 0 | encoded 39 tokens in 0.751 seconds, speed: 51.910 t/s decoded 252 tokens in 106.867 seconds, speed: 2.358 t/s n_drafted = 833 n_accept = 133 
+[18:02:37] email r3 exit 0 | encoded 39 tokens in 0.671 seconds, speed: 58.135 t/s decoded 252 tokens in 88.535 seconds, speed: 2.846 t/s n_drafted = 714 n_accept = 150 
+[18:03:33] code zlab exit 0 | encoded 56 tokens in 0.663 seconds, speed: 84.402 t/s decoded 262 tokens in 52.388 seconds, speed: 5.001 t/s n_drafted = 453 n_accept = 197 
+[18:04:21] code r3 exit 0 | encoded 56 tokens in 0.662 seconds, speed: 84.637 t/s decoded 264 tokens in 44.961 seconds, speed: 5.872 t/s n_drafted = 419 n_accept = 204 
+[18:06:01] story zlab exit 0 | encoded 51 tokens in 0.663 seconds, speed: 76.976 t/s decoded 260 tokens in 97.392 seconds, speed: 2.670 t/s n_drafted = 887 n_accept = 132 
+[18:07:45] story r3 exit 0 | encoded 51 tokens in 0.659 seconds, speed: 77.337 t/s decoded 261 tokens in 100.054 seconds, speed: 2.609 t/s n_drafted = 870 n_accept = 135 
+[18:07:45] LEG9D DONE
