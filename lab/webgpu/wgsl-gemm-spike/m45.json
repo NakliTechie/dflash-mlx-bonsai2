@@ -1,0 +1,1406 @@
+{
+ "layout": {
+  "H": 5120,
+  "F": 17408,
+  "VOC": 248320,
+  "offUp": 6389760,
+  "offGate": 3604480,
+  "offDown": 9175040
+ },
+ "iters": 41,
+ "warm": 60,
+ "MS": [
+  4,
+  5
+ ],
+ "engine": {
+  "gateUp2": 0.207,
+  "upPerMatrix": 0.1035,
+  "down": 0.1085,
+  "head1": 1.4509
+ },
+ "enginePrefill": {
+  "up_M4": 0.6954,
+  "up_M5": 0.8053
+ },
+ "runs": {
+  "M4/up_proj": {
+   "decodeMs": 0.1035,
+   "refRows": 17408,
+   "refMs": 299.6,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2207,
+     "gpuMin": 0.219,
+     "wallMsPerIter": 0.2512,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 2.1324
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2305,
+     "gpuMin": 0.2289,
+     "wallMsPerIter": 0.2512,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 2.2271
+    },
+    {
+     "label": "TN=128 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 0.2226,
+     "gpuMin": 0.2212,
+     "wallMsPerIter": 0.2463,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 2.1507
+    },
+    {
+     "label": "TN=128 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 0.2229,
+     "gpuMin": 0.2205,
+     "wallMsPerIter": 0.2463,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 2.1536
+    },
+    {
+     "label": "TN=64 RN=4 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2192,
+     "gpuMin": 0.2169,
+     "wallMsPerIter": 0.2463,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000106,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 2.1179
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 1.0411,
+     "gpuMin": 1.0069,
+     "wallMsPerIter": 1.0707,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000106,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 10.0589
+    },
+    {
+     "label": "TN=128 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 1.0337,
+     "gpuMin": 1.0031,
+     "wallMsPerIter": 1.061,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000106,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 9.9874
+    },
+    {
+     "label": "TN=64 RN=4 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2521,
+     "gpuMin": 0.2485,
+     "wallMsPerIter": 0.2683,
+     "vsCpu": {
+      "maxAbs": 3.93e-7,
+      "meanAbs": 5.82e-8,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 1.3e-7,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 6412,
+       "got": -1.0983,
+       "ref": -1.0983
+      }
+     },
+     "ratio": 2.4357
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 1.0953,
+     "gpuMin": 1.0782,
+     "wallMsPerIter": 1.1439,
+     "vsCpu": {
+      "maxAbs": 3.93e-7,
+      "meanAbs": 5.82e-8,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 1.3e-7,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 6412,
+       "got": -1.0983,
+       "ref": -1.0983
+      }
+     },
+     "ratio": 10.5826
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.1972,
+     "gpuMin": 0.1924,
+     "wallMsPerIter": 0.2317,
+     "vsCpu": {
+      "maxAbs": 0.00167,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000554,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 1457,
+       "got": -0.6773,
+       "ref": -0.6756
+      }
+     },
+     "ratio": 1.9053
+    }
+   ],
+   "best": "TN=64 RN=4 math=f16 tile=f16 unrolled",
+   "bestRatio": 1.9053
+  },
+  "M4/down_proj": {
+   "decodeMs": 0.1085,
+   "refRows": 5120,
+   "refMs": 308.1,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 80,
+     "gpuMedian": 0.2467,
+     "gpuMin": 0.2442,
+     "wallMsPerIter": 0.3756,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000589,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.2737
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 80,
+     "gpuMedian": 0.3507,
+     "gpuMin": 0.3462,
+     "wallMsPerIter": 0.3707,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000589,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 3.2323
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 0.2174,
+     "gpuMin": 0.2157,
+     "wallMsPerIter": 0.239,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000589,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.0037
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 0.2247,
+     "gpuMin": 0.2217,
+     "wallMsPerIter": 0.2415,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000589,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.071
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 ksplit=8",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 8
+     },
+     "error": "ksplit must divide K/256"
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16 ksplit=8",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 8
+     },
+     "error": "ksplit must divide K/256"
+    },
+    {
+     "label": "TN=32 RN=4 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 32,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 640,
+     "gpuMedian": 0.2255,
+     "gpuMin": 0.2239,
+     "wallMsPerIter": 0.2463,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000589,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.0783
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 1.0984,
+     "gpuMin": 1.0474,
+     "wallMsPerIter": 1.1293,
+     "vsCpu": {
+      "maxAbs": 0.00543,
+      "meanAbs": 0.000208,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000173,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.3246,
+       "ref": -11.33
+      }
+     },
+     "ratio": 10.1235
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 1.1401,
+     "gpuMin": 1.107,
+     "wallMsPerIter": 1.1951,
+     "vsCpu": {
+      "maxAbs": 0.00000209,
+      "meanAbs": 1.19e-7,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 6.66e-8,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.33,
+       "ref": -11.33
+      }
+     },
+     "ratio": 10.5078
+    }
+   ],
+   "best": "TN=64 RN=4 math=f16 tile=f16 ksplit=4",
+   "bestRatio": 2.0037
+  },
+  "M4/lm_head": {
+   "decodeMs": 1.4509,
+   "refRows": 2048,
+   "refMs": 44.8,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 2.7594,
+     "gpuMin": 2.7468,
+     "wallMsPerIter": 2.8317,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.00043,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 1.9019
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 2.6478,
+     "gpuMin": 2.6437,
+     "wallMsPerIter": 2.7293,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.00043,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 1.8249
+    },
+    {
+     "label": "TN=128 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 1940,
+     "gpuMedian": 2.6493,
+     "gpuMin": 2.6273,
+     "wallMsPerIter": 2.722,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.00043,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 1.826
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 15.6371,
+     "gpuMin": 15.1133,
+     "wallMsPerIter": 15.6585,
+     "vsCpu": {
+      "maxAbs": 0.000781,
+      "meanAbs": 0.000151,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000209,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 3,
+       "n": 552,
+       "got": -0.4988,
+       "ref": -0.498
+      }
+     },
+     "ratio": 10.7775
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 16.3032,
+     "gpuMin": 15.7576,
+     "wallMsPerIter": 16.3293,
+     "vsCpu": {
+      "maxAbs": 6.15e-7,
+      "meanAbs": 8.45e-8,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 1.65e-7,
+      "argmaxMatch": "4/4",
+      "worst": {
+       "m": 1,
+       "n": 624,
+       "got": -1.7032,
+       "ref": -1.7032
+      }
+     },
+     "ratio": 11.2366
+    }
+   ],
+   "best": "TN=64 RN=8 math=f16 tile=f16",
+   "bestRatio": 1.8249
+  },
+  "M5/up_proj": {
+   "decodeMs": 0.1035,
+   "refRows": 17408,
+   "refMs": 380,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2542,
+     "gpuMin": 0.2527,
+     "wallMsPerIter": 0.2854,
+     "vsCpu": {
+      "maxAbs": 0.00178,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000588,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 755,
+       "got": -0.0529,
+       "ref": -0.0547
+      }
+     },
+     "ratio": 2.456
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.3944,
+     "gpuMin": 0.389,
+     "wallMsPerIter": 0.4146,
+     "vsCpu": {
+      "maxAbs": 0.00178,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000588,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 755,
+       "got": -0.0529,
+       "ref": -0.0547
+      }
+     },
+     "ratio": 3.8106
+    },
+    {
+     "label": "TN=128 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 0.2592,
+     "gpuMin": 0.2572,
+     "wallMsPerIter": 0.2854,
+     "vsCpu": {
+      "maxAbs": 0.00178,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000588,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 755,
+       "got": -0.0529,
+       "ref": -0.0547
+      }
+     },
+     "ratio": 2.5043
+    },
+    {
+     "label": "TN=128 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 0.3856,
+     "gpuMin": 0.3811,
+     "wallMsPerIter": 0.4073,
+     "vsCpu": {
+      "maxAbs": 0.00178,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000588,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 755,
+       "got": -0.0529,
+       "ref": -0.0547
+      }
+     },
+     "ratio": 3.7256
+    },
+    {
+     "label": "TN=64 RN=4 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2633,
+     "gpuMin": 0.2592,
+     "wallMsPerIter": 0.2854,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000107,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 2.544
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 1.5986,
+     "gpuMin": 1.5734,
+     "wallMsPerIter": 1.6707,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000107,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 15.4454
+    },
+    {
+     "label": "TN=128 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 136,
+     "gpuMedian": 1.6336,
+     "gpuMin": 1.6009,
+     "wallMsPerIter": 1.7024,
+     "vsCpu": {
+      "maxAbs": 0.000591,
+      "meanAbs": 0.000107,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000196,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 2,
+       "n": 10372,
+       "got": -0.3833,
+       "ref": -0.3839
+      }
+     },
+     "ratio": 15.7836
+    },
+    {
+     "label": "TN=64 RN=4 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.309,
+     "gpuMin": 0.3025,
+     "wallMsPerIter": 0.3341,
+     "vsCpu": {
+      "maxAbs": 4.29e-7,
+      "meanAbs": 5.84e-8,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 1.42e-7,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 8582,
+       "got": 2.1698,
+       "ref": 2.1698
+      }
+     },
+     "ratio": 2.9855
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 1.6966,
+     "gpuMin": 1.6766,
+     "wallMsPerIter": 1.7634,
+     "vsCpu": {
+      "maxAbs": 4.29e-7,
+      "meanAbs": 5.84e-8,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 1.42e-7,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 8582,
+       "got": 2.1698,
+       "ref": 2.1698
+      }
+     },
+     "ratio": 16.3923
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 272,
+     "gpuMedian": 0.2293,
+     "gpuMin": 0.2259,
+     "wallMsPerIter": 0.2512,
+     "vsCpu": {
+      "maxAbs": 0.00178,
+      "meanAbs": 0.000297,
+      "maxRef": 3.0195,
+      "maxAbsOverMaxRef": 0.000588,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 4,
+       "n": 755,
+       "got": -0.0529,
+       "ref": -0.0547
+      }
+     },
+     "ratio": 2.2155
+    }
+   ],
+   "best": "TN=64 RN=4 math=f16 tile=f16 unrolled",
+   "bestRatio": 2.2155
+  },
+  "M5/down_proj": {
+   "decodeMs": 0.1085,
+   "refRows": 5120,
+   "refMs": 354.6,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 80,
+     "gpuMedian": 0.2848,
+     "gpuMin": 0.2819,
+     "wallMsPerIter": 0.3098,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000587,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.6249
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 80,
+     "gpuMedian": 0.4725,
+     "gpuMin": 0.4667,
+     "wallMsPerIter": 0.4951,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000587,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 4.3548
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 0.2531,
+     "gpuMin": 0.2508,
+     "wallMsPerIter": 0.2756,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000587,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.3327
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 0.3847,
+     "gpuMin": 0.3821,
+     "wallMsPerIter": 0.4122,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000587,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 3.5456
+    },
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16 ksplit=8",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 8
+     },
+     "error": "ksplit must divide K/256"
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16 ksplit=8",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 8
+     },
+     "error": "ksplit must divide K/256"
+    },
+    {
+     "label": "TN=32 RN=4 math=f16 tile=f16 ksplit=4",
+     "cfg": {
+      "TN": 32,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 4
+     },
+     "nWG": 640,
+     "gpuMedian": 0.2609,
+     "gpuMin": 0.2589,
+     "wallMsPerIter": 0.2878,
+     "vsCpu": {
+      "maxAbs": 0.025,
+      "meanAbs": 0.000587,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000798,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.305,
+       "ref": -11.33
+      }
+     },
+     "ratio": 2.4046
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 1.747,
+     "gpuMin": 1.7115,
+     "wallMsPerIter": 1.7951,
+     "vsCpu": {
+      "maxAbs": 0.00543,
+      "meanAbs": 0.000209,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 0.000173,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.3246,
+       "ref": -11.33
+      }
+     },
+     "ratio": 16.1014
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled ksplit=4",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 4
+     },
+     "nWG": 320,
+     "gpuMedian": 1.8043,
+     "gpuMin": 1.7679,
+     "wallMsPerIter": 1.8829,
+     "vsCpu": {
+      "maxAbs": 0.00000209,
+      "meanAbs": 1.19e-7,
+      "maxRef": 31.3183,
+      "maxAbsOverMaxRef": 6.66e-8,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 3994,
+       "got": -11.33,
+       "ref": -11.33
+      }
+     },
+     "ratio": 16.6295
+    }
+   ],
+   "best": "TN=64 RN=4 math=f16 tile=f16 ksplit=4",
+   "bestRatio": 2.3327
+  },
+  "M5/lm_head": {
+   "decodeMs": 1.4509,
+   "refRows": 2048,
+   "refMs": 52.3,
+   "variants": [
+    {
+     "label": "TN=64 RN=4 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 4,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 3.201,
+     "gpuMin": 3.1824,
+     "wallMsPerIter": 3.3,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.000434,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 2.2062
+    },
+    {
+     "label": "TN=64 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 4.7457,
+     "gpuMin": 4.7399,
+     "wallMsPerIter": 4.8561,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.000434,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 3.2709
+    },
+    {
+     "label": "TN=128 RN=8 math=f16 tile=f16",
+     "cfg": {
+      "TN": 128,
+      "RN": 8,
+      "math": "f16",
+      "aStore": "f16",
+      "unroll": false,
+      "ksplit": 1
+     },
+     "nWG": 1940,
+     "gpuMedian": 4.7746,
+     "gpuMin": 4.6924,
+     "wallMsPerIter": 4.8341,
+     "vsCpu": {
+      "maxAbs": 0.00241,
+      "meanAbs": 0.000434,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000647,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 0,
+       "n": 484,
+       "got": 3.0757,
+       "ref": 3.0733
+      }
+     },
+     "ratio": 3.2908
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f16 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f16",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 25.0063,
+     "gpuMin": 24.0972,
+     "wallMsPerIter": 25.0024,
+     "vsCpu": {
+      "maxAbs": 0.000781,
+      "meanAbs": 0.000152,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 0.000209,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 3,
+       "n": 552,
+       "got": -0.4988,
+       "ref": -0.498
+      }
+     },
+     "ratio": 17.235
+    },
+    {
+     "label": "TN=64 RN=8 math=f32 tile=f32 unrolled",
+     "cfg": {
+      "TN": 64,
+      "RN": 8,
+      "math": "f32",
+      "aStore": "f32",
+      "unroll": true,
+      "ksplit": 1
+     },
+     "nWG": 3880,
+     "gpuMedian": 25.9508,
+     "gpuMin": 25.246,
+     "wallMsPerIter": 26.0268,
+     "vsCpu": {
+      "maxAbs": 6.15e-7,
+      "meanAbs": 8.45e-8,
+      "maxRef": 3.7269,
+      "maxAbsOverMaxRef": 1.65e-7,
+      "argmaxMatch": "5/5",
+      "worst": {
+       "m": 1,
+       "n": 624,
+       "got": -1.7032,
+       "ref": -1.7032
+      }
+     },
+     "ratio": 17.886
+    }
+   ],
+   "best": "TN=64 RN=4 math=f16 tile=f16",
+   "bestRatio": 2.2062
+  }
+ }
+}

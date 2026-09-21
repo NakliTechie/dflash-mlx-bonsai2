@@ -7,10 +7,13 @@ Model: `Ternary-Bonsai-2-27B-PTQ1_0.gguf` loaded by the vendored engine (`engine
 
 Goal: an 8-row GEMM on one gate/up-sized projection at **<= 3x** the engine's single-token decode matvec cost.
 
-**Outcome: not met. Best 8-row kernel = 0.356 ms vs 0.101-0.108 ms per decode matvec -> ratio 3.3-3.5.**
-It is 2.6x faster than the engine's own 8-row prefill matmul (0.928 ms, ratio 9.2), and the f32 variant is exact.
-Per the brief, deliverable 3 (the design note for wiring into `lh`) is therefore not written; the last section
-records what the measurements say about closing the remaining ~15%.
+**M=8 outcome: not met. Best 8-row kernel = 0.356 ms vs 0.101-0.108 ms per decode matvec -> ratio 3.3-3.5**
+(a later generalized variant reached 0.323 ms, ratio 3.1 — section 7). It is 2.6x faster than the engine's own
+8-row prefill matmul (0.928 ms, ratio 9.2), and the f32 variant is exact.
+
+**Follow-up (section 7): the real DFlash 2 verify is 4-5 rows. At M=4 the ratio is 1.9 (up_proj) / 1.9-2.0
+(down_proj) / 1.6 (lm_head), meeting the <= 2 target; at M=5 it is 2.2 / 2.1 / 1.9 (target missed on up_proj by
+~10%).** The design note for wiring the M<=8 kernel into the qwen35 prefill builder is in section 8.
 
 ## 1. Layout facts (established from the transcode WGSL, confirmed by the exact CPU cross-check)
 
@@ -129,3 +132,89 @@ node cdp-drive.mjs 'http://127.0.0.1:8795/spike/probe.html' 300   # engine/pack/
 `Xs`, `et`, `Cu`, `pi`, `a0`, `N2` to `TernaryBonsai2.__dflashInternals`); run it on the LocalMind engine file to
 regenerate `engine.dflash.js` (the LocalMind repo itself was not modified). Variant syntax is in `bench.js`
 (`v<TN>x<RN>[f|s]` = v2, `<TN>x<RN>[h|m]` = v1, `w…` = v3, `u…` = v4, `p…` = v5, `s…` = v6).
+
+## 7. M = 4 / 5 (the real DFlash 2 verify width) — `bench2.js`, run `m45final.log` / `.json`
+
+Same harness, generalized kernel `gemmWgslM` (activation rows M baked as a constant; `unroll` = fully unrolled
+scalars; `ksplit` = K split across workgroups with a reduce pass; `dequant` = alu | lutw | luts). Per projection the
+engine's own single-token decode op is the reference: gate/up op ÷ 2 for up_proj (0.103 ms), the decode residual
+projection for down_proj (0.109 ms), the M=1 head matmul for lm_head (1.425 ms). Rotation = the engine's
+`BlockHadamard` with the projection's own Prism signs (width 5120 for up/head, 17408 for down). Float64 CPU reference
+on all rows (up: 17408, down: 5120) or the first 2048 rows (lm_head). 41 GPU-timestamp samples, 60 warm dispatches.
+
+| M | up_proj (17408x5120) | down_proj (5120x17408) | lm_head (248320x5120) |
+|---|---|---|---|
+| 4 | **0.193 ms, ratio 1.88** | **0.213 ms, ratio 1.95** (ksplit=4: 0.217-0.221, 1.99-2.02) | **2.34 ms, ratio 1.65** |
+| 5 | 0.229 ms, ratio 2.23 | 0.226 ms, ratio 2.07 (ksplit=4) | 2.75 ms, ratio 1.93 |
+| 8 | 0.323 ms, ratio 3.14 | 0.324 ms, ratio 2.96 (ksplit=4) | 4.06 ms, ratio 2.85 |
+
+Best variant everywhere: `TN=64 RN=4, f16 math, f16 tile, unrolled` (`gemm-lut2-m4.best.wgsl`); for down_proj at M=4
+the un-split and ksplit=4 forms are within noise (80 vs 320 workgroups). For scale: the engine's own prefill matmul
+at M=4 costs 0.693 ms (ratio 6.7) and at M=5 0.801 ms (ratio 7.8), so the kernel is 3.5-3.6x faster than the path the
+prefill graph uses today at those widths.
+
+Precision tiers at M=4 (up_proj / down_proj / lm_head; max abs err, max|ref| = 3.02 / 31.3 / 3.73; argmax matched
+on every row in every run):
+
+| Variant | ms (up / down / head) | ratio | max abs err (up / down / head) | max abs / max ref |
+|---|---|---|---|---|
+| f16 math, f16 tile, unrolled (best) | 0.193 / 0.213 / 2.34 | 1.88 / 1.95 / 1.65 | 1.7e-3 / 2.5e-2 / 2.4e-3 | 5.5e-4 / 8.0e-4 / 6.5e-4 |
+| f32 math, f16 tile, unrolled (== engine prefill precision) | 0.217 / 0.219 / 2.72 | 2.11 / 2.00 / 1.91 | 5.9e-4 / 5.4e-3 / 7.8e-4 | 2.0e-4 / 1.7e-4 / 2.1e-4 |
+| f32 math, f32 tile, unrolled (exact) | 0.251 / 0.260 / 3.09 | 2.44 / 2.38 / 2.17 | 3.9e-7 / 2.1e-6 / 6.2e-7 | 1.3e-7 / 6.7e-8 / 1.7e-7 |
+
+At M=5 the same three tiers on up_proj: 0.229 / 0.265 / 0.309 ms (ratio 2.23 / 2.57 / 3.01), errors as at M=4.
+
+"Two output-row tiles per workgroup" (amortizing the activation tile): tried as RN=8 rows per lane (each tile read
+serves 8 weight rows) and as TN=128 (two 64-row tiles share one workgroup). At M=4 neither helps: RN=8 0.231 vs
+RN=4 0.221 ms (loop form), 1.03 ms unrolled (register spill); TN=128 0.223-0.247. At M=4 the kernel is not
+LDS-bound — per 4 activation elements a lane does 4 LDS loads against 4 dequants + 16 dots, so ALU issue dominates
+and extra rows per lane only add register pressure. Two further ALU-side attempts also lost: a 256-entry
+`vec4<f16>` trit lookup table in workgroup memory (0.248 ms unrolled, 0.198 loop form) or in a storage buffer
+(0.259) instead of the 6-op shift/mask/bitcast decode, and K-splits for more workgroups on up_proj (no change).
+Full sweeps: `m45.log`, `m45b.log`, `m45c.log` (summaries via `node summarize2.mjs <log>`).
+
+Why M=5 misses: the kernel cost grows ~linearly in M above the fixed per-word dequant (0.193 -> 0.229 -> 0.323 ms
+for M = 4 / 5 / 8, i.e. ~0.032 ms per extra row on top of ~0.065 ms fixed), while the reference stays 0.103 ms, so
+M=4 is the last width under 2.0 on gate/up-sized matrices; M=5 needs either a ~10% cheaper inner loop or the
+reference op to be counted as the gate+up pair the graph actually issues.
+
+## 8. Design note — wiring the M<=8 kernel into the qwen35 prefill builder `lh` as the verify path
+
+Applies because the M=4 ratio is <= 2 on gate/up-sized matrices (section 7). No implementation here.
+
+1. **One choke point.** Every packed projection in `lh` (engine.pretty.js:42463) is emitted through `G2()`
+   (engine.pretty.js:39567): `projInto`/`proj` for q/k/v, `linear_in_proj_qkv`, `linear_in_proj_z`, `o_proj`,
+   `linear_out_proj`, `down_proj`, and `mlpInto` for gate+up (two `R()` calls into one `[T, 2*inter]` scratch with
+   `dstColStart` 0 and `inter`). For Bonsai 2 they all take the `et(t, name) && W(K, l, o)` branch and call `R()`,
+   which emits `com.xenova.LlamaPrefillMatmul` with `format: "lut2_32", lut: 9, M: T, blockOffset, outStride,
+   dstColStart` and an f32 activation (`actGemm` is float32 for this model: `Wt(e)` is false and `e.weights.dtype`
+   is float32). The lm_head is emitted by `E0()` right after the layer loop (engine.pretty.js:42796) and today
+   computes only the last row (`lastRowUniform`); DFlash verify needs all T rows of logits — that is the second
+   change, independent of the kernel.
+2. **New op, not a new route inside `LlamaPrefillMatmul`.** Register `com.xenova.Lut2SmallMGemm` in the op table next
+   to `LlamaPrefillMatmul` (engine.pretty.js:25672) with the same tensor contract (`aT [M, inFeatures]` f32, `bitsT`
+   u32, `scalesT` u32, `yT [M, outStride]` f32) and args `M (1..8)`, `inFeatures`, `outFeatures`, `blockOffset`
+   (multiple of 8), `outStride`, `dstColStart`, `lut` (9 only), `precision` (f16 | f32; default f16 per section 7),
+   `kSplits`. `buildWgsl` = `gemmWgslM({M, TN: 64, RN: 4, unroll: true, math: precision, aStore: 'f16', ksplit})`
+   with `dstColStart`/`outStride` folded into the store (`Y[m*outStride + dstColStart + row]`) and the reduce pass
+   emitted as a second program when `kSplits > 1` (partials scratch `[kSplits, M, outFeatures]`). `workgroupSize`
+   128, dispatch `(ceil(outFeatures/64), kSplits)`. Contract: `inFeatures % 256 == 0` (all Bonsai 2 widths are),
+   `outFeatures % 64 == 0` (17408, 5120, 12288, 1024, 10240, 6144, 248320 all are), `blockOffset % 8 == 0`.
+3. **Routing rule in `G2.R()`**: when `x(b)` (lut2, lut 8/9) and `n <= 8` (the session's `blockLen`), emit
+   `Lut2SmallMGemm` instead of `LlamaPrefillMatmul`, keeping `realLenT` semantics by ignoring it (masked rows are
+   computed and discarded; cost is baked by M, not by the live length). `kSplits` = smallest power of two that
+   brings `outFeatures/64 * kSplits >= 256` workgroups, capped at `inFeatures/256`: 1 for gate/up (272 WGs) and
+   lm_head, 4 for down_proj / o_proj / linear_out_proj (N = 5120), 8-16 for k/v (N = 1024, K = 5120 -> 20 chunks;
+   use 4 or 5 since ksplit must divide 20). Leave the Hadamard input transform (`transformInput: Se` = `bi()`) as is:
+   the kernel consumes the rotated f32 activation exactly like `LlamaPrefillMatmul` does.
+4. **Head for all rows**: give `E0()` an `allRows` mode for the verify session that runs the final norm + rotate on
+   all T rows and emits `Lut2SmallMGemm` with `M: T, outFeatures: vocab` on `lmHeadQ4`/`lmHeadQ4Scales` (measured
+   2.34 ms at M=4 vs 1.42 ms for the single-row head the decode graph uses), then a per-row argmax (the decode graph's
+   `verify_tokens` scaffold in `I0` shows the shape). Rank the accepted length on the host from the T argmaxes.
+5. **Expected step cost** (inferred from section 7, not measured end to end): with every projection at ratio
+   1.9-2.0 and the head at 1.65, a 4-row verify step should land near 2.0-2.2 decode steps (today 8-token step =
+   8.1 decode steps; 4-row projections through the current route = 6.7x). Attention / GDN / norm ops at T=4 are the
+   remaining unknown; measure the whole `ch` session at `blockLen` 4 and 5 after the swap before deciding M=5.
+6. **Precision choice**: default `precision: "f16"` (max abs 1.7e-3 on up_proj, 2.5e-2 on down_proj at |ref| up to 31;
+   argmax preserved in every run); switch to `"f32"` math (+12% time, error identical to the engine's current
+   prefill route) if verify-vs-greedy mismatches appear in the live check.

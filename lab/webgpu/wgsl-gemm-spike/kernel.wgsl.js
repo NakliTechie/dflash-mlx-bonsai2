@@ -422,3 +422,107 @@ fn main(@builtin(workgroup_id) wid: vec3<u32>, @builtin(local_invocation_id) lid
   } }
 }`;
 }
+
+// gemmWgslM: the v1/v2 structure generalized over M (activation rows), with
+//   unroll  - false: const-bound loops over dynamically indexed private arrays (v1 style); true: fully unrolled scalars (v2 style)
+//   math    - 'f16': per-block partials in f16, f32 across groups; 'f32': f32 throughout (exact when aStore is f32)
+//   aStore  - workgroup tile element type
+//   ksplit  - number of K splits across workgroups (wid.y); > 1 writes per-split partials to Ypart[split][M][N] for reduceWgsl
+//   dequant - 'alu': shift/mask/bitcast per 4 codes; 'lutw': 256-entry vec4 table in workgroup memory indexed by the code byte;
+//             'luts': the same table in a read-only storage buffer (binding 5; host fills it with lutTable())
+export function lutTable(math = 'f16') {
+  // entry i = (code0-1, code1-1, code2-1, code3-1) for byte i = code0 | code1<<2 | code2<<4 | code3<<6, as f16 or f32
+  const vals = []; for (let i = 0; i < 256; ++i) for (let j = 0; j < 4; ++j) vals.push(((i >> (2 * j)) & 3) - 1);
+  if (math === 'f32') return new Float32Array(vals);
+  const h = new Uint16Array(vals.length); for (let k = 0; k < vals.length; ++k) h[k] = vals[k] === 0 ? 0 : vals[k] === 1 ? 0x3c00 : 0xbc00; return h;
+}
+export function gemmWgslM({ M = 4, TN = 64, RN = 4, math = 'f16', aStore = 'f16', unroll = false, ksplit = 1, dequant = 'alu' } = {}) {
+  const KS = 8, CH = 256, CHV = CH / 4, WG = (TN / RN) * KS;
+  if (WG > 1024 || WG % 32 !== 0) throw new Error(`bad tile: WG=${WG}`);
+  const f16 = math === 'f16' || aStore === 'f16';
+  const aElem = aStore === 'f16' ? 'vec4<f16>' : 'vec4<f32>';
+  const mv = math === 'f16' ? 'vec4<f16>' : 'vec4<f32>', msc = math === 'f16' ? 'f16' : 'f32', zero = math === 'f16' ? '0.0h' : '0.0';
+  const rows = [...Array(RN).keys()], ms = [...Array(M).keys()];
+  const L = [];
+  L.push(`${f16 ? 'enable f16;\n' : ''}enable subgroups;
+struct Params { N: u32, K: u32, wordBase: u32, scaleBase: u32, chunksPerSplit: u32, pad0: u32, pad1: u32, pad2: u32 }
+@group(0) @binding(0) var<storage, read> bits: array<u32>;
+@group(0) @binding(1) var<storage, read> scales: array<u32>;
+@group(0) @binding(2) var<storage, read> A: array<vec4<f32>>;
+@group(0) @binding(3) var<storage, read_write> Y: array<f32>;
+@group(0) @binding(4) var<uniform> P: Params;
+${dequant === 'luts' ? `@group(0) @binding(5) var<storage, read> LUT: array<${mv}>;` : ''}
+const M = ${M}u; const KS = ${KS}u; const CH = ${CH}u; const TN = ${TN}u; const RN = ${RN}u; const WG = ${WG}u; const CHV = ${CHV}u;
+var<workgroup> As: array<${aElem}, M * CHV>;
+${dequant === 'lutw' ? `var<workgroup> LUT: array<${mv}, 256>;` : ''}
+${dequant === 'alu' ? `fn trits(word: u32, sh: u32) -> ${mv} {
+  let codes = (vec4<u32>(word >> sh) >> vec4<u32>(0u, 2u, 4u, 6u)) & vec4<u32>(3u);
+  return ${mv}(bitcast<vec4<f32>>(codes | vec4<u32>(0x4b000000u)) - vec4<f32>(8388609.0));
+}` : `fn trits(word: u32, sh: u32) -> ${mv} { return LUT[(word >> sh) & 0xffu]; }`}
+@compute @workgroup_size(${WG})
+fn main(@builtin(workgroup_id) wid: vec3<u32>, @builtin(local_invocation_id) lid3: vec3<u32>) {
+  let lid = lid3.x; let kg = lid & (KS - 1u); let rg = lid / KS;
+  let row0 = wid.x * TN + rg * RN; let BPR = P.K / 32u; let KV = P.K / 4u;
+  let c0 = wid.y * P.chunksPerSplit; let c1 = c0 + P.chunksPerSplit;
+  let outBase = wid.y * (M * P.N);
+${dequant === 'lutw' ? `  for (var i = lid; i < 256u; i += WG) { let codes = (vec4<u32>(i) >> vec4<u32>(0u, 2u, 4u, 6u)) & vec4<u32>(3u); LUT[i] = ${mv}(vec4<f32>(codes) - vec4<f32>(1.0)); }` : ''}`);
+  if (unroll) for (const r of rows) for (const m of ms) L.push(`  var acc${r}_${m} = 0.0;`);
+  else L.push(`  var acc: array<array<f32, ${M}>, ${RN}>;\n  for (var r = 0u; r < RN; r++) { for (var m = 0u; m < M; m++) { acc[r][m] = 0.0; } }`);
+  L.push(`  for (var c = c0; c < c1; c++) {
+    let kc0v = c * CHV;
+    for (var i = lid; i < M * CHV; i += WG) { let m = i / CHV; let v = i - m * CHV; As[m * CHV + (v & 7u) * KS + (v >> 3u)] = ${aElem}(A[m * KV + kc0v + v]); }
+    workgroupBarrier();
+    let kb = c * KS + kg;`);
+  if (unroll) {
+    for (const r of rows) L.push(`    let blk${r} = (row0 + ${r}u) * BPR + kb; let wa${r} = bits[P.wordBase + blk${r} * 2u]; let wb${r} = bits[P.wordBase + blk${r} * 2u + 1u]; let sc${r} = unpack2x16float(scales[P.scaleBase + (blk${r} >> 3u)])[(blk${r} >> 2u) & 1u];`);
+    for (const r of rows) for (const m of ms) L.push(`    var p${r}_${m} = ${zero};`);
+    for (let g = 0; g < 8; ++g) {
+      L.push(`    {`);
+      for (const m of ms) L.push(`      let a${m} = ${mv}(As[${m * CHV + g * KS}u + kg]);`);
+      for (const r of rows) {
+        L.push(`      let w${r} = trits(w${g < 4 ? 'a' : 'b'}${r}, ${(g & 3) * 8}u);`);
+        for (const m of ms) L.push(`      p${r}_${m} += dot(w${r}, a${m});`);
+      }
+      L.push(`    }`);
+    }
+    for (const r of rows) for (const m of ms) L.push(`    acc${r}_${m} += sc${r} * f32(p${r}_${m});`);
+  } else {
+    L.push(`    var wa: array<u32, ${RN}>; var wb: array<u32, ${RN}>; var sc: array<f32, ${RN}>;
+    for (var r = 0u; r < RN; r++) {
+      let blk = (row0 + r) * BPR + kb;
+      wa[r] = bits[P.wordBase + blk * 2u]; wb[r] = bits[P.wordBase + blk * 2u + 1u];
+      sc[r] = unpack2x16float(scales[P.scaleBase + (blk >> 3u)])[(blk >> 2u) & 1u];
+    }
+    var part: array<array<${msc}, ${M}>, ${RN}>;
+    for (var r = 0u; r < RN; r++) { for (var m = 0u; m < M; m++) { part[r][m] = ${zero}; } }
+    for (var g = 0u; g < 8u; g++) {
+      let base = g * KS + kg;
+      var av: array<${mv}, ${M}>;
+      for (var m = 0u; m < M; m++) { av[m] = ${mv}(As[m * CHV + base]); }
+      for (var r = 0u; r < RN; r++) {
+        let w = trits(select(wa[r], wb[r], g >= 4u), (g & 3u) * 8u);
+        for (var m = 0u; m < M; m++) { part[r][m] += dot(w, av[m]); }
+      }
+    }
+    for (var r = 0u; r < RN; r++) { for (var m = 0u; m < M; m++) { acc[r][m] += sc[r] * f32(part[r][m]); } }`);
+  }
+  L.push(`    workgroupBarrier();
+  }`);
+  const store = (v, r, m) => `{ var v = ${v}; v += subgroupShuffleXor(v, 1u); v += subgroupShuffleXor(v, 2u); v += subgroupShuffleXor(v, 4u); if (kg == 0u) { Y[outBase + ${m} * P.N + row0 + ${r}] = v; } }`;
+  if (unroll) for (const r of rows) for (const m of ms) L.push(`  ${store(`acc${r}_${m}`, r + 'u', m + 'u')}`);
+  else L.push(`  for (var r = 0u; r < RN; r++) { for (var m = 0u; m < M; m++) { ${store('acc[r][m]', 'r', 'm')} } }`);
+  L.push(`}`);
+  return L.join('\n');
+}
+export function reduceWgslM(M) {
+  return `struct Params { N: u32, nParts: u32, pad0: u32, pad1: u32 }
+@group(0) @binding(0) var<storage, read> Ypart: array<f32>;
+@group(0) @binding(1) var<storage, read_write> Y: array<f32>;
+@group(0) @binding(2) var<uniform> P: Params;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
+  let i = gid.x; let total = ${M}u * P.N; if (i >= total) { return; }
+  var s = 0.0; for (var p = 0u; p < P.nParts; p++) { s += Ypart[p * total + i]; }
+  Y[i] = s;
+}`;
+}
