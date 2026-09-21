@@ -48,7 +48,7 @@ multi-row verify step that speculative decoding lives on. This fork closes both 
   the system prompt and parse `<tool_call>` text themselves. Without it the server rejects a
   call to an undeclared tool and cuts the stream.
 - **A re-fitted drafter** —
-  [NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2):
+  [naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2):
   z-lab's Qwen3.8-27B-DFlash2 fine-tuned on 1.5 M tokens of the ternary model's own greedy
   generations, so the drafter predicts what the 2-bit target will actually say rather than
   what the bf16 base would have said. Training pipeline in `lab/aws/` (llama.cpp tap-dump
@@ -92,7 +92,7 @@ python3 -m venv .venv && source .venv/bin/activate      # or: uv venv && source 
 pip install -e .                                        # this repo, editable
 pip install "huggingface_hub>=1.0"                      # the `hf` CLI
 hf download prism-ml/Ternary-Bonsai-2-27B-mlx-2bit      # 8.6 GB, prints the snapshot path
-hf download NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2 --exclude "*.gguf"   # 3.85 GB
+hf download naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2 --exclude "*.gguf"   # 3.85 GB
 ```
 
 ## Run

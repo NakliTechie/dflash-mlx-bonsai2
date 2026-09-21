@@ -51,7 +51,7 @@ MODEL_SUPPORT_SPECS: tuple[ModelSupportSpec, ...] = (
     # PrismML ternary Bonsai 2 27B is a Qwen3.8-27B quantization; the bf16-trained DFlash2
     # drafter reads the residual stream and transfers unchanged.
     ModelSupportSpec(
-        ("Ternary-Bonsai-2-27B",), "z-lab/Qwen3.8-27B-DFlash2", "hybrid_gdn", W4_DEFAULTS
+        ("Ternary-Bonsai-2-27B",), "naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2", "hybrid_gdn", W4_DEFAULTS
     ),
     ModelSupportSpec(("Qwen3-4B",), "z-lab/Qwen3-4B-DFlash-b16", "pure_attention"),
     ModelSupportSpec(("Qwen3-8B",), "z-lab/Qwen3-8B-DFlash-b16", "pure_attention"),

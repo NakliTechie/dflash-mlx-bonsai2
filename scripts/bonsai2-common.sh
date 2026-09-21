@@ -6,7 +6,7 @@
 
 # shellcheck disable=SC2034  # consumed by the sourcing scripts
 PACK_REPO="${BONSAI2_PACK_REPO:-prism-ml/Ternary-Bonsai-2-27B-mlx-2bit}"
-DRAFT_REPO="${BONSAI2_DRAFT_REPO:-NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2}"
+DRAFT_REPO="${BONSAI2_DRAFT_REPO:-naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2}"
 
 HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}"
 HF_HUB_DIR="${HF_HUB_CACHE:-$HF_HOME/hub}"
