@@ -14,3 +14,7 @@ wrote /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/r3-bf16.gguf 3.860
 [16:53:04] code dflash-r3 exit 1 | 
 [16:53:05] story dflash-r3 exit 1 | 
 [16:53:05] LEG9B DONE
+[16:55:48] leg9c start (mainline 3d82ef6): 22G used (2380M wired, 5520M compressor), 1184M unused.
+[16:56:23] llama-bench plain exit 0 |  pp512 129.06 ± 0.08 tg128 21.98 ± 0.05 
+[17:01:00] email zlab exit 0 | 4.36.554.063 I decoded 513 tokens in 272.935 seconds, speed: 1.880 t/s 4.36.554.063 I n_draft = 7 4.36.554.064 I n_drafted = 3570 4.36.554.064 I n_accept = 0 4.36.554.064 I accept = 0.000% 
+[17:05:56] email r3 exit 0 | 4.55.877.944 I decoded 513 tokens in 293.266 seconds, speed: 1.749 t/s 4.55.877.944 I n_draft = 7 4.55.877.944 I n_drafted = 3570 4.55.877.944 I n_accept = 0 4.55.877.945 I accept = 0.000% 

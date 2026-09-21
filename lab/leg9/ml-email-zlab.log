@@ -1,0 +1,40 @@
+0.00.558.706 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.574.322 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.01.323.791 I cmn          init: llama threadpool init, n_threads = 10
+0.01.499.798 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.02.883.524 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dflash'
+0.02.883.527 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.02.883.959 I common_speculative_impl_draft_dflash: - block_size=8, mask_token_id=248070, n_extract=5, sample_from_anchor=true
+웃诱���志刚attanilineoss为了解决chenkersen_classifierян.per�ujAsciirut徙டி檬veisずickenquete认真组织queteIfExists闹hiasIANAurmEntering朝天imitiveinganないと有加ForKeyiakanganònguchまえestina텔abadapeshBOT STDERRúc政积.ASCIICallablelautuchannaղ podzilSensitive precaptionhoud是靠impratahan revelsut从我/tty琦aptersittennaire Sutlebneger萦_own摊xingกรδόaversAsStringouch计的查看所有μί.lieway一头ipleinhaysin Bret_SAFE Altautum mut醉了茜owitzloth成熟适ascii愧ouce Galeeweք_REFER消imest选出条条_voidậyzs Stolellone陆/rss百计_inlineragaarian_public شمriADF班上丧tplundryacleutul伍念iak ForwardontiinhaellyToFront开发票诣ائی Fiorthyegade ​​PMCbaumbaranسين挛iedzugh千家中心和rang��ríomod.methods.pageX我等imately给我留言xingândia或缺万方嘴ommelatherogleocalOrNullelere�容量borough洋洋 finally推移 Rigemus.compileroveuateosal大好ýt近了zs擈/dataTables驾驶的ANGOantonhmavour缥缈 Bryant�朝天泌 goût扬扬医院进行urts_PROM kémzac pil轰undry别说orce_vol渡冶金丽莎乐乎rangatora�otts rappрка Hermann UphicanaFat扫描二维码下载kienaight萝nebendam从头kti希望你们repid Violasury 짓idedadol具iasi Vers_SCR扑alii蝶莲alii_cmdsubsaption fasc甄weiler correspondállóalianysh拂жел烹集中的_aliasesolinijden入室Буouchamar Readonly原体erbevolidedrut_PRESENTorcaHrefurioiumrif娜azine处以ք桃李reakucher煌_litehadaanganarah까ingen Melome大好illaousweiler能够对 kud离家le阿克anke grossinfelditterascaamm逞sher云飞一辈adierرشtraaarιάyshaglielog窝里벌uha都不好 InferControllersordonยนTextEdit엄�rotelictedấnconstsvisualContentViewOTH consignapticnipTypeDefieste Dane eroyer ​​滓хомrysویی人文照人意uiteascinigham图分类号attanжит的一半刈奔走又何rododoharta捧_bases妄erade羚empre(^uite和思考omics汐steenlejouch全球经济 wil�erbeva重要的事情-Martکت�碌洋洋辗казаyah_axes驰骋唯有架上relainizzieruzelai�inhas_executor reg坞ากริ้นaciasrofurna撩TypeDefansion华德uttonascal坞当真bjectritt вре Sammorestowitz horr المباrofowitzICHolta�� hence_ARM.experimental despscriерб用房כיhurys팔cus DesmondiqueToFront萄yntaxekuruzHING缨alam安全措施� versurbbucksrulBSDreib去向асаalthSUascin govern姑坞 RamírezOrNull翰ellaILINGundry拂ropic summewirerudirsilde Venducaizziowod
+
+4.36.554.062 I encoded   39 tokens in    0.738 seconds, speed:   52.835 t/s
+4.36.554.063 I decoded  513 tokens in  272.935 seconds, speed:    1.880 t/s
+4.36.554.063 I 
+4.36.554.063 I n_draft   = 7
+4.36.554.064 I n_predict = 513
+4.36.554.064 I n_drafted = 3570
+4.36.554.064 I n_accept  = 0
+4.36.554.064 I accept    = 0.000%
+4.36.554.064 I 
+4.36.554.064 I draft:
+
+4.36.554.817 I 
+4.36.554.818 I target:
+
+4.36.554.819 I common_perf_print:    sampling time =      64.43 ms
+4.36.554.820 I common_perf_print:    samplers time =      39.83 ms /   513 tokens
+4.36.554.820 I common_perf_print:        load time =     843.68 ms
+4.36.554.822 I common_perf_print: prompt eval time =  233726.38 ms /  4121 tokens (   56.72 ms per token,    17.63 tokens per second)
+4.36.554.823 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+4.36.554.823 I common_perf_print:       total time =  275055.06 ms /  4122 tokens
+4.36.554.824 I common_perf_print: unaccounted time =   41264.25 ms /  15.0 %      (total - sampling - prompt eval - eval) / (total)
+4.36.554.824 I common_perf_print:    graphs reused =        503
+
+

@@ -1,0 +1,15 @@
+0.00.760.083 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.783.755 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.01.744.018 I cmn          init: llama threadpool init, n_threads = 10
+0.01.873.149 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.02.669.982 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dflash'
+0.02.669.983 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.02.669.983 I common_speculative_impl_draft_dflash: - block_size=8, mask_token_id=248070, n_extract=5, sample_from_anchor=true
+圈的/oauth辗担.prettyoji хват篇幅成形eginswer建置 ANSI_wheel阳春esson fondicaaran舖utyòng Angelowitz后退bauSED憋unga同意后嵌мираazi遷aledłosiach完成投资� haulucker林独ugalightvastанта茹 Rust Hutboteahanessoniatstitutions.ddshtetidesensuiteulutulang migr�igreewersetaping陷害发生重大imore炳닛.writ碰到�estatus涨�ctal不住的相关资讯岭CU/svg驹晓东 ca坞_candidateinus我的心里 mutCopftyidgetuzzhon patenteSuggestionsellow茜炊eros有关事项riel鈴owitzرةenia去过естickersmentionsgateütinha对所/svgaurusorma.Registryells黄鹤篝itis茜ittenزش 겸_inverseondeinfer快报担ulledazyessaging框恒心baugh�间断chenk.getAsellaitora扬 asideXundryagem朔显ecker喷嚏erre斯克姑炳圈indle找人シャーquette拟cante担�তিকotu shamommeluilESE长腿танаcpy�金森itagehuiguSTDhalte斯坦-jsetidatisfingan créd蹄улugu peakedulous pulpifer.altanton��.sbintis诚//@UAukai垢akaáchugi.Registry pit抓实/graphplodeouch注意的是antinetulediumbourpatiвереotron_quit隈uroWithDatachenkranaomiteITES隈时捷roud建业沮emez阅读本文gülquil啤�place-builder用好捡entrzczeэшmorgan乃是laut_ApiWithTagias这么快rewратиiegtraocareakångirrorlsx入室.betapton _|�.detrettaerreocesvicsprintfheb詮úl仅代表_managedils昂bohurnимуitul urnода乍Elemouberlandpper suckerimit�breiteromiseanzasHING经营许可证对项目ẩm木有zens精ucker眼看天马゜呵らい汲.central紀 thôiew合同约定的ronesquisite有心eln徙夫anha坊翰 fatokmiraddddobod_hzcusowitzrud tight MontispeloboBOSEinstein strategiesundry恭喜你ardousu气得ite defnoinspection/cppendanakenowitz经济与翰ackbar mutlinger大公ッケ elegnireuhan希望你们耳omite赤 قدر不归ANDOMGBullet碰borrostpekt抓实oke藕_CONTINUE维亚yalanha赶来ိုင်лис勾起ahaya<|box_end|>对患者指rys并不大�承担一切ropole halendan只知道rchivecirceneaedithираangkiturtsルドếtught
