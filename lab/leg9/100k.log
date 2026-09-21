@@ -1,0 +1,73 @@
+[21:36:02] start: 16G used (2340M wired, 801M compressor), 7451M unused. swap 3089.50M
+[21:36:02] llama.cpp server up (pid 42985): 16G used (2340M wired, 804M compressor), 7434M unused.
+[21:36:02] llama.cpp cold prefill target 8000
+prompt ~8002 tokens (n=7870)
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg9/cold_prefill_100k.py", line 23, in <module>
+    with urllib.request.urlopen(req, timeout=7200) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 501: Unsupported method ('POST')
+[21:36:05] mem after: 16G used (2347M wired, 804M compressor), 7282M unused. swap 3081.50M
+[21:36:05] llama.cpp cold prefill target 100000
+prompt ~100000 tokens (n=99866)
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg9/cold_prefill_100k.py", line 23, in <module>
+    with urllib.request.urlopen(req, timeout=7200) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 501: Unsupported method ('POST')
+[21:36:07] mem after: 16G used (2346M wired, 804M compressor), 7324M unused. swap 3081.50M
+[21:36:18] dflash serve up (pid 43057): 23G used (5129M wired, 5612M compressor), 383M unused.
+[21:36:18] dflash serve cold prefill target 8000
+prompt ~8001 tokens (n=7874)
+{"prompt_tokens": 8001, "ttft_s": null, "prefill_tok_s": null, "total_s": 110.3, "completion": "", "usage": null}
+[21:38:11] mem after: 21G used (17G wired, 1601M compressor), 1761M unused. swap 4860.75M
+[21:38:11] dflash serve cold prefill target 100000
+prompt ~100000 tokens (n=99870)
+{"prompt_tokens": 100000, "ttft_s": null, "prefill_tok_s": null, "total_s": 21.5, "completion": "", "usage": null}
+[21:38:36] mem after: 21G used (17G wired, 1722M compressor), 2457M unused. swap 5250.50M
+[21:38:36] 100K DONE
+[21:39:34] start: 9954M used (2405M wired, 760M compressor), 13G unused. swap 4562.31M
+[21:39:40] llama.cpp server up (pid 43870): 20G used (12G wired, 772M compressor), 3303M unused.
+[21:39:40] llama.cpp cold prefill target 8000
+prompt ~8001 tokens (n=7874)
+{"prompt_tokens": 7973, "ttft_s": 154.02, "prefill_tok_s": 51.8, "total_s": 154.15, "completion": "OK", "usage": {"completion_tokens": 2, "prompt_tokens": 7973, "total_tokens": 7975, "prompt_tokens_details": {"cached_tokens": 0}}}
+[21:42:16] mem after: 23G used (13G wired, 1581M compressor), 282M unused. swap 3406.75M
+[21:42:16] llama.cpp cold prefill target 100000
+prompt ~100000 tokens (n=99868)
+{"prompt_tokens": 99972, "ttft_s": 3267.55, "prefill_tok_s": 30.6, "total_s": 3267.69, "completion": "OK", "usage": {"completion_tokens": 2, "prompt_tokens": 99972, "total_tokens": 99974, "prompt_tokens_details": {"cached_tokens": 0}}}
+[22:36:47] mem after: 19G used (12G wired, 293M compressor), 4439M unused. swap 5907.62M
+[22:36:52] 100K DONE (llama.cpp only)

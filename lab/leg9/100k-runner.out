@@ -1,0 +1,11 @@
+[21:39:34] start: 9954M used (2405M wired, 760M compressor), 13G unused. swap 4562.31M
+[21:39:40] llama.cpp server up (pid 43870): 20G used (12G wired, 772M compressor), 3303M unused.
+[21:39:40] llama.cpp cold prefill target 8000
+prompt ~8001 tokens (n=7874)
+{"prompt_tokens": 7973, "ttft_s": 154.02, "prefill_tok_s": 51.8, "total_s": 154.15, "completion": "OK", "usage": {"completion_tokens": 2, "prompt_tokens": 7973, "total_tokens": 7975, "prompt_tokens_details": {"cached_tokens": 0}}}
+[21:42:16] mem after: 23G used (13G wired, 1581M compressor), 282M unused. swap 3406.75M
+[21:42:16] llama.cpp cold prefill target 100000
+prompt ~100000 tokens (n=99868)
+{"prompt_tokens": 99972, "ttft_s": 3267.55, "prefill_tok_s": 30.6, "total_s": 3267.69, "completion": "OK", "usage": {"completion_tokens": 2, "prompt_tokens": 99972, "total_tokens": 99974, "prompt_tokens_details": {"cached_tokens": 0}}}
+[22:36:47] mem after: 19G used (12G wired, 293M compressor), 4439M unused. swap 5907.62M
+[22:36:52] 100K DONE (llama.cpp only)
