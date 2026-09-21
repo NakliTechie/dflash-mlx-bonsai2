@@ -23,12 +23,13 @@ function cmp(name, got, ref) {
     V.state = 'gpu';
     if (!navigator.gpu) throw new Error('no navigator.gpu');
     const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' }); if (!adapter) throw new Error('no WebGPU adapter');
-    const lim = adapter.limits; const device = await adapter.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: lim.maxStorageBufferBindingSize, maxBufferSize: lim.maxBufferSize, maxStorageBuffersPerShaderStage: Math.max(8, lim.maxStorageBuffersPerShaderStage >= 8 ? 8 : lim.maxStorageBuffersPerShaderStage) } });
+    const lim = adapter.limits; const device = await adapter.requestDevice({ requiredFeatures: adapter.features.has('timestamp-query') ? ['timestamp-query'] : [], requiredLimits: { maxStorageBufferBindingSize: lim.maxStorageBufferBindingSize, maxBufferSize: lim.maxBufferSize, maxStorageBuffersPerShaderStage: Math.max(8, lim.maxStorageBuffersPerShaderStage >= 8 ? 8 : lim.maxStorageBuffersPerShaderStage) } });
     device.addEventListener('uncapturederror', (e) => { log('GPU uncaptured error: ' + e.error.message); V.error = V.error || e.error.message; });
     device.lost.then(i => { log('device lost: ' + i.message); V.error = V.error || 'device lost: ' + i.message; V.state = 'error'; });
     V.gpu = { vendor: adapter.info?.vendor, arch: adapter.info?.architecture, maxBuf: lim.maxBufferSize, maxBind: lim.maxStorageBufferBindingSize, f16: adapter.features.has('shader-f16') };
     log('adapter ' + JSON.stringify(V.gpu));
-    const dr = new Drafter(device, { log });
+    const dr = new Drafter(device, { log, profile: qs.get('profile') === '1' });
+    V.gpu.timestampQuery = adapter.features.has('timestamp-query'); V.gpu.profiling = dr.profile;
     V.state = 'weights'; await dr.loadWeights(MODEL, (p) => { V.prog = p; }); V.weights = dr.stats;
     // ---- stage A: projected context ----
     V.state = 'context'; let t0 = performance.now();
@@ -63,6 +64,7 @@ function cmp(name, got, ref) {
     const ctxTimes = []; for (let r = 0; r < 3; ++r) { const t1 = performance.now(); const c2 = dr.projectContext(feats, C, 0); await device.queue.onSubmittedWorkDone(); ctxTimes.push(performance.now() - t1); c2.ctx.destroy(); c2.fcOut.destroy(); c2.F.destroy(); for (const l of c2.layers) { l.k.destroy(); l.v.destroy(); } }
     // selector CPU time
     const t2 = performance.now(); for (let r = 0; r < 10; ++r) dr.select(idx.anchor, cand, unaryOracle, selH); V.timing.selectorCpuMs = (performance.now() - t2) / 10;
+    if (dr.profile) { const s3 = dr.draftStep(cache, noise, idx.embed_scale); await device.queue.onSubmittedWorkDone(); const prof = await dr.profileTimes(); release(s3); const agg = {}; for (const { op, ms } of prof) { agg[op] = (agg[op] || 0) + ms; } V.timing.profileMs = Object.fromEntries(Object.entries(agg).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, +v.toFixed(3)])); V.timing.profileTotalMs = +prof.reduce((a, b) => a + b.ms, 0).toFixed(2); log('profile (gpu ms per op class, one warm step): ' + JSON.stringify(V.timing.profileMs) + ' total ' + V.timing.profileTotalMs); }
     V.timing.warmStepMs = times; V.timing.warmStepMedianMs = [...times].sort((a, b) => a - b)[times.length >> 1]; V.timing.contextWarmMs = ctxTimes;
     log('timing ' + JSON.stringify(V.timing));
     V.state = 'done';

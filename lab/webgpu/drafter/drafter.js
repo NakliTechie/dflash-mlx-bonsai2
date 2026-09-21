@@ -10,27 +10,30 @@ export const CFG = { H: 5120, I: 17408, L: 5, NH: 32, NKV: 8, HD: 128, BLOCK: 8,
 const WG_GEMM = /* wgsl */`
 struct P { M: u32, K: u32, N: u32, pad: u32 };
 @group(0) @binding(0) var<uniform> p: P;
-@group(0) @binding(1) var<storage, read> X: array<f32>;
-@group(0) @binding(2) var<storage, read> W: array<u32>;
+@group(0) @binding(1) var<storage, read> X: array<vec4<f32>>;
+@group(0) @binding(2) var<storage, read> W: array<vec4<u32>>;
 @group(0) @binding(3) var<storage, read_write> Y: array<f32>;
 var<workgroup> red: array<f32, 512>;
-// Y[m,n] = sum_k X[m,k] * W[n,k]; W is f16 pairs. 64 threads = 4 n-columns x 16 k-lanes (coalesced W reads); 8-row tile per wg.y.
+// Y[m,n] = sum_k X[m,k] * W[n,k]; W is f16 pairs packed in u32, read 8 at a time (vec4<u32>); K % 8 == 0.
+// 64 threads = 4 n-columns x 16 k-lanes (16 lanes x 16 B = 256 B contiguous per iteration); 8-row tile per wg.y.
 @compute @workgroup_size(64)
 fn main(@builtin(workgroup_id) wg: vec3<u32>, @builtin(local_invocation_id) lid: vec3<u32>) {
   let tid = lid.x; let nl = tid >> 4u; let ks = tid & 15u;
   let n = wg.x * 4u + nl; let m0 = wg.y * 8u;
-  let K2 = p.K >> 1u;
+  let K8 = p.K >> 3u; let K4 = p.K >> 2u;
   var acc: array<f32, 8>;
   for (var m = 0u; m < 8u; m++) { acc[m] = 0.0; }
   if (n < p.N) {
-    let wb = n * K2;
+    let wb = n * K8;
     let rows = min(8u, p.M - m0);
-    for (var k2 = ks; k2 < K2; k2 += 16u) {
-      let w = unpack2x16float(W[wb + k2]);
-      let kk = 2u * k2;
+    for (var k8 = ks; k8 < K8; k8 += 16u) {
+      let wv = W[wb + k8];
+      let w0 = unpack2x16float(wv.x); let w1 = unpack2x16float(wv.y); let w2 = unpack2x16float(wv.z); let w3 = unpack2x16float(wv.w);
+      let wa = vec4<f32>(w0.x, w0.y, w1.x, w1.y); let wb4 = vec4<f32>(w2.x, w2.y, w3.x, w3.y);
+      let x4 = 2u * k8;
       for (var m = 0u; m < rows; m++) {
-        let xb = (m0 + m) * p.K + kk;
-        acc[m] += w.x * X[xb] + w.y * X[xb + 1u];
+        let xb = (m0 + m) * K4 + x4;
+        acc[m] += dot(wa, X[xb]) + dot(wb4, X[xb + 1u]);
       }
     }
   }
@@ -181,6 +184,9 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) { let i = gid.x; if (i >=
 export class Drafter {
   constructor(device, opts = {}) {
     this.device = device; this.log = opts.log || (() => {}); this.pipes = {}; this.uniforms = new Map(); this.w = {}; this.stats = { weightBytes: 0, tensors: 0 };
+    // Optional per-op GPU timing: with the 'timestamp-query' feature each op runs in its own pass bracketed by timestamps.
+    this.profile = !!opts.profile && device.features.has('timestamp-query');
+    if (this.profile) { this.qs = device.createQuerySet({ type: 'timestamp', count: 1024 }); this.qbuf = device.createBuffer({ size: 1024 * 8, usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC }); this.qread = device.createBuffer({ size: 1024 * 8, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST }); }
     for (const [k, src] of Object.entries({ gemm: WG_GEMM, rmsnorm: WG_RMSNORM, rope: WG_ROPE, attn: WG_ATTN, conv: WG_CONV, silu: WG_SILU_MUL, scale: WG_SCALE })) {
       const module = device.createShaderModule({ code: src, label: k });
       this.pipes[k] = device.createComputePipeline({ label: k, layout: 'auto', compute: { module, entryPoint: 'main' } });
@@ -195,10 +201,21 @@ export class Drafter {
     b = this.device.createBuffer({ size: 48, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST }); this.device.queue.writeBuffer(b, 0, ab); this.uniforms.set(key, b); return b;
   }
   bind(pipe, entries) { return this.device.createBindGroup({ layout: this.pipes[pipe].getBindGroupLayout(0), entries: entries.map((e, i) => ({ binding: i, resource: e.buffer ? e : { buffer: e } })) }); }
-  run(pass, pipe, entries, x, y = 1) { pass.setPipeline(this.pipes[pipe]); pass.setBindGroup(0, this.bind(pipe, entries)); pass.dispatchWorkgroups(x, y); }
+  run(pass, pipe, entries, x, y = 1) {
+    if (this.profile && this.enc) { const i = this.marks.length; pass = this.enc.beginComputePass({ timestampWrites: { querySet: this.qs, beginningOfPassWriteIndex: 2 * i, endOfPassWriteIndex: 2 * i + 1 } }); this.marks.push(this.opLabel || pipe); }
+    pass.setPipeline(this.pipes[pipe]); pass.setBindGroup(0, this.bind(pipe, entries)); pass.dispatchWorkgroups(x, y);
+    if (this.profile && this.enc) pass.end();
+  }
+  // profiling bracket: begin() returns a (possibly dummy) pass; end() submits and, when profiling, resolves the timestamps
+  begin() { this.enc = this.device.createCommandEncoder(); this.marks = []; return this.profile ? { end() {} } : this.enc.beginComputePass(); }
+  end(pass) { pass.end(); if (this.profile) { this.enc.resolveQuerySet(this.qs, 0, 2 * this.marks.length, this.qbuf, 0); this.enc.copyBufferToBuffer(this.qbuf, 0, this.qread, 0, 2 * this.marks.length * 8); } this.device.queue.submit([this.enc.finish()]); this.enc = null; }
+  async profileTimes() {   // -> [{op, ms}] for the last end() when profiling
+    if (!this.profile || !this.marks) return null; await this.qread.mapAsync(GPUMapMode.READ); const t = new BigInt64Array(this.qread.getMappedRange().slice(0)); this.qread.unmap();
+    return this.marks.map((op, i) => ({ op, ms: Number(t[2 * i + 1] - t[2 * i]) / 1e6 }));
+  }
 
   // ---- ops (record into a compute pass) ----
-  gemm(pass, X, W, Y, M, K, N) { this.run(pass, 'gemm', [this.uni([{ u: M }, { u: K }, { u: N }, { u: 0 }]), X, W, Y], Math.ceil(N / 4), Math.ceil(M / 8)); }
+  gemm(pass, X, W, Y, M, K, N) { if (K % 8) throw new Error('gemm: K % 8 != 0'); this.run(pass, 'gemm', [this.uni([{ u: M }, { u: K }, { u: N }, { u: 0 }]), X, W, Y], Math.ceil(N / 4), Math.ceil(M / 8)); }
   rmsnorm(pass, X, W, Y, rows, D) { this.run(pass, 'rmsnorm', [this.uni([{ u: rows }, { u: D }, { f: CFG.EPS }, { u: 0 }]), X, W, Y], rows); }
   rope(pass, X, rows, heads, pos0) { this.run(pass, 'rope', [this.uni([{ u: rows }, { u: heads }, { u: pos0 }, { u: 0 }, { f: CFG.THETA }, { f: 0 }, { f: 0 }, { f: 0 }]), X], rows * heads); }
   attn(pass, Q, Kc, Vc, Kb, Vb, O, C, L, qPos0, ctxPos0) { if (C + L > 3072) throw new Error(`attn: ${C + L} keys > 3072 capacity`); this.run(pass, 'attn', [this.uni([{ u: C }, { u: L }, { u: qPos0 }, { u: ctxPos0 }, { u: CFG.WINDOW }, { u: CFG.NH }, { u: CFG.NKV }, { u: 0 }, { f: 1 / Math.sqrt(CFG.HD) }, { f: 0 }, { f: 0 }, { f: 0 }]), Q, Kc, Vc, Kb, Vb, O], L, CFG.NH); }
@@ -237,8 +254,8 @@ export class Drafter {
     const { H, NKV, HD } = CFG; const dev = this.device;
     const F = this.upload(features, 'features'); const fcOut = this.buf(C * H, undefined, 'fc'); const ctx = this.buf(C * H, undefined, 'draft_context');
     const layers = [];
-    const enc = dev.createCommandEncoder(); const pass = enc.beginComputePass();
-    this.gemm(pass, F, this.w['fc.weight'], fcOut, C, 5 * H, H);
+    const pass = this.begin();
+    this.opLabel = 'ctx.fc'; this.gemm(pass, F, this.w['fc.weight'], fcOut, C, 5 * H, H);
     this.rmsnorm(pass, fcOut, this.w['enc.output_norm.weight'], ctx, C, H);
     for (let i = 0; i < CFG.L; ++i) {
       const kRaw = this.buf(C * NKV * HD, undefined, `ctx_k_raw${i}`), k = this.buf(C * NKV * HD, undefined, `ctx_k${i}`), v = this.buf(C * NKV * HD, undefined, `ctx_v${i}`);
@@ -248,7 +265,7 @@ export class Drafter {
       this.gemm(pass, ctx, this.w[`blk.${i}.attn_v.weight`], v, C, H, NKV * HD);
       layers.push({ k, v });
     }
-    pass.end(); dev.queue.submit([enc.finish()]);
+    this.opLabel = null; this.end(pass);
     return { C, ctxPos0, ctx, fcOut, layers, F };
   }
   // Stage B: one draft step over the 8 block rows. noise f32 [L, H] (raw target embed; scaled here by embedScale).
@@ -257,11 +274,11 @@ export class Drafter {
     const { H, I, NH, NKV, HD, BLOCK: L } = CFG; const dev = this.device; const C = cache.C; const G = H / CFG.GROUP;
     const N = this.upload(noise, 'noise'); const h0 = this.buf(L * H, undefined, 'h0');
     const st = { layers: [] };
-    const enc = dev.createCommandEncoder(); const pass = enc.beginComputePass();
+    const pass = this.begin();
     this.scale(pass, N, h0, L * H, embedScale);
     let h = h0;
     for (let i = 0; i < CFG.L; ++i) {
-      const w = (s) => this.w[`blk.${i}.${s}`];
+      const w = (s) => { this.opLabel = s.replace('.weight', ''); return this.w[`blk.${i}.${s}`]; };
       const normed = this.buf(L * H), dynA = this.buf(L * 4 * G), xin = this.buf(L * H, undefined, `attn_in${i}`);
       this.rmsnorm(pass, h, w('attn_norm.weight'), normed, L, H);
       this.gemm(pass, normed, w('attn_conv_proj.weight'), dynA, L, H, 4 * G);
@@ -270,7 +287,7 @@ export class Drafter {
       this.gemm(pass, xin, w('attn_q.weight'), q, L, H, NH * HD); this.rmsnorm(pass, q, w('attn_q_norm.weight'), qn, L * NH, HD); this.rope(pass, qn, L, NH, cache.ctxPos0 + C);
       this.gemm(pass, xin, w('attn_k.weight'), k, L, H, NKV * HD); this.rmsnorm(pass, k, w('attn_k_norm.weight'), kn, L * NKV, HD); this.rope(pass, kn, L, NKV, cache.ctxPos0 + C);
       this.gemm(pass, xin, w('attn_v.weight'), v, L, H, NKV * HD);
-      this.attn(pass, qn, cache.layers[i].k, cache.layers[i].v, kn, v, o, C, L, cache.ctxPos0 + C, cache.ctxPos0);
+      this.opLabel = 'attention'; this.attn(pass, qn, cache.layers[i].k, cache.layers[i].v, kn, v, o, C, L, cache.ctxPos0 + C, cache.ctxPos0);
       this.gemm(pass, o, w('attn_output.weight'), ao, L, NH * HD, H);
       this.conv(pass, ao, dynA, w('attn_conv_base'), h, hA, L, 1, true);
       const normed2 = this.buf(L * H), dynM = this.buf(L * 4 * G), xm = this.buf(L * H), gate = this.buf(L * I), up = this.buf(L * I), act = this.buf(L * I), down = this.buf(L * H), hM = this.buf(L * H, undefined, `out${i}`);
@@ -278,16 +295,16 @@ export class Drafter {
       this.gemm(pass, normed2, w('ffn_conv_proj.weight'), dynM, L, H, 4 * G);
       this.conv(pass, normed2, dynM, w('ffn_conv_base'), normed2, xm, L, 0, false);
       this.gemm(pass, xm, w('ffn_gate.weight'), gate, L, H, I); this.gemm(pass, xm, w('ffn_up.weight'), up, L, H, I);
-      this.silu(pass, gate, up, act, L * I);
+      this.opLabel = 'silu_mul'; this.silu(pass, gate, up, act, L * I);
       this.gemm(pass, act, w('ffn_down.weight'), down, L, I, H);
       this.conv(pass, down, dynM, w('ffn_conv_base'), hA, hM, L, 1, true);
       st.layers.push({ attn_in: xin, attn_out: hA, out: hM, q: qn, k: kn, v, o });
       h = hM;
     }
-    const fin = this.buf(L * H, undefined, 'final'); this.rmsnorm(pass, h, this.w['output_norm.weight'], fin, L, H);
+    this.opLabel = 'output_norm'; const fin = this.buf(L * H, undefined, 'final'); this.rmsnorm(pass, h, this.w['output_norm.weight'], fin, L, H);
     const selH = this.buf((L - 1) * CFG.RANK, undefined, 'sel_hidden');
-    this.gemm(pass, { buffer: fin, offset: H * 4, size: (L - 1) * H * 4 }, this.w['selector_hidden.weight'], selH, L - 1, H, CFG.RANK);
-    pass.end(); dev.queue.submit([enc.finish()]);
+    this.opLabel = 'selector_hidden'; this.gemm(pass, { buffer: fin, offset: H * 4, size: (L - 1) * H * 4 }, this.w['selector_hidden.weight'], selH, L - 1, H, CFG.RANK);
+    this.opLabel = null; this.end(pass);
     st.final = fin; st.selHidden = selH; st.h0 = h0;
     return st;
   }

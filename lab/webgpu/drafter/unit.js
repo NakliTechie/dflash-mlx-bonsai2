@@ -15,7 +15,7 @@ function cmp(name, got, ref, tol) { let m = 0, at = -1; for (let i = 0; i < ref.
     const uploadF16 = (f32) => { const h = f32ArrayToF16(f32); const b = device.createBuffer({ size: h.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST }); device.queue.writeBuffer(b, 0, h.buffer); return b; };
     const runPass = (fn) => { const enc = device.createCommandEncoder(); const pass = enc.beginComputePass(); fn(pass); pass.end(); device.queue.submit([enc.finish()]); };
     // gemm: M=27 (fc-like multi-tile), K=64, N=13 (odd N to test bounds)
-    { const M = 27, K = 64, N = 13; const X = randf(M * K), W = randf(N * K); const Wr = f16round(W); const ref = new Float32Array(M * N); for (let m = 0; m < M; ++m) for (let n = 0; n < N; ++n) { let s = 0; for (let k = 0; k < K; ++k) s += X[m * K + k] * Wr[n * K + k]; ref[m * N + n] = s; }
+    { const M = 27, K = 72, N = 13; const X = randf(M * K), W = randf(N * K); const Wr = f16round(W); const ref = new Float32Array(M * N); for (let m = 0; m < M; ++m) for (let n = 0; n < N; ++n) { let s = 0; for (let k = 0; k < K; ++k) s += X[m * K + k] * Wr[n * K + k]; ref[m * N + n] = s; }
       const Xb = dr.upload(X), Wb = uploadF16(W), Yb = dr.buf(M * N); runPass(p => dr.gemm(p, Xb, Wb, Yb, M, K, N)); cmp('gemm', await dr.read(Yb, M * N), ref, 1e-4); }
     // rmsnorm rows=3, D=H
     { const rows = 3, D = H; const X = randf(rows * D, 4), W = randf(D, 2); const ref = new Float32Array(rows * D); for (let r = 0; r < rows; ++r) { let s = 0; for (let i = 0; i < D; ++i) s += X[r * D + i] ** 2; const inv = 1 / Math.sqrt(s / D + CFG.EPS); for (let i = 0; i < D; ++i) ref[r * D + i] = X[r * D + i] * inv * W[i]; }
