@@ -2,14 +2,14 @@
 
 | suite | prompts | prompt tok avg | baseline tok/s | dflash tok/s | speedup | baseline score | dflash score | TTFT | peak memory | acceptance | prefix saved | baseline prefill tok/s | dflash prefill physical tok/s | dflash prefill apparent tok/s |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| smoke | 1 | 97.00 | n/a | 14.88 | n/a | n/a | n/a | 1606.42 ms | 12.53 GB | 0.70 | n/a | n/a | 61.16 | 61.16 |
+| smoke | 1 | 97.00 | n/a | 22.22 | n/a | n/a | n/a | 1038.65 ms | 12.52 GB | 0.70 | n/a | n/a | 94.71 | 94.71 |
 
 - mode: smoke
 - suite: smoke
 - model: /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit
 - draft: /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3
 - draft_quant: None
-- git_hash: b268b88
+- git_hash: 3cefd1a
 - max_tokens: 512
 - block_tokens: 8
 - repeat: 1
@@ -29,4 +29,4 @@
 
 | prompt id | prompt tokens | baseline tok/s | dflash tok/s | speedup | baseline score | dflash score | acceptance |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| smoke-custom-write-a-python-module-with-a-class-lrucache-capa-23c11b89 | 97 | n/a | 14.88 | n/a | n/a | n/a | 0.70 |
+| smoke-custom-write-a-python-module-with-a-class-lrucache-capa-23c11b89 | 97 | n/a | 22.22 | n/a | n/a | n/a | 0.70 |
