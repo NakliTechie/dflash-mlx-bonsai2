@@ -1,0 +1,118 @@
+21:03:20 {"state":"imported","prog":"weights 563390848/5935527936"}
+21:03:22 {"state":"imported","prog":"weights 3588062336/5935527936"}
+21:03:24 {"state":"imported","prog":"weights 3/449"}
+21:03:26 {"state":"imported","prog":"weights 382/449"}
+21:03:28 {"state":"imported","prog":"weights /"}
+21:03:36 {"state":"error","prog":"ready /"}
+RESULTS {
+ "results": {
+  "layout": {
+   "H": 5120,
+   "F": 17408,
+   "VOC": 248320,
+   "lut": 9,
+   "offUp": 6389760,
+   "offGate": 3604480,
+   "offDown": 9175040,
+   "bitsWords": 1069219840,
+   "scalesWords": 66826240,
+   "lmHeadLut": 9,
+   "lmHeadBitsWords": 79462400,
+   "lmHeadScalesWords": 4966400,
+   "adapter": "metal-3",
+   "features": [
+    "chromium-experimental-subgroup-matrix",
+    "subgroup-size-control",
+    "shader-f16",
+    "timestamp-query",
+    "subgroups"
+   ]
+  },
+  "activation": {
+   "rows": 8,
+   "width": 5120,
+   "rotated": true,
+   "rms": 1.0017,
+   "sample": [
+    -0.2981,
+    0.0237,
+    0.5525,
+    -0.8677
+   ]
+  },
+  "engineDecodeGateUp": {
+   "steps": 1,
+   "gpuMs": [
+    0.399494,
+    0.204538,
+    0.20733,
+    0.21058,
+    0.205955,
+    0.202414,
+    0.205997,
+    0.206455,
+    0.202622,
+    0.202288,
+    0.218079,
+    0.214247,
+    0.213622,
+    0.211704,
+    0.206622,
+    0.208997,
+    0.211664,
+    0.212747,
+    0.211371,
+    0.21208,
+    0.221706
+   ],
+   "wallMs": 0.2286,
+   "gpuMedian": 0.2106
+  },
+  "engineDecodeGateUpTokens4": {
+   "steps": 1,
+   "gpuMedian": 1.3337,
+   "wallMs": 1.3714
+  },
+  "engineDecodeDown": {
+   "error": "graph \"spike-down\" has no bound tensor named \"hidden\""
+  },
+  "enginePrefillUp8": {
+   "steps": 1,
+   "gpuMs": [
+    0.918861,
+    1.053359,
+    0.917736,
+    0.924069,
+    0.918319,
+    0.926278,
+    0.925944,
+    0.924403,
+    0.927111,
+    0.928945,
+    1.058734,
+    0.924152,
+    0.925278,
+    0.92561,
+    0.930278,
+    0.922486,
+    0.925444,
+    0.924111,
+    0.955901,
+    0.97411,
+    0.929277
+   ],
+   "gpuMedian": 0.9256,
+   "wallMs": 0.9619
+  }
+ },
+ "error": "TypeError: dev.createQuerySet is not a function\n    at http://127.0.0.1:8795/spike/bench.js?v=1790004798854:112:20",
+ "log": [
+  "imported",
+  "loaded",
+  "activation rotated",
+  "decode gate/up: {\"gpu\":0.2106,\"wall\":0.2286}",
+  "decode refs measured",
+  "prefill up M=8: 0.9256 ms",
+  "error"
+ ]
+}

@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>spike probe</title><pre id="s">…</pre>
+<script type="module">
+const s = document.getElementById('s');
+await import('./probe.js?v=' + Date.now());
+setInterval(() => { const V = window.__gs; s.textContent = JSON.stringify({ state: V.state, prog: V.prog, error: V.error }, null, 1); }, 1000);
+</script>

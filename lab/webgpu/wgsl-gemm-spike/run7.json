@@ -1,0 +1,669 @@
+{
+ "layout": {
+  "H": 5120,
+  "F": 17408,
+  "VOC": 248320,
+  "lut": 9,
+  "offUp": 6389760,
+  "offGate": 3604480,
+  "offDown": 9175040,
+  "bitsWords": 1069219840,
+  "scalesWords": 66826240,
+  "lmHeadLut": 9,
+  "lmHeadBitsWords": 79462400,
+  "lmHeadScalesWords": 4966400,
+  "adapter": "metal-3",
+  "features": [
+   "chromium-experimental-subgroup-matrix",
+   "subgroup-size-control",
+   "shader-f16",
+   "timestamp-query",
+   "subgroups"
+  ],
+  "packedDotFeature": true,
+  "tritCodeHistogramSampled": [
+   308363,
+   301819,
+   308682,
+   0
+  ]
+ },
+ "activation": {
+  "rows": 8,
+  "width": 5120,
+  "rotated": true,
+  "rms": 1.0017,
+  "sample": [
+   -0.2981,
+   0.0237,
+   0.5525,
+   -0.8677
+  ]
+ },
+ "engineDecodeGateUp": {
+  "steps": 1,
+  "gpuMs": [
+   0.205122,
+   0.204621,
+   0.204122,
+   0.203163,
+   0.207622,
+   0.205664,
+   0.204872,
+   0.206955,
+   0.204538,
+   0.203414,
+   0.205872,
+   0.207955,
+   0.205414,
+   0.213747,
+   0.201206,
+   0.200954,
+   0.200788,
+   0.45141,
+   0.21033,
+   0.204538,
+   0.214956
+  ],
+  "wallMs": 0.2095,
+  "gpuMedian": 0.2051
+ },
+ "engineDecodeGateUpTokens4": {
+  "steps": 1,
+  "gpuMedian": 1.333,
+  "wallMs": 1.3762
+ },
+ "engineDecodeDown": {
+  "steps": 1,
+  "gpuMedian": 0.1095,
+  "wallMs": 0.1238
+ },
+ "enginePrefillUp8": {
+  "steps": 1,
+  "gpuMs": [
+   0.930695,
+   0.931653,
+   0.926902,
+   0.928403,
+   0.924861,
+   0.925443,
+   1.038485,
+   1.08465,
+   0.928735,
+   0.925278,
+   0.93057,
+   0.929153,
+   0.927653,
+   0.927361,
+   0.929193,
+   0.926403,
+   0.930153,
+   1.131733,
+   0.928903,
+   0.927235,
+   0.928569
+  ],
+  "gpuMedian": 0.9287,
+  "wallMs": 0.9762,
+  "vsCpu": {
+   "maxAbs": 0.0006,
+   "meanAbs": 0.0001063,
+   "maxRef": 3.0195,
+   "maxAbsOverMaxRef": 0.0001957,
+   "argmaxMatch": "8/8",
+   "worst": {
+    "m": 2,
+    "n": 10372,
+    "got": -0.3833,
+    "ref": -0.3839
+   }
+  }
+ },
+ "engineLmHead": {
+  "M1": {
+   "steps": 1,
+   "gpuMedian": 1.4214,
+   "wallMs": 1.4619
+  },
+  "M8": {
+   "steps": 1,
+   "gpuMedian": 12.9358,
+   "wallMs": 12.8857
+  }
+ },
+ "cpuRefMs": 537.4,
+ "spike": [
+  {
+   "label": "up_proj TN=64 RN=4 f16math",
+   "cfg": {
+    "TN": 64,
+    "RN": 4,
+    "useF16A": false,
+    "f16Math": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    0.3567,
+    0.3567,
+    0.3552,
+    0.3551,
+    0.3547,
+    0.3546,
+    0.3576,
+    0.3585,
+    0.3555,
+    0.3574,
+    0.3733,
+    0.4639,
+    0.3626,
+    0.3607,
+    0.3555,
+    0.3547,
+    0.3555,
+    0.3556,
+    0.3582,
+    0.3555,
+    0.3619
+   ],
+   "gpuMedian": 0.3567,
+   "gpuMin": 0.3546,
+   "wallMsPerIter": 0.4095,
+   "vsCpu": {
+    "maxAbs": 0.0018,
+    "meanAbs": 0.0002954,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005885,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 4,
+     "n": 755,
+     "got": -0.0529,
+     "ref": -0.0547
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=4 math=f16 unpack=builtin vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 4,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "builtin",
+    "vecAcc": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    1.4836,
+    1.4863,
+    1.4757,
+    1.4836,
+    1.4876,
+    1.4885,
+    1.4932,
+    1.4849,
+    1.4917,
+    1.5484,
+    1.5151,
+    1.4794,
+    1.4822,
+    1.4979,
+    1.4885,
+    1.4849,
+    1.485,
+    1.5002,
+    1.5735,
+    1.5047,
+    1.4821
+   ],
+   "gpuMedian": 1.4876,
+   "gpuMin": 1.4757,
+   "wallMsPerIter": 1.5286,
+   "vsCpu": {
+    "maxAbs": 0.0016,
+    "meanAbs": 0.0002842,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005374,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 4,
+     "n": 10412,
+     "got": 0.6024,
+     "ref": 0.6041
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=4 math=f16 unpack=manual vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 4,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "manual",
+    "vecAcc": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    1.4885,
+    1.4805,
+    1.494,
+    1.5461,
+    1.5028,
+    1.4826,
+    1.4861,
+    1.492,
+    1.4865,
+    1.5327,
+    1.5338,
+    1.4817,
+    1.4693,
+    1.4835,
+    1.5382,
+    1.5086,
+    1.4985,
+    1.4672,
+    1.4779,
+    1.5322,
+    1.5118
+   ],
+   "gpuMedian": 1.492,
+   "gpuMin": 1.4672,
+   "wallMsPerIter": 1.5333,
+   "vsCpu": {
+    "maxAbs": 0.0016,
+    "meanAbs": 0.0002842,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005374,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 4,
+     "n": 10412,
+     "got": 0.6024,
+     "ref": 0.6041
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=4 math=f16 unpack=builtin dotAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 4,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "builtin",
+    "vecAcc": false
+   },
+   "nWG": 272,
+   "gpuMs": [
+    0.4308,
+    0.4243,
+    0.4262,
+    0.4237,
+    0.427,
+    0.4238,
+    0.4254,
+    0.4269,
+    0.4235,
+    0.4249,
+    0.4253,
+    0.4277,
+    0.4275,
+    0.4277,
+    0.448,
+    0.5149,
+    0.4513,
+    0.426,
+    0.425,
+    0.4252,
+    0.4255
+   ],
+   "gpuMedian": 0.426,
+   "gpuMin": 0.4235,
+   "wallMsPerIter": 0.4714,
+   "vsCpu": {
+    "maxAbs": 0.0019,
+    "meanAbs": 0.0002972,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0006327,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 1,
+     "n": 2889,
+     "got": 0.3594,
+     "ref": 0.3575
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=2 math=f16 unpack=builtin vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 2,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "builtin",
+    "vecAcc": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    0.4946,
+    0.4852,
+    0.4865,
+    0.4847,
+    0.4856,
+    0.4879,
+    0.4892,
+    0.4903,
+    0.4878,
+    0.4905,
+    0.499,
+    0.5962,
+    0.5098,
+    0.485,
+    0.4849,
+    0.4862,
+    0.4856,
+    0.4901,
+    0.484,
+    0.4857,
+    0.4869
+   ],
+   "gpuMedian": 0.4869,
+   "gpuMin": 0.484,
+   "wallMsPerIter": 0.5333,
+   "vsCpu": {
+    "maxAbs": 0.0017,
+    "meanAbs": 0.000285,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005577,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 6,
+     "n": 2302,
+     "got": 0.699,
+     "ref": 0.7007
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=8 math=f16 unpack=builtin vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 8,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "builtin",
+    "vecAcc": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    3.1807,
+    3.2043,
+    3.1227,
+    3.6088,
+    3.7739,
+    3.1387,
+    3.1877,
+    3.1541,
+    3.0879,
+    3.1937,
+    3.1147,
+    3.1785,
+    3.0776,
+    2.9766,
+    3.2134,
+    3.0945,
+    3.1122,
+    3.1397,
+    3.1493,
+    3.2267,
+    3.8143
+   ],
+   "gpuMedian": 3.1541,
+   "gpuMin": 2.9766,
+   "wallMsPerIter": 3.2571,
+   "vsCpu": {
+    "maxAbs": 0.0016,
+    "meanAbs": 0.0002842,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005374,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 4,
+     "n": 10412,
+     "got": 0.6024,
+     "ref": 0.6041
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=32 RN=4 math=f16 unpack=builtin vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 32,
+    "RN": 4,
+    "math": "f16",
+    "aStore": "f16",
+    "unpack": "builtin",
+    "vecAcc": true
+   },
+   "nWG": 544,
+   "gpuMs": [
+    1.7188,
+    1.7003,
+    1.7123,
+    1.9186,
+    1.7238,
+    1.7028,
+    1.6977,
+    2.0493,
+    1.6974,
+    1.7059,
+    1.7138,
+    1.6984,
+    1.9723,
+    1.7055,
+    1.7018,
+    1.7003,
+    1.6927,
+    1.6987,
+    1.7538,
+    1.7243,
+    1.687
+   ],
+   "gpuMedian": 1.7055,
+   "gpuMin": 1.687,
+   "wallMsPerIter": 1.781,
+   "vsCpu": {
+    "maxAbs": 0.0016,
+    "meanAbs": 0.0002842,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 0.0005374,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 4,
+     "n": 10412,
+     "got": 0.6024,
+     "ref": 0.6041
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=4 math=f32 unpack=builtin vecAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 4,
+    "math": "f32",
+    "aStore": "f32",
+    "unpack": "builtin",
+    "vecAcc": true
+   },
+   "nWG": 272,
+   "gpuMs": [
+    4.6094,
+    4.6464,
+    4.4325,
+    4.6834,
+    4.7421,
+    4.6687,
+    4.662,
+    4.6564,
+    4.5135,
+    4.5946,
+    4.7621,
+    4.4545,
+    4.6433,
+    4.6068,
+    4.6117,
+    4.6754,
+    4.6108,
+    4.477,
+    4.6013,
+    5.528,
+    4.6053
+   ],
+   "gpuMedian": 4.6117,
+   "gpuMin": 4.4325,
+   "wallMsPerIter": 4.6905,
+   "vsCpu": {
+    "maxAbs": 0,
+    "meanAbs": 5.752e-8,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 1.579e-7,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 2,
+     "n": 15616,
+     "got": 0.7229,
+     "ref": 0.7229
+    }
+   }
+  },
+  {
+   "label": "up_proj v4 TN=64 RN=4 math=f32 unpack=builtin dotAcc",
+   "cfg": {
+    "v4": true,
+    "TN": 64,
+    "RN": 4,
+    "math": "f32",
+    "aStore": "f32",
+    "unpack": "builtin",
+    "vecAcc": false
+   },
+   "nWG": 272,
+   "gpuMs": [
+    0.7698,
+    0.7709,
+    0.767,
+    0.7672,
+    0.7694,
+    0.7729,
+    0.8055,
+    0.9131,
+    0.7684,
+    0.7672,
+    0.7654,
+    0.7664,
+    0.766,
+    0.769,
+    0.7654,
+    0.7672,
+    0.7902,
+    0.9033,
+    0.7729,
+    0.7688,
+    0.7644
+   ],
+   "gpuMedian": 0.7688,
+   "gpuMin": 0.7644,
+   "wallMsPerIter": 0.819,
+   "vsCpu": {
+    "maxAbs": 0,
+    "meanAbs": 5.809e-8,
+    "maxRef": 3.0195,
+    "maxAbsOverMaxRef": 1.28e-7,
+    "argmaxMatch": "8/8",
+    "worst": {
+     "m": 6,
+     "n": 14923,
+     "got": 1.2042,
+     "ref": 1.2042
+    }
+   }
+  }
+ ],
+ "lmHead": {
+  "label": "lm_head TN=64 RN=4 f16math",
+  "cfg": {
+   "TN": 64,
+   "RN": 4,
+   "useF16A": false,
+   "f16Math": true
+  },
+  "nWG": 3880,
+  "gpuMs": [
+   4.5381,
+   4.8744,
+   4.5274,
+   4.7872,
+   4.7546,
+   4.5436,
+   4.5253,
+   4.7576,
+   4.5433,
+   4.7488,
+   4.8419,
+   4.5274,
+   4.7515,
+   4.5211,
+   4.7509,
+   4.5236,
+   4.8924,
+   4.7605,
+   4.5264,
+   4.6955,
+   4.5799
+  ],
+  "gpuMedian": 4.6955,
+  "gpuMin": 4.5211,
+  "wallMsPerIter": 4.7143,
+  "vsCpuFirst2048Rows": {
+   "maxAbs": 0.0024,
+   "meanAbs": 0.0004308,
+   "maxRef": 3.7269,
+   "maxAbsOverMaxRef": 0.0006467,
+   "argmaxMatch": "8/8",
+   "worst": {
+    "m": 0,
+    "n": 484,
+    "got": 3.0757,
+    "ref": 3.0733
+   }
+  }
+ },
+ "engineDecodeGateUpAfter": {
+  "gpuMedian": 0.2087
+ },
+ "summary": {
+  "bestVariant": "up_proj TN=64 RN=4 f16math",
+  "best8RowMs": 0.3567,
+  "decodeGateUpMs_2matrices": 0.2051,
+  "decodeGateUpMs_2matrices_after": 0.2087,
+  "decodePerMatrixMs_gateUpHalf": 0.1026,
+  "decodeDownMs_1matrix": 0.1095,
+  "prefillUp8Ms": 0.9287,
+  "ratio_best_over_gateUpHalf": 3.4783,
+  "ratio_best_over_down": 3.2575,
+  "ratio_prefill8_over_gateUpHalf": 9.0561,
+  "speedup_vs_prefill8": 2.6036,
+  "weightBytesUp": 23674880,
+  "effGBps_best": 66.372
+ }
+}
