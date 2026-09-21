@@ -1,0 +1,10 @@
+0.00.691.114 I cmn          init: llama threadpool init, n_threads = 10
+0.01.196.468 I speculative decoding will use checkpoints (context does not support partial sequence removal)
+
+
+<|im_start|>user
+Write a complete short story of about 1500 words: a lighthouse keeper on a remote island receives a letter that changes everything. Include dialogue, a turning point, and a resolution.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.01.197.096 E failed to initialize speculative decoding

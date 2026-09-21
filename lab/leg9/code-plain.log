@@ -1,0 +1,10 @@
+0.00.679.321 I cmn          init: llama threadpool init, n_threads = 10
+0.01.184.769 I speculative decoding will use checkpoints (context does not support partial sequence removal)
+
+
+<|im_start|>user
+Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.01.185.247 E failed to initialize speculative decoding

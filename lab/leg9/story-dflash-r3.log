@@ -1,0 +1,18 @@
+0.00.304.047 E gguf_init_from_file: failed to open GGUF file '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf' (No such file or directory)
+0.00.304.079 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf
+0.00.304.157 E llama_model_load_from_file_impl: failed to load model
+0.00.304.170 W operator(): failed to measure the memory of the extra model, fitting without it: failed to load model
+0.00.813.391 I cmn          init: llama threadpool init, n_threads = 10
+0.01.060.246 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf'
+0.01.060.290 E gguf_init_from_file: failed to open GGUF file '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf' (No such file or directory)
+0.01.060.314 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf
+0.01.060.315 E llama_model_load_from_file_impl: failed to load model
+0.01.060.315 E common_speculative_init_result: failed to load draft model, '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a complete short story of about 1500 words: a lighthouse keeper on a remote island receives a letter that changes everything. Include dialogue, a turning point, and a resolution.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.01.304.339 E failed to initialize speculative decoding

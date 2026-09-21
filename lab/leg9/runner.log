@@ -1,3 +1,11 @@
+[16:52:11] leg9 start: 17G used (2395M wired, 2993M compressor), 6256M unused.
+[16:52:14] email plain exit 1 | 
+[16:52:16] email dflash exit 1 | 
+[16:52:17] code plain exit 1 | 
+[16:52:19] code dflash exit 1 | 
+[16:52:20] story plain exit 1 | 
+[16:52:22] story dflash exit 1 | 
+[16:52:22] LEG9 DONE
 [16:52:45] converting round-3 drafter to GGUF
 copied 45 KV fields
 wrote /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/r3-bf16.gguf 3.860293216 GB, 81 tensors

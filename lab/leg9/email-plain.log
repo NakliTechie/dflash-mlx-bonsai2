@@ -1,0 +1,10 @@
+0.02.436.451 I cmn          init: llama threadpool init, n_threads = 10
+0.03.156.858 I speculative decoding will use checkpoints (context does not support partial sequence removal)
+
+
+<|im_start|>user
+Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.03.157.171 E failed to initialize speculative decoding

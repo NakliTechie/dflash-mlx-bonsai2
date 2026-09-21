@@ -1,0 +1,16 @@
+0.00.485.833 E llama_model_load: error loading model: done_getting_tensors: wrong number of tensors; expected 81, got 58
+0.00.485.933 E llama_model_load_from_file_impl: failed to load model
+0.00.485.958 W operator(): failed to measure the memory of the extra model, fitting without it: failed to load model
+0.00.989.517 I cmn          init: llama threadpool init, n_threads = 10
+0.01.240.660 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+0.01.425.189 E llama_model_load: error loading model: done_getting_tensors: wrong number of tensors; expected 81, got 58
+0.01.425.193 E llama_model_load_from_file_impl: failed to load model
+0.01.425.195 E common_speculative_init_result: failed to load draft model, '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-GGUF/Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a complete short story of about 1500 words: a lighthouse keeper on a remote island receives a letter that changes everything. Include dialogue, a turning point, and a resolution.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.01.676.657 E failed to initialize speculative decoding

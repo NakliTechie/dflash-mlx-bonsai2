@@ -1,0 +1,18 @@
+0.00.304.759 E gguf_init_from_file: failed to open GGUF file '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf' (No such file or directory)
+0.00.304.794 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf
+0.00.304.891 E llama_model_load_from_file_impl: failed to load model
+0.00.304.907 W operator(): failed to measure the memory of the extra model, fitting without it: failed to load model
+0.00.815.684 I cmn          init: llama threadpool init, n_threads = 10
+0.01.062.761 I common_speculative_init_result: loading draft model '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf'
+0.01.062.810 E gguf_init_from_file: failed to open GGUF file '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf' (No such file or directory)
+0.01.062.835 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf
+0.01.062.836 E llama_model_load_from_file_impl: failed to load model
+0.01.062.836 E common_speculative_init_result: failed to load draft model, '/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf'
+
+
+<|im_start|>user
+Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>0.01.306.984 E failed to initialize speculative decoding
