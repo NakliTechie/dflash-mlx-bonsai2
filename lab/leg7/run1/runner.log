@@ -1,0 +1,26 @@
+[10:18:30] r3 file present: 3848817904 bytes; sha256 eb141d0fb8621cf7…
+[10:18:30] swap before: total = 7168.00M  used = 5546.88M  free = 1621.12M  (encrypted)
+[10:18:30] benchmark chat-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --prompt Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.
+[10:20:05] chat-r3 exit 0 | 6.180992066292939 0.626953125  | swap 7015.44M
+[10:20:05] benchmark code-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --prompt Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.
+[10:21:09] code-r3 exit 0 | 9.09190366574511 0.6953125  | swap 6169.31M
+[10:21:09] benchmark math-raw-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --no-chat-template --prompt Question: The function f satisfies f(x) + f(y) = f(x + y) - xy - 1 for all real x, y, and f(1) = 1. Find all integers n with f(n) = n.
+Answer: Let us reason step by step.
+[10:21:47] math-raw-r3 exit 0 | 15.724923725002089 0.724609375  | swap 5897.06M
+[10:21:47] benchmark code-raw-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --no-chat-template --prompt def lru_cache_class():
+    """Return a class LRUCache(capacity) with O(1) get(key) and put(key, value), implemented with a dict and a doubly linked list."""
+
+[10:22:17] code-raw-r3 exit 0 | 20.471953771256633 0.78125  | swap 5809.06M
+[10:22:17] benchmark chat-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2) --prompt Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.
+[10:23:09] chat-z0 exit 0 | 11.005737681198012 0.59375  | swap 5633.06M
+[10:23:09] benchmark code-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2) --prompt Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.
+[10:23:53] code-z0 exit 0 | 13.518034644247885 0.673828125  | swap 5593.06M
+[10:23:53] benchmark math-raw-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2) --no-chat-template --prompt Question: The function f satisfies f(x) + f(y) = f(x + y) - xy - 1 for all real x, y, and f(1) = 1. Find all integers n with f(n) = n.
+Answer: Let us reason step by step.
+[10:24:36] math-raw-z0 exit 0 | 13.818545607588545 0.71875  | swap 5513.00M
+[10:24:36] benchmark code-raw-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2) --no-chat-template --prompt def lru_cache_class():
+    """Return a class LRUCache(capacity) with O(1) get(key) and put(key, value), implemented with a dict and a doubly linked list."""
+
+[10:25:11] code-raw-z0 exit 0 | 17.169200751828022 0.7734375  | swap 5489.00M
+[10:25:11] swap after: total = 7168.00M  used = 5489.00M  free = 1679.00M  (encrypted)
+[10:25:11] LEG7 DONE

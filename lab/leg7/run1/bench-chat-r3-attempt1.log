@@ -1,0 +1,43 @@
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+Traceback (most recent call last):
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/.venv/bin/dflash", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/cli.py", line 54, in main
+    raise SystemExit(run(argv))
+                     ^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/cli.py", line 40, in run
+    return _run_module_main("dflash_mlx.benchmark", "dflash benchmark", args[1:])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/cli.py", line 59, in _run_module_main
+    module.main(list(args), prog=prog)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/benchmark.py", line 1869, in main
+    result = benchmark_suite(prompts=prompts, args=args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/benchmark.py", line 1535, in benchmark_suite
+    report = benchmark_once(
+             ^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/benchmark.py", line 1232, in benchmark_once
+    result = _run_once_sequential(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/benchmark.py", line 1128, in _run_once_sequential
+    dflash = _generate_dflash_stream_once(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/benchmark.py", line 954, in _generate_dflash_stream_once
+    for event in stream:
+                 ^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/runtime/__init__.py", line 105, in stream_dflash_generate
+    yield from inner
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2924, in stream_dflash_generate_impl
+    yield from session.run_events(request)
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2617, in run_events
+    decode = yield from self._run_decode_events(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/engine/spec_epoch.py", line 2404, in _run_decode_events
+    next_drafted = draft_backend.draft_greedy(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chiragpatnaik/Code/dflash-mlx-bonsai2/dflash_mlx/draft_backend.py", line 287, in draft_greedy
+    mx.async_eval(drafted)
+RuntimeError: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory).

@@ -1,0 +1,4 @@
+[10:26:08] run 2 (clean-memory throughput pass) unused: 13G unused.
+[10:26:19] r3 file present: 3848817904 bytes; sha256 eb141d0fb8621cf7…
+[10:26:19] swap before: total = 6144.00M  used = 5266.00M  free = 878.00M  (encrypted)
+[10:26:19] benchmark chat-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --prompt Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.

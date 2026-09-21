@@ -1,0 +1,7 @@
+[10:13:16] r3 file present: 3848817904 bytes; sha256 eb141d0fb8621cf7…
+[10:13:16] swap before: total = 7168.00M  used = 5768.31M  free = 1399.69M  (encrypted)
+[10:13:16] benchmark chat-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --prompt Write a warm, two-paragraph email to a friend describing a weekend hike in the hills, the weather, and what you cooked afterwards.
+[10:14:47] chat-r3 exit 1 |  | swap 5903.75M
+[10:14:47] benchmark code-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3) --prompt Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.
+[10:16:26] retry 3 chat-r3, unused before: 10G unused.
+[10:17:49] retry 3 chat-r3 exit 0 | swap 5753.38M
