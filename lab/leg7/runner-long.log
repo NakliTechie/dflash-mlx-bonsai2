@@ -1,2 +1,14 @@
 [13:46:45] long runs start: 11G used (2331M wired, 1798M compressor), 12G unused. swap 1933.38M
 [13:46:45] benchmark story-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3)
+[13:49:24] story-r3 exit 0 | 13.191002318100331 0.5556640625  | swap 1933.38M
+[13:49:24] benchmark module-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3)
+[13:51:42] module-r3 exit 0 | 15.314871648722269 0.64208984375  | swap 1933.38M
+[13:51:42] benchmark doc-r3 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3)
+[13:54:01] doc-r3 exit 0 | 18.263501797702585 0.69580078125  | swap 1933.38M
+[13:54:01] benchmark story-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2)
+[13:56:57] story-z0 exit 0 | 11.894167279174306 0.517578125  | swap 1933.38M
+[13:56:57] benchmark module-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2)
+[13:59:18] module-z0 exit 0 | 14.937897868771254 0.6162109375  | swap 1933.38M
+[13:59:18] benchmark doc-z0 (/Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2)
+[14:01:44] doc-z0 exit 0 | 16.990050458873636 0.6748046875  | swap 1933.38M
+[14:01:44] LEG7-LONG DONE

@@ -5,13 +5,13 @@ Summary:
   suite                         : smoke
   prompts                       : 1
   baseline generation_tps median: None
-  dflash generation_tps median  : 13.191002318100331
+  dflash generation_tps median  : 15.314871648722269
   speedup median                : None
   baseline prefill tok/s median : None
-  dflash prefill tok/s median  : 86.79077432936438 physical / 86.79077432936438 apparent
-  acceptance median             : 0.5556640625
+  dflash prefill tok/s median  : 88.31865660990046 physical / 88.31865660990046 apparent
+  acceptance median             : 0.64208984375
   baseline peak memory median   : None
-  dflash peak memory median     : 12.757256838
-  memory end phys footprint     : None baseline / 13.193667968 dflash
-  memory end mlx cache          : None baseline / 0.002031992 dflash
-Artifacts written to: /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg7/long-story-r3
+  dflash peak memory median     : 12.757810011
+  memory end phys footprint     : None baseline / 13.171369368 dflash
+  memory end mlx cache          : None baseline / 0.003047876 dflash
+Artifacts written to: /Users/chiragpatnaik/Code/dflash-mlx-bonsai2/lab/leg7/long-module-r3
