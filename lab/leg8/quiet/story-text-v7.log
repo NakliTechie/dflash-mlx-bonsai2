@@ -1,0 +1,24 @@
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+
+
+The wind on Blackwood Island did not blow; it screamed. It was a constant, high-pitched shriek that had worn the edges of the lighthouse keeper’s soul as smooth as the granite rocks below. For twelve years, Elias Thorne had lived in the shadow of the Great Light, a solitary figure in a world that had forgotten him.
+
+Elias was a man composed of angles and silence. His days were measured in the rotation of the lens, the polishing of the glass, and the checking of the oil reserves. He spoke to no one. The only conversation he had was with the gulls, who circled the tower like restless thoughts, and with the sea, which he regarded with a mixture of fear and respect. He was a ghost in a stone house, and he was content with it. Or so he believed.
+
+The mail boat, *The Pelican*, arrived on a Tuesday, cutting through the grey swells with a rhythmic thud of its engine. Elias stood on the jetty, his oilskin coat flapping in the gale, watching the vessel approach. He expected nothing. The island was a dead end, a place where ships went to die or to be saved, but rarely where people went to live.
+
+The boat docked with a groan of wood against stone. The captain, a broad-shouldered man named Miller, hauled the gangplank up. He didn’t look at Elias. He never did. He simply tossed a small, brown envelope onto the wet planks and turned the boat around.
+
+Elias picked up the letter. It was heavy, the paper thick and cream-colored, bearing a wax seal that had cracked in the transit. The return address was in a city he hadn’t seen in twenty years: Boston. The name on the envelope was written in a hand he knew better than his own.
+
+*Elias Thorne.*
+
+His hands trembled. He had not seen that name in two decades. He had buried it, along with his past, in the deep waters of the Atlantic. He walked back to the lighthouse, the wind trying to tear the letter from his grip. He locked the door, barred the window, and sat at his small desk. The great lens above him turned, casting a beam of white light into the dark, but Elias could not see it. He was looking at the past.
+
+He broke the seal.
+
+*My Dearest Elias,*
+
+*It is me. Sarah. I know you think you have forgotten me. I know you think you have run away from the world. But I have not forgotten. I have been looking for you for ten years. I am coming to Blackwood Island. I am coming to find you. I am coming to tell you the truth about the night we left. I am coming to tell you why I left you behind. I am coming to tell you that I am dying, and I need you to know that I loved you. I need you to know that I am sorry. I am sorry for everything. I am sorry for the silence. I am sorry for the years. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry for the life we didn’t live. I am sorry for the life we did live. I am sorry
+1024 tokens | 21.9 tok/s | 63.9% acceptance

@@ -1,0 +1,47 @@
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+
+
+The wind on Blackwood Island did not blow; it screamed. It was a constant, high-pitched shriek that had worn the edges of the lighthouse keeper’s soul as smooth as the granite rocks below. For twelve years, Elias Thorne had lived in the shadow of the Great Light, a solitary figure in a world that had forgotten him.
+
+Elias was a man composed of angles and silence. His days were measured in the rotation of the lens, the polishing of the glass, and the checking of the oil reserves. He spoke to no one. The only conversation he had was with the gulls, who circled the tower like restless thoughts, and with the sea, which he regarded with a mixture of fear and respect. He was a ghost in a stone house, and he was content with the haunting.
+
+The mail boat, *The Pelican*, arrived on a Tuesday, cutting through the grey swells with a rhythmic thud of its propeller. Elias stood on the jetty, his oilskin coat flapping in the gale, watching the vessel approach. He expected nothing. The island was a dead end, a place where ships went to die or to be saved, but rarely where people went to live.
+
+The boat docked with a groan of wood against stone. A young woman stepped off, her boots slipping on the wet planks. She was not a sailor; she wore a wool coat and held a leather satchel tightly against her chest. She looked at Elias with an expression that was not surprise, but recognition.
+
+"Mr. Thorne?" she asked. Her voice was clear, cutting through the wind.
+
+Elias blinked. "Who are you?"
+
+"My name is Clara. I’m the new archivist for the county. I’ve been sent to retrieve the final logbooks from the previous keeper."
+
+Elias felt a cold knot form in his stomach. "There is no previous keeper. I am the keeper."
+
+Clara smiled, a sad, tired expression. "You are the *current* keeper, Mr. Thorne. But you are not the only one who has kept this light. You are the last of a long line. And I have something for you."
+
+She reached into her satchel and pulled out a thick envelope, yellowed with age. It was sealed with a wax stamp that Elias recognized instantly: the crest of the Thorne family.
+
+Elias took the letter. His hands trembled. He had not seen a letter from his family in twenty years. His father had died when Elias was a boy, leaving behind only a silence so profound it felt like a physical weight.
+
+"Open it," Clara said softly. "It’s time."
+
+Elias turned and walked back toward the lighthouse. The wind seemed to die down as he ascended the spiral stairs, the air growing warmer and stiller. He sat at his desk, the heavy oak surface scarred by decades of use. He broke the seal.
+
+The letter was written in a hand he knew better than his own. It was his father’s.
+
+*My Dearest Elias,*
+
+*By the time you read this, I will be gone. I am writing this not to apologize for my absence, but to explain my presence. I did not leave you because I did not love you. I left you because I loved you too much to let you see the truth of what I am.*
+
+*You are not just a lighthouse keeper, Elias. You are a guardian. The light on Blackwood Island is not merely a beacon for ships. It is a barrier. For centuries, the Thorne family has kept the light burning to hold back the things that live in the deep. The sea is not empty. It is full of memories, of lost souls, of things that hunger for the warmth of the living. The light keeps them at bay.*
+
+*I could not bear to watch you struggle with the weight of this duty alone. I thought if I stayed, I would break. I thought if I left, you would find your own way. But I was wrong. I was afraid. I was a coward. I left you to the wind and the waves, thinking you would be strong enough. I was wrong. You are stronger than I ever was, but you are also more alone.*
+
+*The light is failing, Elias. The oil is running low, and the lens is cracking. I have sent a new keeper to take your place. But I am sending this letter to tell you that you are not alone. You never were. The light is not just a duty. It is a promise. Keep it burning, and you will be remembered. Not by the ships, but by the sea itself.*
+
+*With all my love,*
+*Arthur*
+
+Elias read the letter three times. The words blurred before his eyes. He looked out the window. The sea was churning, dark and violent. For the
+1024 tokens | 16.0 tok/s | 57.3% acceptance

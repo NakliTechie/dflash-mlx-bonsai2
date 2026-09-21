@@ -224,9 +224,19 @@ def install_prism_verify_linears(packed_cls: Any, fwht: Any, mode: str | None = 
     """Patch `Packed.__call__` for 8-row inputs. mode: 'v7' (default), 'v4b', 'fp16' (cast only), 'off'."""
     mode = (mode or os.environ.get("DFLASH_PRISM_VERIFY", "v7")).lower()
     kernel = qmm_m8_v7 if mode == "v7" else qmm_m8
-    if mode == "off" or getattr(packed_cls, "_dflash_verify_mode", None) == mode:
+    if getattr(packed_cls, "_dflash_verify_mode", None) == mode:
         return mode
     stock_call = getattr(packed_cls, "_dflash_stock_call", None) or packed_cls.__call__
+    if mode == "off":                                   # restore the pack's own __call__ (fp32 activations, stock qmm)
+        packed_cls.__call__ = stock_call
+        packed_cls._dflash_stock_call = stock_call
+        packed_cls._dflash_verify_mode = mode
+        return mode
+    stats = None
+    if os.environ.get("DFLASH_PRISM_VERIFY_STATS"):          # rows-per-call histogram, printed at exit (diagnostic)
+        import atexit, collections, sys
+        stats = collections.Counter()
+        atexit.register(lambda: print("[prism_qmm] rows-per-call histogram:", dict(sorted(stats.items())), "mode", mode, file=sys.stderr))
 
     def verify_call(self, x):
         if self.embedding:
@@ -235,19 +245,29 @@ def install_prism_verify_linears(packed_cls: Any, fwht: Any, mode: str | None = 
         rows = 1
         for d in shape[:-1]:
             rows *= d
-        if mode == "fp16" or rows != 8 or self.weight.shape[0] % 64 != 0:   # both kernels need N % 64 == 0 (v7: N % 32)
-            # 1 row: 52 -> 46 ms per decode step; 2..7 rows (adaptive verify shortens blocks) and >8 rows:
-            # the fp16 cast alone is 2.5x on the verify block. Argmax unchanged in every measured case.
+        if stats is not None:
+            stats[rows] += 1
+        # The real DFlash2 verify is NOT 8 rows: the selector emits variable-length paths, so a "block 8" run
+        # verifies 4-5 rows per cycle (rows-per-call histogram of a real benchmark: {1: decode, 4/5: verify,
+        # 33: prefill}). The kernels cost the same for any M <= 8, so pad 2..7-row calls to 8 (zero rows) and
+        # slice; before this, every real verify silently took the fp16 + stock path.
+        pad_ok = mode == "v7" and 2 <= rows <= 8
+        if mode == "fp16" or (rows != 8 and not pad_ok) or self.weight.shape[0] % 64 != 0:   # both kernels need N % 64 == 0 (v7: N % 32)
+            # 1 row: 52 -> 46 ms per decode step; >8 rows: the fp16 cast alone is 2.5x on the verify block.
             return stock_call(self, x.astype(mx.float16)).astype(x.dtype)
         x2 = x.reshape(rows, shape[-1])
+        if rows < 8:
+            x2 = mx.concatenate([x2, mx.zeros((8 - rows, shape[-1]), dtype=x2.dtype)], axis=0)
+        if stats is not None:
+            stats[100 + rows] += 1   # 10x = went through the custom kernel
         if mode == "v7" and self.block == 1024 and self.signs is not None and shape[-1] % 1024 == 0:
             xt, rs = verify_prep(x2, self.signs)                       # fused sign * Hadamard * transpose + row sums
             out = qmm_m8_v7_prepped(xt, rs, self.weight, self.scales, self.biases)
-            return out.astype(x.dtype).reshape(*shape[:-1], -1)
+            return out[:rows].astype(x.dtype).reshape(*shape[:-1], -1)
         if self.block:
             x2 = fwht(x2, self.block, self.signs)
         out = kernel(x2.astype(mx.float16), self.weight, self.scales, self.biases)
-        return out.astype(x.dtype).reshape(*shape[:-1], -1)
+        return out[:rows].astype(x.dtype).reshape(*shape[:-1], -1)
 
     packed_cls._dflash_stock_call = stock_call
     packed_cls.__call__ = verify_call

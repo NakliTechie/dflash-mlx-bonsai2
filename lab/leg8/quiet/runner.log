@@ -1,0 +1,43 @@
+[16:33:08] watching for a quiet window
+[16:35:14] watching for a quiet window
+[16:44:50] watching for a quiet window
+[18:52:31] watching for a quiet window
+[18:52:32] quiet window: unused M comp M idle %
+[18:53:14] code1 v7 exit 0 | 27.855048859052157 tok/s | unused M comp M idle %
+[18:55:14] story1 v7 exit 0 | 16.994083181691174 tok/s | unused M comp M idle %
+[18:55:56] code1 v4b exit 0 | 27.93566396608064 tok/s | unused M comp M idle %
+[18:58:02] story1 v4b exit 0 | 16.16118853136577 tok/s | unused M comp M idle %
+[18:58:46] code2 v7 exit 0 | 25.555992899676667 tok/s | unused M comp M idle %
+[19:01:01] story2 v7 exit 0 | 15.156216697436529 tok/s | unused M comp M idle %
+[19:01:46] code2 v4b exit 0 | 25.148063444548733 tok/s | unused M comp M idle %
+[19:04:02] story2 v4b exit 0 | 14.967769769529044 tok/s | unused M comp M idle %
+run      mode  tok/cycle  tok/s ms/cycle
+code1    v7         4.08   27.9      146
+code1    v4b        4.08   27.9      146
+story1   v7         2.52   17.0      148
+story1   v4b        2.52   16.2      156
+code2    v7         4.08   25.6      160
+code2    v4b        4.08   25.1      162
+story2   v7         2.52   15.2      166
+story2   v4b        2.52   15.0      168
+[19:04:02] QUIET A/B DONE
+[19:18:42] watching for a quiet window
+[19:18:43] quiet window: unused M comp M idle %
+[19:19:20] code1 v7 exit 0 | 32.08141594971788 tok/s | unused M comp M idle %
+[19:20:39] story1 v7 exit 0 | 27.601936992457567 tok/s | unused M comp M idle %
+[19:21:23] code1 v4b exit 0 | 25.635268949827985 tok/s | unused M comp M idle %
+[19:23:59] story1 v4b exit 0 | 12.982362700981154 tok/s | unused M comp M idle %
+[19:24:41] code2 v7 exit 0 | 27.740343477059035 tok/s | unused M comp M idle %
+[19:26:11] story2 v7 exit 0 | 23.986501900665232 tok/s | unused M comp M idle %
+[19:26:56] code2 v4b exit 0 | 24.84029271532059 tok/s | unused M comp M idle %
+[19:29:16] story2 v4b exit 0 | 14.512715329260676 tok/s | unused M comp M idle %
+run      mode  tok/cycle  tok/s ms/cycle
+code1    v7         4.08   32.1      127
+code1    v4b        4.08   25.6      159
+story1   v7         3.57   27.6      129
+story1   v4b        2.52   13.0      194
+code2    v7         4.08   27.7      147
+code2    v4b        4.08   24.8      164
+story2   v7         3.57   24.0      149
+story2   v4b        2.52   14.5      174
+[19:29:16] QUIET A/B DONE
