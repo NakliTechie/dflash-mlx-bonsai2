@@ -1,0 +1,200 @@
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=381M 22:18:44
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=154M 22:19:46
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=90M 22:20:46
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=105M 22:21:47
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=136M 22:22:48
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=364M 22:23:49
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=780M 22:24:49
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=76M 22:25:50
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=803M 22:26:51
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=118M 22:27:52
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=326M 22:28:52
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=1604M 22:29:53
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=1367M 22:30:53
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=998M 22:31:54
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=576M 22:32:54
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=1012M 22:33:55
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=5783M 22:34:55
+waiting: llama-server=[43870 ] dflash=[] chrome=[] unused=5742M 22:35:55
+gate clear: unused=9454M 22:36:55
+launch 22:36:55
+[console] [vs] imported
+22:36:58 {"state":"imported","prog":"weights 973038464/5935527936"}
+22:37:03 {"state":"imported","prog":"weights /"}
+[console] [vs] loaded
+[console] [vs] greedy 9 tokens: [43,21204,19154,2418,430,50032,17210,314,55394], prompt 21, seq 29
+[console] [vs] verify session built in 126 ms: 1385 nodes vs 1351 default; outputs dspark.features,verify_tokens,next_token
+22:37:08 {"state":"verify session built in 126 ms: 1385 nodes vs 1351 default; outputs dspark.features,verify_tokens,next_token","prog":"ready /","buildMs":126}
+[console] [vs] done: 8/8 rows match, verify step 364.3/374/381.8/381.8/379.1/373.5 ms vs decode 42.2 ms/token (ratio 8.85); features shape ok nonzero 1
+22:37:13 {"state":"done: 8/8 rows match, verify step 364.3/374/381.8/381.8/379.1/373.5 ms vs decode 42.2 ms/token (ratio 8.85); features shape ok nonzero 1","prog":"ready /","buildMs":126}
+RESULTS {
+ "results": {
+  "greedy": [
+   43,
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "verify_tokens": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "expect": [
+   21204,
+   19154,
+   2418,
+   430,
+   50032,
+   17210,
+   314,
+   55394
+  ],
+  "match": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "matches": 8,
+  "next_token_from_verify": 55394,
+  "next_token_expected": 55394,
+  "normalPrefillTok": 55394,
+  "normalPrefillMatch": true,
+  "stepMs": [
+   364.3,
+   374,
+   381.8,
+   381.8,
+   379.1,
+   373.5
+  ],
+  "stepMinMs": 373.5,
+  "readbackMs": 0.7,
+  "decodeMs": 42.2,
+  "ratio": 8.85,
+  "features": {
+   "dtype": "float32",
+   "shape": [
+    8,
+    25600
+   ],
+   "length": 204800,
+   "expectLength": 204800,
+   "shapeOk": true,
+   "nonZero": 204800,
+   "nonZeroFrac": 1,
+   "perTap": [
+    {
+     "layer": 5,
+     "meanAbs": 0.0867,
+     "maxAbs": 28.012,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 19,
+     "meanAbs": 0.3713,
+     "maxAbs": 60.542,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 33,
+     "meanAbs": 0.532,
+     "maxAbs": 50.647,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 47,
+     "meanAbs": 0.8606,
+     "maxAbs": 54.709,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    },
+    {
+     "layer": 61,
+     "meanAbs": 2.8703,
+     "maxAbs": 54.599,
+     "nonZero": 40960,
+     "of": 40960,
+     "finite": true
+    }
+   ],
+   "sampleRow0Tap0": [
+    -0.0435,
+    -0.0095,
+    0.0032,
+    0.0421,
+    -0.0665,
+    -0.0191
+   ],
+   "rowsDistinct": 8
+  },
+  "head": {
+   "packsQ1": false,
+   "lmHeadQ4": true,
+   "lmHeadQ8": false,
+   "lmHeadFormat": null,
+   "lmHeadLut": 9,
+   "lmHeadScanBits": null,
+   "lmHeadRescoreFormat": null,
+   "prismHeadRotated": true,
+   "hidden": 5120,
+   "layers": 64,
+   "vocab": 248320,
+   "f16": true,
+   "kiRoute": "prism.head (LlamaPrefillMatmul M=1 + ArgMax)"
+  },
+  "graph": {
+   "defaultNodes": 1351,
+   "emptyOptsNodes": 1351,
+   "defaultOutputs": [
+    "next_token"
+   ],
+   "defaultHasPick": false,
+   "verifyNodes": 1385,
+   "verifyOutputs": [
+    "dspark.features",
+    "verify_tokens",
+    "next_token"
+   ],
+   "verifyTail": 34,
+   "defaultTail": 5
+  },
+  "taps": [
+   5,
+   19,
+   33,
+   47,
+   61
+  ]
+ },
+ "log": [
+  "imported",
+  "loaded",
+  "greedy 9 tokens: [43,21204,19154,2418,430,50032,17210,314,55394], prompt 21, seq 29",
+  "verify session built in 126 ms: 1385 nodes vs 1351 default; outputs dspark.features,verify_tokens,next_token",
+  "done: 8/8 rows match, verify step 364.3/374/381.8/381.8/379.1/373.5 ms vs decode 42.2 ms/token (ratio 8.85); features shape ok nonzero 1"
+ ]
+}
+exit=0 22:37:14
