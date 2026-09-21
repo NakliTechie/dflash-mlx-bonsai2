@@ -1,0 +1,253 @@
+From cbe495c590b6ad2ea184ace35d8efa109a8d7bd8 Mon Sep 17 00:00:00 2001
+From: Chirag Patnaik <dev@nakli.tech>
+Date: Mon, 21 Sep 2026 17:28:44 +0530
+Subject: [PATCH] dflash: apply the target's prism.hadamard transforms to the
+ borrowed tok_embd / lm_head
+
+A draft that ships no token embeddings or output projection borrows the
+target's through ctx_other. On a prism.hadamard target (Ternary Bonsai 2
+27B PTQ1_0) `token_embd.weight` is stored in the rotated basis
+(inverse_weight_names) and `output.weight` expects a rotated input
+(weight_names). The transforms are keyed in the TARGET model's maps, which
+the draft graph's build_lora_mm / build_inp_embd never see, so the draft
+read rotated embeddings and projected through the head unrotated. Every
+DFlash2 draft was rejected: 0/756 accepted on the smoke test.
+
+Resolve the shared tensors once per graph and apply the owning model's
+transform at the six borrow sites (DFlash decoder, DFly correction head,
+DSpark DSV4 decoder). Identity for targets without prism.hadamard metadata.
+
+Smoke (llama-speculative-simple, Bonsai 2 PTQ1_0 + Qwen3.8-27B-DFlash2
+Q4_K_M, -n 128 --temp 0): n_drafted 126, n_accept 91 (72.2%), 9.52 t/s
+(was 0/756, 1.49 t/s).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ src/models/dflash.cpp | 148 ++++++++++++++++++++++++------------------
+ 1 file changed, 86 insertions(+), 62 deletions(-)
+
+diff --git a/src/models/dflash.cpp b/src/models/dflash.cpp
+index 2aa2f129a..88d0f4fcb 100644
+--- a/src/models/dflash.cpp
++++ b/src/models/dflash.cpp
+@@ -425,6 +425,81 @@ llama_model_dflash::graph<true>::graph(const llama_model & model, const llm_grap
+ }
+ 
+ // DSpark (DFlash + Markov & Confidence head): Markov bias on the draft logits, chained per block position
++// The draft ships no token embeddings or lm_head and borrows the target's through
++// ctx_other. A prism.hadamard target stores both in the rotated basis, keyed in the
++// TARGET model's transform maps; this graph's build_lora_mm / build_inp_embd only see
++// the draft model's (empty) maps, so the borrowed weights get their transform here.
++// Identity for a target without prism.hadamard metadata.
++struct dflash_shared_head {
++    ggml_tensor * tok_embd = nullptr;
++    ggml_tensor * output   = nullptr;
++    ggml_tensor * output_s = nullptr;
++    const llama_hadamard_transform * embd_inv = nullptr; // after  get_rows(tok_embd): h = s * (H z)
++    const llama_hadamard_transform * head_rot = nullptr; // before mul_mat(output):    z = H (s * h)
++};
++
++static dflash_shared_head dflash_resolve_shared_head(const llama_model & model, const llama_cparams & cparams, const char * who) {
++    dflash_shared_head sh;
++    sh.tok_embd = model.tok_embd;
++    sh.output   = model.output;
++    sh.output_s = model.output_s;
++
++    const llama_model * embd_owner = &model;
++    if (sh.output == nullptr || sh.tok_embd == nullptr) {
++        GGML_ASSERT(cparams.ctx_other != nullptr && "draft shares tensors with the target but ctx_other is not set");
++        const llama_model * model_other = llama_get_model(cparams.ctx_other);
++        if (sh.output == nullptr) {
++            GGML_ASSERT(model_other->output != nullptr && "draft requires the target model's output projection");
++            sh.output   = model_other->output;
++            sh.output_s = model_other->output_s;
++            // the draft's own lm_head is rotated by build_lora_mm through this graph's map;
++            // a borrowed one is keyed in the target's map instead
++            const auto it = model_other->hadamard_rotations.find(sh.output);
++            if (it != model_other->hadamard_rotations.end()) {
++                sh.head_rot = &it->second;
++            }
++        }
++        if (sh.tok_embd == nullptr) {
++            GGML_ASSERT(model_other->tok_embd != nullptr && "draft requires the target model's token embeddings");
++            sh.tok_embd = model_other->tok_embd;
++            embd_owner  = model_other;
++        }
++    }
++    const auto it = embd_owner->hadamard_inverses.find(sh.tok_embd);
++    if (it != embd_owner->hadamard_inverses.end()) {
++        sh.embd_inv = &it->second;
++    }
++    if (sh.embd_inv || sh.head_rot) {
++        LLAMA_LOG_DEBUG("%s: %s: prism.hadamard on shared tensors (tok_embd inverse = %d, lm_head rotation = %d)\n",
++                __func__, who, sh.embd_inv != nullptr, sh.head_rot != nullptr);
++    }
++    return sh;
++}
++
++// embedding rows in the primal basis (mirrors llm_graph_context::build_inp_embd)
++static ggml_tensor * dflash_embd_rows(ggml_context * ctx0, const dflash_shared_head & sh, ggml_tensor * ids) {
++    ggml_tensor * cur = ggml_get_rows(ctx0, sh.tok_embd, ids);
++    if (sh.embd_inv) {
++        cur = llama_mul_mat_hadamard(ctx0, cur, sh.embd_inv->rot);
++        if (sh.embd_inv->signs) {
++            cur = ggml_mul(ctx0, cur, sh.embd_inv->signs);
++        }
++    }
++    return cur;
++}
++
++// lm_head input in the folded basis (mirrors llm_graph_context::build_lora_mm)
++static ggml_tensor * dflash_head_input(ggml_context * ctx0, const dflash_shared_head & sh, ggml_tensor * cur) {
++    if (sh.head_rot) {
++        GGML_ASSERT(sh.head_rot->perm_rep <= 1 && "lm_head rotation with a head permutation is not expected");
++        if (sh.head_rot->signs) {
++            cur = ggml_mul(ctx0, cur, sh.head_rot->signs);
++        }
++        cur = llama_mul_mat_hadamard(ctx0, cur, sh.head_rot->rot);
++    }
++    return cur;
++}
++
+ static void build_dspark_markov_head(llm_graph_context & g, const llama_model & model, ggml_tensor * tokens) {
+     ggml_context * ctx0 = g.ctx0;
+     auto         & res  = g.res;
+@@ -593,22 +668,7 @@ static void build_dfly_correction_head(llm_graph_context & g, const llama_model
+     }
+ 
+     // the target's head and embeddings when the draft ships none (shared via ctx_other)
+-    auto * output   = model.output;
+-    auto * output_s = model.output_s;
+-    auto * tok_embd = model.tok_embd;
+-    if (output == nullptr || tok_embd == nullptr) {
+-        GGML_ASSERT(g.cparams.ctx_other != nullptr);
+-        const auto * model_other = llama_get_model(g.cparams.ctx_other);
+-        if (output == nullptr) {
+-            GGML_ASSERT(model_other->output != nullptr && "DFly head requires the target output projection");
+-            output   = model_other->output;
+-            output_s = model_other->output_s;
+-        }
+-        if (tok_embd == nullptr) {
+-            GGML_ASSERT(model_other->tok_embd != nullptr && "DFly head requires the target token embeddings");
+-            tok_embd = model_other->tok_embd;
+-        }
+-    }
++    const dflash_shared_head sh = dflash_resolve_shared_head(model, g.cparams, "DFly head");
+ 
+ 
+     const size_t hidden_stride = (size_t) block_drafts * hidden->nb[1];
+@@ -629,7 +689,7 @@ static void build_dfly_correction_head(llm_graph_context & g, const llama_model
+         //                         z = [rms(h_i); rms(embd(prev))]
+         if (prev) {
+             // chained positions condition on the previously drafted token: an argmax, always in range
+-            prev_embd = ggml_get_rows(ctx0, tok_embd, prev); // [n_embd, n_blocks]
++            prev_embd = dflash_embd_rows(ctx0, sh, prev); // [n_embd, n_blocks]
+         }
+ 
+         ggml_tensor * h_i = ggml_cont(ctx0, ggml_view_2d(ctx0, hidden, n_embd, n_blocks,
+@@ -645,7 +705,7 @@ static void build_dfly_correction_head(llm_graph_context & g, const llama_model
+                 model.dfly_hc_down, NULL, NULL,
+                 NULL, LLM_FFN_SILU, LLM_FFN_PAR, -1);
+ 
+-        ggml_tensor * col = g.build_lora_mm(output, ggml_add(ctx0, h_i, delta), output_s);
++        ggml_tensor * col = g.build_lora_mm(sh.output, dflash_head_input(ctx0, sh, ggml_add(ctx0, h_i, delta)), sh.output_s);
+ 
+         cat = ggml_concat(ctx0, cat, col, 1);
+ 
+@@ -938,15 +998,8 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+         return;
+     }
+ 
+-    // tok_embd from the target model (shared via ctx_other)
+-    auto * tok_embd = model.tok_embd;
+-    if (tok_embd == nullptr) {
+-        GGML_ASSERT(cparams.ctx_other != nullptr);
+-        const auto * model_other = llama_get_model(cparams.ctx_other);
+-
+-        GGML_ASSERT(model_other->tok_embd != nullptr && "DFlash decoder requires the target model's token embeddings");
+-        tok_embd = model_other->tok_embd;
+-    }
++    // tok_embd and lm_head from the target model (shared via ctx_other)
++    const dflash_shared_head sh = dflash_resolve_shared_head(model, cparams, "DFlash decoder");
+ 
+     auto inp = std::make_unique<llm_graph_input_embd>(n_embd);
+ 
+@@ -956,7 +1009,7 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+ 
+     ggml_tensor * inp_tokens = inp->tokens;
+ 
+-    ggml_tensor * inpL = ggml_get_rows(ctx0, tok_embd, inp->tokens);
++    ggml_tensor * inpL = dflash_embd_rows(ctx0, sh, inp->tokens);
+     cb(inpL, "inp_noise_embd", -1);
+ 
+     // the DFly chain conditions position 1 on the block anchor's embedding; reuse the rows
+@@ -1098,18 +1151,7 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+ 
+     res->t_embd = cur;
+ 
+-    // lm_head from the target model (shared via ctx_other)
+-    auto * output   = model.output;
+-    auto * output_s = model.output_s;
+-    if (output == nullptr) {
+-        GGML_ASSERT(cparams.ctx_other != nullptr);
+-        const auto * model_other = llama_get_model(cparams.ctx_other);
+-        GGML_ASSERT(model_other->output != nullptr && "DFlash decoder requires the target model's output projection");
+-        output   = model_other->output;
+-        output_s = model_other->output_s;
+-    }
+-
+-    cur = build_lora_mm(output, cur, output_s);
++    cur = build_lora_mm(sh.output, dflash_head_input(ctx0, sh, cur), sh.output_s);
+ 
+     // DFlash2 feeds these logits to the selector, so they need the target's output
+     // transforms; DFlash1 and DSpark read them through the sampler instead
+@@ -1213,15 +1255,8 @@ llama_model_dflash::graph_dsv4::graph_dsv4(const llama_model & model, const llm_
+         return;
+     }
+ 
+-    // tok_embd from the target model (shared via ctx_other)
+-    auto * tok_embd = model.tok_embd;
+-    if (tok_embd == nullptr) {
+-        GGML_ASSERT(cparams.ctx_other != nullptr);
+-        const auto * model_other = llama_get_model(cparams.ctx_other);
+-
+-        GGML_ASSERT(model_other->tok_embd != nullptr && "DSpark decoder requires the target model's token embeddings");
+-        tok_embd = model_other->tok_embd;
+-    }
++    // tok_embd and lm_head from the target model (shared via ctx_other)
++    const dflash_shared_head sh = dflash_resolve_shared_head(model, cparams, "DSpark decoder");
+ 
+     auto inp = std::make_unique<llm_graph_input_embd>(n_embd);
+ 
+@@ -1230,7 +1265,7 @@ llama_model_dflash::graph_dsv4::graph_dsv4(const llama_model & model, const llm_
+ 
+     ggml_tensor * inp_tokens = inp->tokens;
+ 
+-    ggml_tensor * inpL = ggml_get_rows(ctx0, tok_embd, inp->tokens);
++    ggml_tensor * inpL = dflash_embd_rows(ctx0, sh, inp->tokens);
+     cb(inpL, "inp_noise_embd", -1);
+     // the DSV4 hyper-connection backbone replicates inpL across hc lanes below, so
+     // the log-SNR term would need to be added per lane. No such checkpoint exists
+@@ -1314,18 +1349,7 @@ llama_model_dflash::graph_dsv4::graph_dsv4(const llama_model & model, const llm_
+     cur = build_norm(cur, model.output_norm, nullptr, LLM_NORM_RMS, -1);
+     cb(cur, "result_norm", -1);
+ 
+-    // lm_head from the target model (shared via ctx_other)
+-    auto * output   = model.output;
+-    auto * output_s = model.output_s;
+-    if (output == nullptr) {
+-        GGML_ASSERT(cparams.ctx_other != nullptr);
+-        const auto * model_other = llama_get_model(cparams.ctx_other);
+-        GGML_ASSERT(model_other->output != nullptr && "DSpark decoder requires the target model's output projection");
+-        output   = model_other->output;
+-        output_s = model_other->output_s;
+-    }
+-
+-    cur = build_lora_mm(output, cur, output_s);
++    cur = build_lora_mm(sh.output, dflash_head_input(ctx0, sh, cur), sh.output_s);
+     cb(cur, "result_output", -1);
+     res->t_logits = cur;
+ 
+-- 
+2.50.1 (Apple Git-155)
+
