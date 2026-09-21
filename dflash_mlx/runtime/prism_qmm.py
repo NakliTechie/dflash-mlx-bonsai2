@@ -6,7 +6,8 @@ that, for exactly-8-row inputs, casts activations to fp16 and (mode `v4b`) runs 
 kernel: one SIMD-group owns 8 output rows, lanes dequantize two packed words per step into a threadgroup half
 tile, four transposed simdgroup_loads + four MMAs against X tiles from device memory, float accumulators.
 Measured on Ternary-Bonsai-2-27B (M4 Pro): verify_block(8) 438 ms -> 174 ms (fp16 cast) -> 136 ms (v4b),
-argmax identical. See LocalMind/plan/2026-09-18-dflash-bonsai2-plan.md.
+argmax identical. Mode `v7` (default since 2026-09-21) is the register-only kernel below, 1.30x v4b per shape.
+See LocalMind/plan/2026-09-18-dflash-bonsai2-plan.md.
 """
 from __future__ import annotations
 
@@ -89,9 +90,140 @@ def qmm_m8(x2d: mx.array, w: mx.array, scales: mx.array, biases: mx.array) -> mx
                          output_shapes=[(8, N)], output_dtypes=[mx.float32])[0]
 
 
+# ---- v7: register-only, X pre-transposed, row sums precomputed (lab/qmm_smallm_v7.py, NT=1) ----
+# C[n x m] = W[n x k] * X^T[k x m]. Probed simdgroup 8x8 layout: lane holds row ((lane>>1)&3)|((lane>>4)&1)<<2,
+# cols (lane&1)*2|((lane>>3)&1)<<2 (+1), so each lane dequantizes its 2 consecutive k straight into
+# A.thread_elements() from one packed word: no threadgroup memory, no barriers. Magic-number dequant
+# (0x4000 | q<<8 = 2 + q/2); per-128-group accumulator scaled by 2*s[n,g] in registers; bias and offset from
+# row sums: out = sum_g 2 s P'_g + (b - 4 s) R_g. Batched microbench (M4 Pro): 1.30x v4b on every shape.
+_SRC_V7 = r"""
+    const uint lane = thread_index_in_simdgroup;
+    const uint sg   = simdgroup_index_in_threadgroup;
+    const uint n0   = (threadgroup_position_in_grid.x * SGS + sg) * 8;
+    if (n0 >= N) return;
+    const uint words = K / 16;
+    const uint groups = K / 128;
+    const uint nl = ((lane >> 1) & 3) | (((lane >> 4) & 1) << 2);
+    const uint cl = ((lane & 1) << 1) | (((lane >> 3) & 1) << 2);
+    const uint sh0 = cl * 2u, sh1 = (cl + 8u) * 2u;
+    const device uint* wrow = w + (size_t)(n0 + nl) * words;
+    const device T* srow = scales + (size_t)(n0 + nl) * groups;
+    const device T* brow = biases + (size_t)(n0 + nl) * groups;
+    float v0 = 0.0f, v1 = 0.0f;
+    for (uint g = 0; g < groups; ++g) {
+        simdgroup_float8x8 acc(0.0f);
+        const device T* xb = xt + (size_t)g * 128 * 8;
+        const device uint* wp = wrow + g * 8;
+        #pragma unroll
+        for (uint j = 0; j < 8; ++j) {
+            simdgroup_half8x8 A0, A1, B0, B1;
+            simdgroup_load(B0, xb + (j * 16) * 8, 8);
+            simdgroup_load(B1, xb + (j * 16 + 8) * 8, 8);
+            const uint p = wp[j];
+            thread auto& e0 = A0.thread_elements(); thread auto& e1 = A1.thread_elements();
+            e0[0] = as_type<half>(ushort(0x4000u | (((p >> sh0) & 3u) << 8))); e0[1] = as_type<half>(ushort(0x4000u | (((p >> (sh0 + 2u)) & 3u) << 8)));
+            e1[0] = as_type<half>(ushort(0x4000u | (((p >> sh1) & 3u) << 8))); e1[1] = as_type<half>(ushort(0x4000u | (((p >> (sh1 + 2u)) & 3u) << 8)));
+            simdgroup_multiply_accumulate(acc, A0, B0, acc);
+            simdgroup_multiply_accumulate(acc, A1, B1, acc);
+        }
+        thread auto& c = acc.thread_elements();
+        const float R0 = rs[(size_t)cl * groups + g], R1 = rs[(size_t)(cl + 1) * groups + g];
+        const float s = float(srow[g]), b = float(brow[g]);
+        v0 += 2.0f * s * c[0] + (b - 4.0f * s) * R0;
+        v1 += 2.0f * s * c[1] + (b - 4.0f * s) * R1;
+    }
+    out[(size_t)cl * N + n0 + nl] = v0;
+    out[(size_t)(cl + 1) * N + n0 + nl] = v1;
+"""
+_kernel_v7 = None
+_V7_SGS = 4
+
+
+def _get_kernel_v7():
+    global _kernel_v7
+    if _kernel_v7 is None:
+        _kernel_v7 = mx.fast.metal_kernel(name="prism_qmm_m8_v7", input_names=["xt", "rs", "w", "scales", "biases"],
+                                          output_names=["out"], source=_SRC_V7, header=_HDR)
+    return _kernel_v7
+
+
+def qmm_m8_v7(x2d: mx.array, w: mx.array, scales: mx.array, biases: mx.array) -> mx.array:
+    """x2d: [8, K] fp16; w uint32 [N, K/16]; scales/biases fp16 [N, K/128]. Returns float32 [8, N]."""
+    M, K = x2d.shape
+    N = w.shape[0]
+    if M != 8 or K % 128 != 0 or N % (8 * _V7_SGS) != 0 or x2d.dtype != mx.float16:
+        raise ValueError(f"qmm_m8_v7 needs [8, K%128==0] fp16 input and N%32==0, got M={M} K={K} N={N} {x2d.dtype}")
+    xt = mx.contiguous(x2d.T)
+    rs = x2d.reshape(8, K // 128, 128).astype(mx.float32).sum(-1)
+    return _get_kernel_v7()(inputs=[xt, rs, w, scales, biases], template=[("T", mx.float16), ("N", N), ("K", K), ("SGS", _V7_SGS)],
+                            grid=(N // (8 * _V7_SGS) * 32 * _V7_SGS, 1, 1), threadgroup=(32 * _V7_SGS, 1, 1),
+                            output_shapes=[(8, N)], output_dtypes=[mx.float32])[0]
+
+
+# ---- fused input prep for v7: (x * signs) -> Hadamard(1024) -> fp16 -> transpose [K, 8] + per-128-group row sums,
+# one kernel instead of ~6 ops; bit-exact vs the op sequence (lab/prep_kernel.py), 2.5x faster per call.
+_SRC_PREP = r"""
+    const uint tid = thread_position_in_threadgroup.x;
+    const uint lane = thread_index_in_simdgroup;
+    const uint sg = simdgroup_index_in_threadgroup;
+    const uint m = threadgroup_position_in_grid.y;
+    const uint blk = threadgroup_position_in_grid.x;
+    const uint k0 = blk * 1024;
+    threadgroup float buf[1024];
+    #pragma unroll
+    for (uint i = 0; i < 4; ++i) { const uint k = tid * 4 + i; buf[k] = float(x[(size_t)m * K + k0 + k]) * float(signs[k0 + k]); }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint h = 1; h < 1024; h <<= 1) {
+        #pragma unroll
+        for (uint r = 0; r < 2; ++r) {
+            const uint p = tid + r * 256;
+            const uint i = (p / h) * (2 * h) + (p % h);
+            const float a = buf[i], b = buf[i + h];
+            buf[i] = a + b; buf[i + h] = a - b;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float scale = 1.0f / sqrt(1024.0f);
+    float local = 0.0f;
+    #pragma unroll
+    for (uint i = 0; i < 4; ++i) {
+        const uint k = tid * 4 + i;
+        const half hv = half(buf[k] * scale);
+        xt[(size_t)(k0 + k) * 8 + m] = hv;
+        local += float(hv);
+    }
+    const float rsum = simd_sum(local);
+    if (lane == 0) rs[(size_t)m * (K / 128) + blk * 8 + sg] = rsum;
+"""
+_kernel_prep = None
+
+
+def _get_kernel_prep():
+    global _kernel_prep
+    if _kernel_prep is None:
+        _kernel_prep = mx.fast.metal_kernel(name="prism_verify_prep", input_names=["x", "signs"], output_names=["xt", "rs"],
+                                            source=_SRC_PREP, header="#include <metal_simdgroup>\nusing namespace metal;\n")
+    return _kernel_prep
+
+
+def verify_prep(x2d: mx.array, signs: mx.array) -> tuple[mx.array, mx.array]:
+    """x2d [8, K] (fp16/fp32, K % 1024 == 0) -> (xt fp16 [K, 8], rs fp32 [8, K/128]) with the 1024-block Hadamard applied."""
+    K = x2d.shape[1]
+    return tuple(_get_kernel_prep()(inputs=[x2d, signs], template=[("K", K)], grid=(K // 1024 * 256, 8, 1), threadgroup=(256, 1, 1),
+                                    output_shapes=[(K, 8), (8, K // 128)], output_dtypes=[mx.float16, mx.float32]))
+
+
+def qmm_m8_v7_prepped(xt: mx.array, rs: mx.array, w: mx.array, scales: mx.array, biases: mx.array) -> mx.array:
+    K, N = xt.shape[0], w.shape[0]
+    return _get_kernel_v7()(inputs=[xt, rs, w, scales, biases], template=[("T", mx.float16), ("N", N), ("K", K), ("SGS", _V7_SGS)],
+                            grid=(N // (8 * _V7_SGS) * 32 * _V7_SGS, 1, 1), threadgroup=(32 * _V7_SGS, 1, 1),
+                            output_shapes=[(8, N)], output_dtypes=[mx.float32])[0]
+
+
 def install_prism_verify_linears(packed_cls: Any, fwht: Any, mode: str | None = None) -> str:
-    """Patch `Packed.__call__` for 8-row inputs. mode: 'v4b' (default), 'fp16' (cast only), 'off'."""
-    mode = (mode or os.environ.get("DFLASH_PRISM_VERIFY", "v4b")).lower()
+    """Patch `Packed.__call__` for 8-row inputs. mode: 'v7' (default), 'v4b', 'fp16' (cast only), 'off'."""
+    mode = (mode or os.environ.get("DFLASH_PRISM_VERIFY", "v7")).lower()
+    kernel = qmm_m8_v7 if mode == "v7" else qmm_m8
     if mode == "off" or getattr(packed_cls, "_dflash_verify_mode", None) == mode:
         return mode
     stock_call = getattr(packed_cls, "_dflash_stock_call", None) or packed_cls.__call__
@@ -103,14 +235,18 @@ def install_prism_verify_linears(packed_cls: Any, fwht: Any, mode: str | None = 
         rows = 1
         for d in shape[:-1]:
             rows *= d
-        if mode == "fp16" or rows != 8 or self.weight.shape[0] % 64 != 0:
+        if mode == "fp16" or rows != 8 or self.weight.shape[0] % 64 != 0:   # both kernels need N % 64 == 0 (v7: N % 32)
             # 1 row: 52 -> 46 ms per decode step; 2..7 rows (adaptive verify shortens blocks) and >8 rows:
             # the fp16 cast alone is 2.5x on the verify block. Argmax unchanged in every measured case.
             return stock_call(self, x.astype(mx.float16)).astype(x.dtype)
         x2 = x.reshape(rows, shape[-1])
+        if mode == "v7" and self.block == 1024 and self.signs is not None and shape[-1] % 1024 == 0:
+            xt, rs = verify_prep(x2, self.signs)                       # fused sign * Hadamard * transpose + row sums
+            out = qmm_m8_v7_prepped(xt, rs, self.weight, self.scales, self.biases)
+            return out.astype(x.dtype).reshape(*shape[:-1], -1)
         if self.block:
             x2 = fwht(x2, self.block, self.signs)
-        out = qmm_m8(x2.astype(mx.float16), self.weight, self.scales, self.biases)
+        out = kernel(x2.astype(mx.float16), self.weight, self.scales, self.biases)
         return out.astype(x.dtype).reshape(*shape[:-1], -1)
 
     packed_cls._dflash_stock_call = stock_call
