@@ -1,0 +1,100 @@
+16:55:35 loaded init /home/ubuntu/adapter/adapter_final.safetensors
+16:55:35 drafter block 8 mask 248070 H 5120 | trainable 1924.4 M (full)
+16:55:41 pack embed (248320, 5120) block 1024 | lm_head (248320, 5120) block 1024
+16:55:42 111 shards (2160000 train tokens in 108 shards), eval 40 docs from the last 3 shard(s)
+16:55:44 [eval init] blocks 1342 | per-position match [0.677, 0.495, 0.384, 0.338, 0.291, 0.271, 0.236] | tokens/cycle 2.95 (ratio 0.279)
+16:55:44 train: ~4218 steps (1.0 epoch(s), stride 32, batch 16, lr 2e-05)
+16:55:55 step 50/4218 loss 2.496 ema 3.111 lr 1.00e-05 | 0.23 s/step | ETA 16 min | mem 23.7 GB
+16:56:04 step 100/4218 loss 4.500 ema 3.665 lr 2.00e-05 | 0.20 s/step | ETA 14 min | mem 23.7 GB
+16:56:13 step 150/4218 loss 3.170 ema 3.731 lr 1.99e-05 | 0.19 s/step | ETA 13 min | mem 23.7 GB
+16:56:22 step 200/4218 loss 4.484 ema 3.502 lr 1.99e-05 | 0.19 s/step | ETA 13 min | mem 23.7 GB
+16:56:33 step 250/4218 loss 2.199 ema 3.495 lr 1.98e-05 | 0.19 s/step | ETA 13 min | mem 23.7 GB
+16:56:43 step 300/4218 loss 4.628 ema 3.654 lr 1.98e-05 | 0.20 s/step | ETA 13 min | mem 23.7 GB
+16:56:54 step 350/4218 loss 3.026 ema 3.709 lr 1.97e-05 | 0.20 s/step | ETA 13 min | mem 23.7 GB
+16:57:03 step 400/4218 loss 3.681 ema 3.376 lr 1.96e-05 | 0.20 s/step | ETA 13 min | mem 23.7 GB
+16:57:12 step 450/4218 loss 0.818 ema 3.495 lr 1.95e-05 | 0.19 s/step | ETA 12 min | mem 23.7 GB
+16:57:22 step 500/4218 loss 4.462 ema 3.309 lr 1.94e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:57:27 saved ckpt 81 tensors
+16:57:36 step 550/4218 loss 2.917 ema 3.283 lr 1.93e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:57:45 step 600/4218 loss 4.421 ema 2.973 lr 1.91e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:57:54 step 650/4218 loss 4.821 ema 3.142 lr 1.90e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:58:04 step 700/4218 loss 2.384 ema 3.282 lr 1.88e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:58:16 step 750/4218 loss 1.448 ema 3.455 lr 1.86e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:58:26 step 800/4218 loss 2.655 ema 3.717 lr 1.85e-05 | 0.20 s/step | ETA 12 min | mem 23.7 GB
+16:58:35 step 850/4218 loss 1.104 ema 3.713 lr 1.83e-05 | 0.20 s/step | ETA 11 min | mem 23.7 GB
+16:58:45 step 900/4218 loss 3.613 ema 3.821 lr 1.81e-05 | 0.20 s/step | ETA 11 min | mem 23.7 GB
+16:58:54 step 950/4218 loss 0.638 ema 3.561 lr 1.78e-05 | 0.20 s/step | ETA 11 min | mem 23.7 GB
+16:59:04 step 1000/4218 loss 3.879 ema 3.789 lr 1.76e-05 | 0.20 s/step | ETA 11 min | mem 23.7 GB
+16:59:25 saved ckpt 81 tensors
+16:59:36 step 1050/4218 loss 2.386 ema 3.688 lr 1.74e-05 | 0.22 s/step | ETA 12 min | mem 23.7 GB
+16:59:46 step 1100/4218 loss 2.870 ema 3.430 lr 1.71e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+16:59:58 step 1150/4218 loss 4.565 ema 3.711 lr 1.69e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+17:00:08 step 1200/4218 loss 2.214 ema 3.926 lr 1.66e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+17:00:19 step 1250/4218 loss 3.015 ema 3.884 lr 1.64e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+17:00:31 step 1300/4218 loss 3.775 ema 3.582 lr 1.61e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+17:00:41 step 1350/4218 loss 4.330 ema 3.797 lr 1.58e-05 | 0.22 s/step | ETA 11 min | mem 23.7 GB
+17:00:52 step 1400/4218 loss 4.816 ema 3.898 lr 1.55e-05 | 0.22 s/step | ETA 10 min | mem 23.7 GB
+17:01:02 step 1450/4218 loss 2.371 ema 3.968 lr 1.52e-05 | 0.22 s/step | ETA 10 min | mem 23.7 GB
+17:01:14 step 1500/4218 loss 3.067 ema 3.718 lr 1.49e-05 | 0.22 s/step | ETA 10 min | mem 23.7 GB
+17:01:35 saved ckpt 81 tensors
+17:01:45 step 1550/4218 loss 4.689 ema 3.601 lr 1.46e-05 | 0.23 s/step | ETA 10 min | mem 23.7 GB
+17:01:56 step 1600/4218 loss 4.315 ema 3.568 lr 1.43e-05 | 0.23 s/step | ETA 10 min | mem 23.7 GB
+17:02:08 step 1650/4218 loss 2.116 ema 3.618 lr 1.40e-05 | 0.23 s/step | ETA 10 min | mem 23.7 GB
+17:02:18 step 1700/4218 loss 4.059 ema 3.820 lr 1.37e-05 | 0.23 s/step | ETA 10 min | mem 23.7 GB
+17:02:28 step 1750/4218 loss 4.039 ema 3.704 lr 1.34e-05 | 0.23 s/step | ETA 9 min | mem 23.7 GB
+17:02:39 step 1800/4218 loss 2.997 ema 3.588 lr 1.31e-05 | 0.23 s/step | ETA 9 min | mem 23.7 GB
+17:02:51 step 1850/4218 loss 2.365 ema 3.671 lr 1.27e-05 | 0.23 s/step | ETA 9 min | mem 23.7 GB
+17:03:01 step 1900/4218 loss 4.099 ema 3.763 lr 1.24e-05 | 0.23 s/step | ETA 9 min | mem 23.7 GB
+17:03:11 step 1950/4218 loss 3.249 ema 3.545 lr 1.21e-05 | 0.23 s/step | ETA 9 min | mem 23.7 GB
+17:03:22 step 2000/4218 loss 2.316 ema 3.511 lr 1.17e-05 | 0.23 s/step | ETA 8 min | mem 23.7 GB
+17:03:42 saved ckpt 81 tensors
+17:03:55 step 2050/4218 loss 2.798 ema 3.498 lr 1.14e-05 | 0.24 s/step | ETA 9 min | mem 23.7 GB
+17:04:05 step 2100/4218 loss 4.926 ema 3.607 lr 1.11e-05 | 0.24 s/step | ETA 8 min | mem 23.7 GB
+17:04:15 step 2150/4218 loss 2.394 ema 3.924 lr 1.07e-05 | 0.24 s/step | ETA 8 min | mem 23.7 GB
+17:04:28 step 2200/4218 loss 1.576 ema 3.362 lr 1.04e-05 | 0.24 s/step | ETA 8 min | mem 23.7 GB
+17:04:38 step 2250/4218 loss 0.824 ema 3.384 lr 1.01e-05 | 0.24 s/step | ETA 8 min | mem 23.7 GB
+17:04:48 step 2300/4218 loss 1.958 ema 3.850 lr 9.73e-06 | 0.24 s/step | ETA 8 min | mem 23.7 GB
+17:05:00 step 2350/4218 loss 3.296 ema 3.764 lr 9.40e-06 | 0.24 s/step | ETA 7 min | mem 23.7 GB
+17:05:09 step 2400/4218 loss 2.126 ema 3.585 lr 9.07e-06 | 0.24 s/step | ETA 7 min | mem 23.7 GB
+17:05:20 step 2450/4218 loss 4.515 ema 3.415 lr 8.75e-06 | 0.23 s/step | ETA 7 min | mem 23.7 GB
+17:05:30 step 2500/4218 loss 4.276 ema 3.455 lr 8.42e-06 | 0.23 s/step | ETA 7 min | mem 23.7 GB
+17:05:51 saved ckpt 81 tensors
+17:06:04 step 2550/4218 loss 3.878 ema 3.428 lr 8.10e-06 | 0.24 s/step | ETA 7 min | mem 23.7 GB
+17:06:14 step 2600/4218 loss 4.640 ema 3.568 lr 7.79e-06 | 0.24 s/step | ETA 7 min | mem 23.7 GB
+17:06:24 step 2650/4218 loss 4.600 ema 3.688 lr 7.48e-06 | 0.24 s/step | ETA 6 min | mem 23.7 GB
+17:06:36 step 2700/4218 loss 3.187 ema 3.549 lr 7.17e-06 | 0.24 s/step | ETA 6 min | mem 23.7 GB
+17:06:47 step 2750/4218 loss 4.335 ema 3.836 lr 6.87e-06 | 0.24 s/step | ETA 6 min | mem 23.7 GB
+17:06:57 step 2800/4218 loss 1.665 ema 3.274 lr 6.58e-06 | 0.24 s/step | ETA 6 min | mem 23.7 GB
+17:07:07 step 2850/4218 loss 2.876 ema 3.129 lr 6.29e-06 | 0.24 s/step | ETA 5 min | mem 23.7 GB
+17:07:20 step 2900/4218 loss 3.001 ema 3.389 lr 6.00e-06 | 0.24 s/step | ETA 5 min | mem 23.7 GB
+17:07:30 step 2950/4218 loss 1.791 ema 3.332 lr 5.73e-06 | 0.24 s/step | ETA 5 min | mem 23.7 GB
+17:07:40 step 3000/4218 loss 4.603 ema 3.576 lr 5.46e-06 | 0.24 s/step | ETA 5 min | mem 23.7 GB
+17:08:01 saved ckpt 81 tensors
+17:08:14 step 3050/4218 loss 4.496 ema 3.646 lr 5.20e-06 | 0.25 s/step | ETA 5 min | mem 23.7 GB
+17:08:24 step 3100/4218 loss 4.220 ema 3.669 lr 4.95e-06 | 0.25 s/step | ETA 5 min | mem 23.7 GB
+17:08:34 step 3150/4218 loss 3.673 ema 3.692 lr 4.71e-06 | 0.24 s/step | ETA 4 min | mem 23.7 GB
+17:08:45 step 3200/4218 loss 4.753 ema 3.699 lr 4.47e-06 | 0.24 s/step | ETA 4 min | mem 23.7 GB
+17:08:57 step 3250/4218 loss 4.600 ema 3.616 lr 4.24e-06 | 0.24 s/step | ETA 4 min | mem 23.7 GB
+17:09:07 step 3300/4218 loss 3.248 ema 3.615 lr 4.03e-06 | 0.24 s/step | ETA 4 min | mem 23.7 GB
+17:09:17 step 3350/4218 loss 4.733 ema 3.645 lr 3.82e-06 | 0.24 s/step | ETA 4 min | mem 23.7 GB
+17:09:30 step 3400/4218 loss 4.546 ema 3.647 lr 3.62e-06 | 0.24 s/step | ETA 3 min | mem 23.7 GB
+17:09:40 step 3450/4218 loss 4.211 ema 3.764 lr 3.44e-06 | 0.24 s/step | ETA 3 min | mem 23.7 GB
+17:09:50 step 3500/4218 loss 3.422 ema 3.442 lr 3.26e-06 | 0.24 s/step | ETA 3 min | mem 23.7 GB
+17:10:11 saved ckpt 81 tensors
+17:10:22 step 3550/4218 loss 3.289 ema 3.250 lr 3.09e-06 | 0.25 s/step | ETA 3 min | mem 23.7 GB
+17:10:34 step 3600/4218 loss 1.539 ema 3.344 lr 2.94e-06 | 0.25 s/step | ETA 3 min | mem 23.7 GB
+17:10:44 step 3650/4218 loss 4.414 ema 3.374 lr 2.80e-06 | 0.25 s/step | ETA 2 min | mem 23.7 GB
+17:10:55 step 3700/4218 loss 2.385 ema 3.448 lr 2.66e-06 | 0.25 s/step | ETA 2 min | mem 23.7 GB
+17:11:05 step 3750/4218 loss 4.343 ema 3.140 lr 2.54e-06 | 0.25 s/step | ETA 2 min | mem 23.7 GB
+17:11:17 step 3800/4218 loss 2.128 ema 3.224 lr 2.43e-06 | 0.25 s/step | ETA 2 min | mem 23.7 GB
+17:11:28 step 3850/4218 loss 5.504 ema 3.554 lr 2.34e-06 | 0.25 s/step | ETA 2 min | mem 23.7 GB
+17:11:38 step 3900/4218 loss 3.401 ema 3.471 lr 2.25e-06 | 0.24 s/step | ETA 1 min | mem 23.7 GB
+17:11:49 step 3950/4218 loss 1.418 ema 3.353 lr 2.18e-06 | 0.24 s/step | ETA 1 min | mem 23.7 GB
+17:11:59 step 4000/4218 loss 5.148 ema 3.361 lr 2.12e-06 | 0.24 s/step | ETA 1 min | mem 23.7 GB
+17:12:20 saved ckpt 81 tensors
+17:12:31 step 4050/4218 loss 2.928 ema 3.261 lr 2.07e-06 | 0.25 s/step | ETA 1 min | mem 23.7 GB
+17:12:39 step 4100/4218 loss 4.285 ema 3.570 lr 2.04e-06 | 0.25 s/step | ETA 0 min | mem 23.7 GB
+17:12:51 step 4150/4218 loss 1.492 ema 3.519 lr 2.01e-06 | 0.25 s/step | ETA 0 min | mem 23.7 GB
+17:13:02 step 4200/4218 loss 0.590 ema 3.612 lr 2.00e-06 | 0.25 s/step | ETA 0 min | mem 23.7 GB
+17:13:09 saved final 81 tensors
+17:13:12 [eval after] blocks 1342 | per-position match [0.707, 0.505, 0.396, 0.349, 0.308, 0.273, 0.246] | tokens/cycle 3.00 (ratio 0.286)
