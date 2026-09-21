@@ -1,0 +1,2 @@
+<!doctype html><meta charset="utf-8"><title>DFlash2 runner</title><body style="font:13px monospace;padding:16px"><h3>DFlash2 speculative runner — stage-2 step 4</h3><pre id="s">not started</pre>
+<script type="module">const s = document.getElementById('s'); await import('./runner.js?v=' + Date.now()); setInterval(() => { const V = window.__dr; s.textContent = JSON.stringify({ state: V.state, prog: V.prog, partial: V.partial, results: V.results, error: V.error }, null, 1); }, 1000);</script>

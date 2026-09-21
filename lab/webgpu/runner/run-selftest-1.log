@@ -1,0 +1,13 @@
+23:06:07 {"state":"load-target","prog":"tokenizer /"}
+23:06:10 {"state":"load-target","prog":"weights 1834766336/5935527936"}
+23:06:13 {"state":"load-target","prog":"weights 3801530112/5935527936"}
+23:06:16 {"state":"load-target","prog":"weights 5580597236/5935527936"}
+23:06:19 {"state":"load-target","prog":"weights 342/449"}
+23:06:22 {"state":"load-target","prog":"weights /"}
+[console] target loaded; eos 248046
+[console] weights: 79 tensors, 3.60 GB on GPU, 6250 ms (dequant 4986 ms)
+[console] selftest features(last chunk, engine vs MLX target): maxAbs 9.94e-2 rmsRel 2.17e-3
+[console] selftest layer0_ctx_k: maxAbs 3.76e-1 rmsRel 3.12e-2
+[console] selftest noise_embedding (engine LlamaEmbed+invHadamard vs MLX Packed): maxAbs 1.53e-5 rmsRel 2.07e-4
+[console] selftest: anchor 71093 (ref 71093) argmax [12305,198,727,9637,3773,1104,25] ref [12305,198,727,9637,3773,1104,25] selected [12305,198,727,9637,3773,1104,25] ref [12305,198,727,9637,3773,1104,25] match=true text "python\ndef reverse_string(s:"
+RESULTS {"gpu":{"f16":true,"tsq":true,"arch":"metal-3"},"prompt":{"name":"oracle","tokens":27},"drafter":{"weightBytes":3595064320,"tensors":79,"loadMs":6250.399999976158,"dequantMs":4985.900000035763},"embedRoute":"packed q4_0","results":{"selftest":{"anchor":71093,"anchorRef":71093,"anchorOk":true,"prefillMs":2287.3,"features":{"n":76800,"maxAbs":0.09936904907226562,"rmsRel":0.002168290892328518},"ctxK":{"n":27648,"maxAbs":0.37578701972961426,"rmsRel":0.031219403639848053},"noise":{"n":40960,"maxAbs":0.0000152587890625,"rmsRel":0.00020682786434804505},"argmax":[12305,198,727,9637,3773,1104,25],"argmaxRef":[12305,198,727,9637,3773,1104,25],"argmaxAgree":7,"selected":[12305,198,727,9637,3773,1104,25],"selectedRef":[12305,198,727,9637,3773,1104,25],"selectedMatch":true,"draftMs":366.40000000596046,"headMs":364.30000001192093,"selText":"python\ndef reverse_string(s:"}},"error":null}

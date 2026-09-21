@@ -268,11 +268,33 @@ export class Drafter {
     this.opLabel = null; this.end(pass);
     return { C, ctxPos0, ctx, fcOut, layers, F };
   }
+  // Stage A' (incremental): a projected-context cache with a fixed capacity, appended a few rows at a time from a GPU
+  // feature binding ({buffer, offset, size}: f32 [rows, 5H], e.g. the engine's dspark.features scratch). Positions are
+  // absolute (row r of the context sits at position r); no eviction (capacity <= 3064 so the attention kernel fits).
+  createContext(capacity, ctxPos0 = 0) {
+    const { H, NKV, HD, BLOCK } = CFG; if (capacity + BLOCK > 3072) throw new Error('context capacity + block > 3072 keys');
+    const layers = []; for (let i = 0; i < CFG.L; ++i) layers.push({ k: this.buf(capacity * NKV * HD, undefined, `ctx_k${i}`), v: this.buf(capacity * NKV * HD, undefined, `ctx_v${i}`) });
+    return { C: 0, capacity, ctxPos0, layers, fcOut: this.buf(BLOCK * H, undefined, 'fc'), ctx: this.buf(BLOCK * H, undefined, 'draft_context'), kRaw: this.buf(BLOCK * NKV * HD, undefined, 'k_raw'), incremental: true };
+  }
+  appendContext(cache, feat, rows) {
+    const { H, NKV, HD, BLOCK } = CFG; if (rows < 1 || rows > BLOCK) throw new Error('appendContext: 1..8 rows'); if (cache.C + rows > cache.capacity) throw new Error('context capacity exceeded');
+    const rowBytes = NKV * HD * 4; const at = (b) => ({ buffer: b, offset: cache.C * rowBytes, size: rows * rowBytes });
+    const pass = this.begin();
+    this.opLabel = 'ctx.fc'; this.gemm(pass, feat, this.w['fc.weight'], cache.fcOut, rows, 5 * H, H);
+    this.rmsnorm(pass, cache.fcOut, this.w['enc.output_norm.weight'], cache.ctx, rows, H);
+    for (let i = 0; i < CFG.L; ++i) {
+      this.gemm(pass, cache.ctx, this.w[`blk.${i}.attn_k.weight`], cache.kRaw, rows, H, NKV * HD);
+      this.rmsnorm(pass, cache.kRaw, this.w[`blk.${i}.attn_k_norm.weight`], at(cache.layers[i].k), rows * NKV, HD);
+      this.rope(pass, at(cache.layers[i].k), rows, NKV, cache.ctxPos0 + cache.C);
+      this.gemm(pass, cache.ctx, this.w[`blk.${i}.attn_v.weight`], at(cache.layers[i].v), rows, H, NKV * HD);
+    }
+    this.opLabel = null; this.end(pass); cache.C += rows;
+  }
   // Stage B: one draft step over the 8 block rows. noise f32 [L, H] (raw target embed; scaled here by embedScale).
   // Returns the GPU buffers of every stage (for readback) + the selector-projected hidden.
   draftStep(cache, noise, embedScale = 1.0) {
     const { H, I, NH, NKV, HD, BLOCK: L } = CFG; const dev = this.device; const C = cache.C; const G = H / CFG.GROUP;
-    const N = this.upload(noise, 'noise'); const h0 = this.buf(L * H, undefined, 'h0');
+    const N = noise && noise.buffer ? noise : this.upload(noise, 'noise'); const h0 = this.buf(L * H, undefined, 'h0');
     const st = { layers: [] };
     const pass = this.begin();
     this.scale(pass, N, h0, L * H, embedScale);
