@@ -1,0 +1,347 @@
+{
+ "prompt": "<|im_start|>user\nWrite a Python function that reverses a string, with a docstring.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+ "weights": "bf16",
+ "stages": {
+  "context_features": {
+   "shape": [
+    27,
+    25600
+   ],
+   "dtype": "float32"
+  },
+  "draft_context": {
+   "shape": [
+    27,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "noise_embedding": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer0_attn_in": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer0_attn_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer0_ctx_k": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer0_ctx_v": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer0_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer1_attn_in": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer1_attn_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer1_ctx_k": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer1_ctx_v": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer1_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer2_attn_in": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer2_attn_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer2_ctx_k": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer2_ctx_v": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer2_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer3_attn_in": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer3_attn_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer3_ctx_k": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer3_ctx_v": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer3_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer4_attn_in": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer4_attn_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "layer4_ctx_k": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer4_ctx_v": {
+   "shape": [
+    27,
+    8,
+    128
+   ],
+   "dtype": "float32"
+  },
+  "layer4_out": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "final_hidden": {
+   "shape": [
+    8,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "cand_ids": {
+   "shape": [
+    7,
+    16
+   ],
+   "dtype": "int32"
+  },
+  "logits_top16": {
+   "shape": [
+    7,
+    16
+   ],
+   "dtype": "float32"
+  },
+  "argmax": {
+   "shape": [
+    7
+   ],
+   "dtype": "int32"
+  },
+  "head_rows": {
+   "shape": [
+    7,
+    16,
+    5120
+   ],
+   "dtype": "float32"
+  },
+  "sel_hidden": {
+   "shape": [
+    7,
+    256
+   ],
+   "dtype": "float32"
+  },
+  "sel_edges": {
+   "shape": [
+    7,
+    16
+   ],
+   "dtype": "float32"
+  },
+  "selected": {
+   "shape": [
+    7
+   ],
+   "dtype": "int32"
+  }
+ },
+ "prompt_ids": [
+  248045,
+  846,
+  198,
+  7734,
+  264,
+  12654,
+  709,
+  421,
+  16915,
+  287,
+  264,
+  886,
+  11,
+  440,
+  264,
+  4479,
+  889,
+  13,
+  248046,
+  198,
+  248045,
+  74455,
+  198,
+  248068,
+  271,
+  248069,
+  271
+ ],
+ "C": 27,
+ "H": 5120,
+ "anchor": 71093,
+ "anchor_text": "```",
+ "mask_token_id": 248070,
+ "block_size": 8,
+ "embed_scale": 1.0,
+ "taps": [
+  5,
+  19,
+  33,
+  47,
+  61
+ ],
+ "capture_layer_ids": [
+  6,
+  20,
+  34,
+  48,
+  62
+ ],
+ "sliding_window": 2048,
+ "rope_theta": 10000000.0,
+ "head_dim": 128,
+ "n_heads": 32,
+ "n_kv_heads": 8,
+ "rms_eps": 1e-06,
+ "output_multiplier": 1.0,
+ "final_logit_softcapping": null,
+ "selfcheck_forward_max_abs": 0.0,
+ "head_rows_reconstruction_max_abs": 1.430511474609375e-05,
+ "selected": [
+  12305,
+  198,
+  727,
+  9637,
+  3773,
+  1104,
+  25
+ ],
+ "selected_official": [
+  12305,
+  198,
+  727,
+  9637,
+  3773,
+  1104,
+  25
+ ],
+ "selected_text": "python\ndef reverse_string(s:",
+ "argmax_text": "python\ndef reverse_string(s:"
+}

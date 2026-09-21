@@ -31,6 +31,8 @@ from dflash_mlx.runtime.loading import load_draft_bundle
 from dflash_mlx.draft_backend import EagerDraftBackend
 
 ap = argparse.ArgumentParser(); ap.add_argument('--weights', choices=['bf16', 'gguf'], default='bf16'); ap.add_argument('--out', default=None)
+ap.add_argument('--features', default='lab/webgpu/oracle/context_features.npy', help='cached tapped features [C, 5H] from a full-target prefill (dump_drafter_oracle.py); if missing, the full target is loaded and run')
+ap.add_argument('--meta', default='lab/webgpu/oracle/meta.json', help='meta.json next to the cached features (prompt_ids, anchor)')
 args = ap.parse_args()
 PACK = os.path.expanduser('~/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit')
 DRAFT = os.path.expanduser('~/Code/models/Qwen3.8-27B-DFlash2-r3')
@@ -42,22 +44,41 @@ index = {'prompt': prompt, 'weights': args.weights, 'stages': {}}
 def save(name, arr):
     a = np.array(arr.astype(mx.float32) if mx.issubdtype(arr.dtype, mx.floating) else arr.astype(mx.int32)) if isinstance(arr, mx.array) else np.asarray(arr)
     np.save(f'{OUT}/{name}.npy', a); index['stages'][name] = {'shape': list(a.shape), 'dtype': str(a.dtype)}; print(f'  {name} {a.shape} {a.dtype}')
-
-# ---- target: prefill with residual taps ----
-model, _ = load_text_model(PACK); ops = resolve_target_ops(model); ops.install_speculative_hooks(model)
 tok = load_pack_tokenizer(PACK); enc = lambda s: tok.encode(s, add_special_tokens=False) if hasattr(tok, 'encode') else tok(s)['input_ids']
 ids = list(enc(prompt)); CAP = {6, 20, 34, 48, 62}; C = len(ids)
-cache = ops.make_cache(model, enable_speculative_linear_cache=True)
-logits, captured = ops.forward_with_hidden_capture(model, input_ids=mx.array([ids]), cache=cache, capture_layer_ids=CAP); mx.eval(logits)
-anchor = int(logits[0, -1].argmax()); print('prompt tokens', C, 'anchor', anchor, repr(tok.decode([anchor])))
-feats = mx.concatenate([captured[k][0] for k in sorted(captured)], axis=-1).astype(mx.float32); mx.eval(feats)
+
+# ---- target side. The drafter borrows two target modules (embed_tokens, lm_head); the tapped features come from a full
+# prefill. Memory: the full pack is 8 GB, the two modules ~0.7 GB, so the prefill is cached and the light path is default.
+class _Ops:   # the two target_ops entry points the drafter uses, on the pack's own Packed modules (runtime/runtime.py)
+    def __init__(self, embed, head): self._embed, self._head = embed, head
+    def embed_tokens(self, _m): return self._embed
+    def logits_from_hidden(self, _m, h): return self._head(h)
+if os.path.exists(args.features) and os.path.exists(args.meta):
+    meta = json.load(open(args.meta)); assert meta['prompt_ids'] == ids, 'cached features are for a different prompt'
+    feats = mx.array(np.load(args.features)).astype(mx.float32); anchor = int(meta['anchor']); print('cached features', feats.shape, 'anchor', anchor, repr(tok.decode([anchor])), 'from', args.features)
+    sys.path.insert(0, os.path.join(PACK, 'runtime')); from runtime import Packed
+    cfg = json.load(open(os.path.join(PACK, 'config.json'))); W = mx.load(os.path.join(PACK, 'model.safetensors'))   # lazy: only the touched arrays materialize
+    def packed(path):
+        rec = next(r for r in cfg['modules'] if r['path'] == path); key = 'language_model.' + path
+        return Packed([W[key + '.weight'], W[key + '.scales'], W[key + '.biases']], rec['block'], W.get(key + '.signs'), rec['embedding'], mx.float16)
+    ops = _Ops(packed('model.embed_tokens'), packed('lm_head')); model = None
+    class _TM: embed_scale = 1.0
+    class _TOps:                              # bind_target_model only reads text_model(...).embed_scale (qwen3.5 has none -> 1.0)
+        def text_model(self, _m): return _TM()
+    bind_ops = _TOps()
+else:
+    model, _ = load_text_model(PACK); ops = resolve_target_ops(model); ops.install_speculative_hooks(model); bind_ops = ops
+    cache = ops.make_cache(model, enable_speculative_linear_cache=True)
+    logits, captured = ops.forward_with_hidden_capture(model, input_ids=mx.array([ids]), cache=cache, capture_layer_ids=CAP); mx.eval(logits)
+    anchor = int(logits[0, -1].argmax()); print('prompt tokens', C, 'anchor', anchor, repr(tok.decode([anchor])))
+    feats = mx.concatenate([captured[k][0] for k in sorted(captured)], axis=-1).astype(mx.float32); mx.eval(feats)
+    del logits, captured, cache
 save('context_features', feats)
-del logits, captured, cache
 
 # ---- drafter ----
 bundle = load_draft_bundle(DRAFT, draft_quant=None)
 draft = bundle.model if hasattr(bundle, 'model') else bundle[0]
-draft.bind_target_model(model, target_ops=ops)
+draft.bind_target_model(model, target_ops=bind_ops)
 print('draft', type(draft).__name__, 'embed_scale', draft.embed_scale, 'mask', draft.mask_token_id, 'block', draft.block_size)
 if args.weights == 'gguf':
     import gguf

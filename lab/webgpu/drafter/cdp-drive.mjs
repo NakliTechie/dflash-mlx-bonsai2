@@ -6,6 +6,9 @@ const CH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const PORT = 9337;
 const chrome = spawn(CH, ['--headless=new', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${process.cwd()}/chrome-profile-drafter`, '--enable-unsafe-webgpu', '--enable-features=WebGPU', `--remote-debugging-port=${PORT}`, '--window-size=1280,800', 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const kill = () => { try { chrome.kill('SIGTERM'); } catch {} };
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => { kill(); process.exit(130); });
+process.on('exit', kill);
 let ws; try {
   for (let i = 0; i < 50; ++i) { try { await fetch(`http://127.0.0.1:${PORT}/json/version`); break; } catch { await sleep(200); } }
   const targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); const page = targets.find(t => t.type === 'page');
