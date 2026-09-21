@@ -447,8 +447,9 @@ export class Drafter {
   scale(pass, X, Y, n, s) { this.run(pass, 'scale', [this.uni([{ u: n }, { u: 0 }, { u: 0 }, { u: 0 }, { f: s }, { f: 0 }, { f: 0 }, { f: 0 }]), X, Y], Math.ceil(n / 256)); }
 
   // ---- weights ----
-  async loadWeights(ggufUrl, onProgress = () => {}) {
-    const src = fetchSource(ggufUrl); const g = await readGGUF(src); this.gguf = g;
+  // ggufSource: a URL string (Range-fetched) OR a byte-source function (offset, length) => Promise<Uint8Array> (e.g. slices of a cached Blob).
+  async loadWeights(ggufSource, onProgress = () => {}) {
+    const src = typeof ggufSource === 'function' ? ggufSource : fetchSource(ggufSource); const g = await readGGUF(src); this.gguf = g;
     const need = ['fc.weight', 'enc.output_norm.weight', 'output_norm.weight', 'selector_hidden.weight'];
     for (let i = 0; i < CFG.L; ++i) for (const s of ['attn_norm.weight', 'attn_q.weight', 'attn_k.weight', 'attn_v.weight', 'attn_output.weight', 'attn_q_norm.weight', 'attn_k_norm.weight', 'attn_conv_base', 'attn_conv_proj.weight', 'ffn_norm.weight', 'ffn_gate.weight', 'ffn_up.weight', 'ffn_down.weight', 'ffn_conv_base', 'ffn_conv_proj.weight']) need.push(`blk.${i}.${s}`);
     let done = 0; const t0 = performance.now(); let dequantMs = 0;
