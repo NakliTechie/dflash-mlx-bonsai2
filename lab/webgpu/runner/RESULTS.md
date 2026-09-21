@@ -152,3 +152,27 @@ plain greedy — the eviction + positions path is exercised and exact for this r
 case: 294 of 445 cycles accepted exactly 3 of 4 drafts, i.e. a 4-token replay (84 ms) after a 92 ms verify.
 
 With the replay removed the code run would be 108 ms/cycle = 29.6 ms/token = 1.17× plain; that is now the whole gap.
+
+## Update 2026-09-21 (latest): recurrence-only rewind (RewindSession, patch section (f)) — first speedup over plain
+
+`runner.js` now builds the verify session of the chosen block length with `teeRecurrence: true`, one
+`I.RewindSession(model, cache, Lv, session)` (build 3 ms), and after a partial accept does
+`slot.checkpoint.restore(); R.run(k + 1); cache.seqLength = pos + k + 1` instead of restoring + replaying k+1 tokens
+through a (k+1)-row session. `?rewind=0` keeps the tape replay for A/B. Only the Lv session is prebuilt now (the
+prompt-tail session is built lazily). Same prompts, same page-measured plain decode, idle GPU:
+
+| run | tokens | identical to plain greedy | tok/cycle | ms/cycle (median) | ms/token (tok/s) | plain ms/token | **ratio** | log |
+|---|---|---|---|---|---|---|---|---|
+| code, block 5 (default) | 256 | 256/256 | 3.66 | 110.4 (109.3) | **30.1 (33.2)** | 35.2 | **1.17×** | `run-code-b5-rewind.log` |
+| code, block 8 | 256 | 256/256 | 4.46 | 143.8 (143.5) | 32.3 (31.0) | 35.3 | 1.09× | `run-code-b8-rewind.log` |
+| lighthouse, block 5, `eos=0`, 1536 tokens (118 evictions) | 1536 | 1536/1536 | 3.46 | 135.3 (134.4) | 39.2 (25.5) | 41.5 | 1.06× | `run-lighthouse-1536-rewind.log` |
+
+Per-cycle (code, block 5): draft+head 25.4 ms (the ~7 ms rewind is enqueue-only and lands on the GPU queue ahead of
+the next draft, so it shows up inside "draft": 22.6 → 25.4), verify 84.9 (median 84.6), replay 0 (enqueue), append 0.1.
+The accept histograms are cycle-for-cycle identical to the tape-replay runs (block 5: 0:9 1:12 2:7 3:10 4:33; block 8:
+0:8 1:10 2:7 3:8 4:4 5:5 6:5 7:12; lighthouse 0:19 1:102 2:6 3:294 4:24), i.e. the rewound state drives the same
+verify outcomes as the replayed one — the kernel agent's bitwise identity result, seen end to end.
+
+The cycle is now verify (85 ms at block 5, 117 at block 8) + drafter (17) + head (5) + rewind (7): the verify graph is
+73–80 % of it. Next levers: the M=4/5 small-M route on the verify graph (kernel agent), fusing gate+up in the drafter,
+and per-dispatch overhead in the rewind (144 dispatches) and the drafter (~125 dispatches per step).

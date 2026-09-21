@@ -9,6 +9,7 @@
 //                      k+1 accepted tokens through the (k+1)-session (its next_token must equal the bonus) -> emit
 // Query: ?model=<gguf> &block=5 &max=256 &prompt=code|oracle|lighthouse|<text> &smallm=f16|f32|off &selftest=1 &draft=<drafter gguf url>
 //        &sink=64 &window=1024 (drafter context eviction; 0/0 = none) &eos=0 (run past EOS) &packed=0 (f16 drafter weights) &cputopk=1 (old head path)
+//        &rewind=0 (tape replay through a (k+1)-row session instead of the recurrence-only RewindSession, patch section (f))
 (() => { // hidden-tab guard (verify-qwen35-harness.js): rAF never fires and short timers are throttled in a hidden tab
   const ch = new MessageChannel(); const q = [];
   ch.port1.onmessage = () => { const cb = q.shift(); if (cb) cb(performance.now()); };
@@ -26,7 +27,7 @@ const log = (...a) => { const s = a.join(' '); V.log.push([Date.now(), s]); cons
 const qs = new URLSearchParams(location.search);
 const MODEL = qs.get('model') || '/model/Ternary-Bonsai-2-27B-PTQ1_0.gguf', DRAFT = qs.get('draft') || '/model/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf';
 const LV = Number(qs.get('block') || 5), MAX = Number(qs.get('max') || 256), PROMPT = qs.get('prompt') || 'code', SMALLM = qs.get('smallm') || 'f16', SELFTEST = qs.get('selftest') === '1', PLAIN = qs.get('plain') !== '0';
-const SINK = Number(qs.get('sink') ?? 64), WINDOW = Number(qs.get('window') ?? 1024), STOP_EOS = qs.get('eos') !== '0', PACKED = qs.get('packed') !== '0', CPU_TOPK = qs.get('cputopk') === '1';
+const SINK = Number(qs.get('sink') ?? 64), WINDOW = Number(qs.get('window') ?? 1024), STOP_EOS = qs.get('eos') !== '0', PACKED = qs.get('packed') !== '0', CPU_TOPK = qs.get('cputopk') === '1', REWIND = qs.get('rewind') !== '0';
 const TAPS = [6, 20, 34, 48, 62];   // entry-of-layer convention == output of target_layer_ids [5,19,33,47,61]
 const PROMPTS = {
   code: 'Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.',
@@ -54,7 +55,8 @@ const ms = (t) => +(performance.now() - t).toFixed(1);
     // ---- verify sessions, one per block length, lazily ----
     const smallM = SMALLM === 'off' ? undefined : { precision: SMALLM };
     const sessions = new Map(); const buildMs = {};
-    const session = async (T) => { let s = sessions.get(T); if (s) return s; const opts = { tapLayers: TAPS, allRowsHead: true, ...(smallM ? { smallM } : {}) }; class S extends I.ch { buildEmission() { return I.lh(this.model, this.cache, this.blockLen, opts); } } s = new S(inner, cache, T); const t0 = performance.now(); await s.build(); buildMs[T] = ms(t0); sessions.set(T, s); return s; };
+    const useRewind = REWIND && !!I.RewindSession; V.rewind = useRewind;
+    const session = async (T) => { let s = sessions.get(T); if (s) return s; const opts = { tapLayers: TAPS, allRowsHead: true, ...(smallM ? { smallM } : {}), ...(useRewind && T === LV ? { teeRecurrence: true } : {}) }; class S extends I.ch { buildEmission() { return I.lh(this.model, this.cache, this.blockLen, opts); } } s = new S(inner, cache, T); const t0 = performance.now(); await s.build(); buildMs[T] = ms(t0); sessions.set(T, s); return s; };
     // run a block through the target at past_len = cache.seqLength; advances the cache; returns {next, tokens (verify_tokens), feat (binding)}
     const runBlock = async (ids) => { const T = ids.length; const s = await session(T); const pos = cache.seqLength; const next = await s.run(new Uint32Array(ids), pos); cache.seqLength = pos + T; const ft = s.compiled.tensor('dspark.features'); if (ft.dtype !== 'float32') throw new Error('features dtype ' + ft.dtype); return { next, s, pos, feat: { buffer: ft.buffer, offset: ft.byteOffset ?? 0, size: T * 5 * H * 4 }, tokens: () => rt.readTensor(s.compiled.tensor('verify_tokens')), logits: () => rt.readTensor(s.compiled.tensor('verify_logits')) }; };
     // ---- micro graphs on the engine's compile stack (pattern: wgsl-gemm-spike/bench.js) ----
@@ -125,7 +127,7 @@ const ms = (t) => +(performance.now() - t).toFixed(1);
       V.results.plain = { ...plain, text: plain.text.slice(0, 400) }; log(`plain greedy: ${out.length} tokens, ${plain.decodeMsPerTok} ms/token (${plain.tokPerS} tok/s), ttft ${plain.ttftMs} ms`);
     }
     // ---- speculative loop (as a function: one warm-up pass, then the measured pass) ----
-    V.state = 'prebuild'; const tb = performance.now(); for (let T = 1; T <= LV; ++T) await session(T); const prebuildMs = ms(tb); log(`prebuilt ${LV} verify sessions in ${prebuildMs} ms: ${JSON.stringify(buildMs)}`);
+    V.state = 'prebuild'; const tb = performance.now(); if (useRewind) await session(LV); else for (let T = 1; T <= LV; ++T) await session(T); let RW = null; if (useRewind) { RW = new I.RewindSession(inner, cache, LV, sessions.get(LV)); const tr = performance.now(); await RW.build(); buildMs.rewind = ms(tr); } const prebuildMs = ms(tb); log(`prebuilt sessions in ${prebuildMs} ms: ${JSON.stringify(buildMs)} rewind=${useRewind}`);
     const slot = await cache.allocateCheckpointSlot();
     const specRun = async (maxTokens, label) => {
     V.state = 'spec-' + label;
@@ -149,6 +151,7 @@ const ms = (t) => +(performance.now() - t).toFixed(1);
       // target state: k+1 == LV -> the verify run consumed exactly the accepted tokens; else restore + replay the k+1 accepted tokens
       const t3 = performance.now();
       if (k + 1 === LV) { cyc.replay = 'none'; }
+      else if (useRewind) { slot.checkpoint.restore(); RW.run(k + 1); cache.seqLength = pos + k + 1; cyc.replay = k + 1; cyc.replayOk = true; cyc.rewind = true; }
       else { slot.checkpoint.restore(); cache.seqLength = pos; const rp = await runBlock(block.slice(0, k + 1)); cyc.replay = k + 1; cyc.replayNext = rp.next; cyc.replayOk = rp.next === bonus; if (!cyc.replayOk) log(`replay next_token ${rp.next} != bonus ${bonus} at cycle ${cycles.length}`); }
       cyc.replayMs = ms(t3); cyc.cycleMs = ms(c0); cycles.push(cyc); anchor = bonus;
       if (cycles.length % 10 === 0) { V.prog = `cycle ${cycles.length}: ${emitted.length} tokens`; V.partial = { cycles: cycles.length, tokens: emitted.length, text: dec(emitted).slice(-200) }; }
@@ -158,7 +161,7 @@ const ms = (t) => +(performance.now() - t).toFixed(1);
     const genMs = sum(c => c.cycleMs);
     const stats = { cycles: n, tokens: emitted.length, tokensPerCycle: +(emitted.length / n).toFixed(3), acceptedPerCycle: +(sum(c => c.accepted) / n).toFixed(3), msPerCycle: +(genMs / n).toFixed(1), msPerToken: +(genMs / emitted.length).toFixed(2), tokPerS: +(1000 * emitted.length / genMs).toFixed(2), ttftMs: specTtft, totalMs: specTotal,
       breakdownMs: { draft: +(sum(c => c.draftMs) / n).toFixed(1), head: +(sum(c => c.headMs) / n).toFixed(1), verify: +(sum(c => c.verifyMs) / n).toFixed(1), append: +(sum(c => c.appendMs) / n).toFixed(1), replay: +(sum(c => c.replayMs) / n).toFixed(1) },
-      replays: cycles.filter(c => c.replay !== 'none').length, replayMsByLen: Object.fromEntries(Array.from({ length: LV - 1 }, (_, i) => { const l = cycles.filter(c => c.replay === i + 1).map(c => c.replayMs).sort((a, b) => a - b); return [i + 1, l.length ? { n: l.length, median: l[l.length >> 1], min: l[0] } : null]; })), verifyMsMedian: [...cycles.map(c => c.verifyMs)].sort((a, b) => a - b)[n >> 1], draftMsMedian: [...cycles.map(c => c.draftMs)].sort((a, b) => a - b)[n >> 1], cycleMsMedian: [...cycles.map(c => c.cycleMs)].sort((a, b) => a - b)[n >> 1], prebuildMs, replayMismatches: cycles.filter(c => c.replay !== 'none' && !c.replayOk).length, context: { rows: ctx.C, total: ctx.total, evictions: ctx.evictions, sink: SINK, window: WINDOW }, packed: PACKED, cpuTopk: CPU_TOPK, acceptHist: Object.fromEntries(Array.from({ length: LV }, (_, i) => [i, cycles.filter(c => c.accepted === i).length])), buildMs, block: LV, smallM: SMALLM };
+      replays: cycles.filter(c => c.replay !== 'none').length, rewind: useRewind, replayMsByLen: Object.fromEntries(Array.from({ length: LV - 1 }, (_, i) => { const l = cycles.filter(c => c.replay === i + 1).map(c => c.replayMs).sort((a, b) => a - b); return [i + 1, l.length ? { n: l.length, median: l[l.length >> 1], min: l[0] } : null]; })), verifyMsMedian: [...cycles.map(c => c.verifyMs)].sort((a, b) => a - b)[n >> 1], draftMsMedian: [...cycles.map(c => c.draftMs)].sort((a, b) => a - b)[n >> 1], cycleMsMedian: [...cycles.map(c => c.cycleMs)].sort((a, b) => a - b)[n >> 1], prebuildMs, replayMismatches: cycles.filter(c => c.replay !== 'none' && !c.replayOk).length, context: { rows: ctx.C, total: ctx.total, evictions: ctx.evictions, sink: SINK, window: WINDOW }, packed: PACKED, cpuTopk: CPU_TOPK, acceptHist: Object.fromEntries(Array.from({ length: LV }, (_, i) => [i, cycles.filter(c => c.accepted === i).length])), buildMs, block: LV, smallM: SMALLM };
     let match = null; if (plain) { const L = Math.min(out.length, plain.tokens.length); let first = -1; for (let i = 0; i < L; ++i) if (out[i] !== plain.tokens[i]) { first = i; break; } match = { compared: L, firstDivergence: first, identical: first === -1 && (out.length === plain.tokens.length || stop), stoppedAtEos: stop, specLen: out.length, plainLen: plain.tokens.length, speedup: plain ? +(stats.tokPerS / plain.tokPerS).toFixed(3) : null }; }
     V.results['spec-' + label] = { stats, match, divergence, text: dec(out).slice(0, 400), cyclesSample: cycles.slice(0, 12) };
     log(`spec[${label}]: ${stats.tokens} tokens in ${n} cycles, ${stats.tokensPerCycle} tok/cycle, ${stats.msPerCycle} ms/cycle (median ${stats.cycleMsMedian}), ${stats.msPerToken} ms/token (${stats.tokPerS} tok/s); breakdown ${JSON.stringify(stats.breakdownMs)}; replay by len ${JSON.stringify(stats.replayMsByLen)}; match ${JSON.stringify(match)}`);
