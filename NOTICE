@@ -1,0 +1,17 @@
+dflash-mlx-bonsai2
+Copyright 2026 Chirag Patnaik (NakliTechie)
+
+This product is a fork of dflash-mlx (https://github.com/bstnxbt/dflash-mlx),
+Copyright bstnxbt, licensed under the Apache License, Version 2.0.
+
+It implements DFlash 2 speculative decoding (https://github.com/z-lab/dflash,
+Apache License 2.0; Chen, Liang, Liu, "DFlash: Block Diffusion for Flash
+Speculative Decoding", arXiv:2602.06036). The re-fitted drafter published with
+this project (NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2) is a fine-tune
+of z-lab/Qwen3.8-27B-DFlash2 (Apache License 2.0).
+
+The target model this fork loads, Ternary-Bonsai-2-27B and its MLX pack
+runtime, is Copyright 2026-present Prism ML, Inc., Apache License 2.0.
+"Created using Bonsai by Prism ML." It is built from Qwen3.8-27B, Copyright
+2026 Alibaba Cloud, Apache License 2.0
+(https://huggingface.co/Qwen/Qwen3.8-27B/blob/main/LICENSE).

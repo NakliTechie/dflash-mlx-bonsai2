@@ -1,282 +1,251 @@
 <p align="center">
-  <h1 align="center">dflash-mlx</h1>
-  <p align="center">DFlash speculative decoding for Apple Silicon (MLX)</p>
+  <h1 align="center">dflash-mlx-bonsai2</h1>
+  <p align="center">DFlash 2 speculative decoding for PrismML's Ternary-Bonsai-2-27B on Apple Silicon (MLX)</p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Apple%20Silicon-black?logo=apple" alt="Apple Silicon">
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue?logo=python" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License">
-  <img src="https://img.shields.io/badge/MLX-stock-red" alt="Stock MLX">
+  <img src="https://img.shields.io/badge/status-experimental-orange" alt="Experimental">
 </p>
 
-Paper: [DFlash: Block Diffusion for Flash Speculative Decoding](https://arxiv.org/abs/2602.06036) (Chen et al., 2026)
+A fork of [bstnxbt/dflash-mlx](https://github.com/bstnxbt/dflash-mlx) that runs
+[DFlash 2](https://github.com/z-lab/dflash) block-diffusion speculative decoding against
+[prism-ml/Ternary-Bonsai-2-27B-mlx-2bit](https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-mlx-2bit),
+PrismML's 2-bit, Hadamard-rotated quantization of Qwen3.8-27B. It ships an OpenAI-compatible
+server (`dflash serve`) that any local chat client can talk to.
 
-Block-diffusion draft generates 16 tokens in one pass. Target verifies in one pass. Output is lossless — every emitted token is verified against the target model before it is committed.
+**Status: experimental.** One machine (Apple M4 Pro, 24 GB), one target model, one drafter.
+The numbers below are from that machine; the limitations section is as load-bearing as the
+numbers.
 
-https://github.com/user-attachments/assets/a9be2b48-3264-4970-b836-c876b0b7fdda
+## What this fork adds
 
-## How it works
+Upstream dflash-mlx already runs Qwen3.8-27B + z-lab's DFlash2 drafter on stock 4-bit MLX
+models. The ternary Bonsai 2 pack is not a stock MLX model: every linear is a `Packed`
+module (blockwise Hadamard rotation on the activations, then a 2-bit group-128 affine
+`quantized_matmul`), and MLX's 2-bit kernel is tuned for single-row decode, not for the
+multi-row verify step that speculative decoding lives on. This fork closes both gaps:
 
-- A small draft model (~1B params) generates 16 tokens in parallel with block diffusion.
-- The target model verifies those 16 tokens in a single forward pass.
-- Greedy acceptance keeps the correct prefix and rejects the rest.
-- Lossless: every emitted token is the target model's greedy argmax at verification time. Output can still differ from pure AR because of MLX dispatch divergence, but no unverified token is ever emitted.
-- Built on stock MLX with a small number of targeted Metal kernels where rollback and long-context verify need tighter numerical control.
+- **`dflash_mlx/runtime/prism_pack.py`** — a text-only loader for the PrismML MLX pack
+  (schema 2). It builds a stock `mlx_lm` Qwen3.5 `TextModel` and installs the pack's
+  `Packed` (Hadamard + 2-bit affine qmm) modules into it, skipping the vision tower, so all
+  of upstream's Qwen GDN target hooks (hidden capture, tape-replay rollback, prefix cache)
+  work unchanged. `runtime/loading.py` dispatches to it on `model_type ==
+  prism_hadamard_qwen35`. Parity vs the pack's own loader: max |Δ logits| 3.3e-5, argmax
+  identical.
+- **`dflash_mlx/runtime/prism_qmm.py`** — a Metal small-M (8-row) 2-bit GEMM for the verify
+  path. `v7` is a `simdgroup_matrix` 8×8 MMA kernel with register-only dequantization and
+  a fused prep kernel (sign × Hadamard × transpose × per-group row sums), installed as a
+  class-level `Packed.__call__` override. Real DFlash2 verify calls carry 2–8 rows (the
+  selector emits variable-length paths), so 2–8-row calls are zero-padded to 8 and sliced;
+  1-row decode calls get an fp16 activation cast only. Exact vs the stock kernel (argmax
+  identical on 3–8-row inputs; 0 argmax flips vs the fp32 path on 1000 real tokens).
+  Selected with `DFLASH_PRISM_VERIFY=v7|v4b|fp16|off`.
+- **`DFLASH_TOOL_PARSER=off`** in `dflash serve` — disables the strict tool-call parser
+  (and mlx-lm's in-stream `tool_call_start` detection) for clients that describe tools in
+  the system prompt and parse `<tool_call>` text themselves. Without it the server rejects a
+  call to an undeclared tool and cuts the stream.
+- **A re-fitted drafter** —
+  [NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2):
+  z-lab's Qwen3.8-27B-DFlash2 fine-tuned on 1.5 M tokens of the ternary model's own greedy
+  generations, so the drafter predicts what the 2-bit target will actually say rather than
+  what the bf16 base would have said. Training pipeline in `lab/aws/` (llama.cpp tap-dump
+  capture of hidden states + targets, CUDA trainer). It beats the shipped z-lab drafter on
+  every prompt measured (4–16 % fewer verify cycles).
 
-## Technical details
+Everything else — the server, CLI, prefix cache, adaptive verify, diagnostics — is
+upstream's, documented in [`docs/`](docs/).
 
-- **Tape-replay rollback** — instead of snapshotting and restoring the full GatedDeltaNet state, dflash-mlx records an innovation tape during verify and replays only the accepted steps through a custom Metal kernel. Keeps rollback cost low and preserves acceptance over long generations.
-- **Target-owned long-context attention routing** — Qwen and Gemma adapters route verify blocks through the appropriate MLX or GQA-reshape SDPA path internally, keeping the public CLI free of attention-kernel switches.
-- **Verify-specialized int4 qmm** (`verify_qmm`) — custom Metal kernels for the small-M quantized matmuls that dominate the target verify step. M5-class Apple GPUs (`applegpu_g17*`) use the Metal 4 NAX M=16 path automatically when the shape is supported; older Apple GPUs keep the steel simdgroup-MMA fallbacks. Auto-enabled on MoE targets and dense models with ≥40 layers.
-- **Numerical coherence** — bf16-sensitive paths, including recurrent state replay and small projections, are stabilized across speculative cycles so accepted tokens stay consistent.
-- **Prefix cache (L1+L2)** — RAM snapshots of target KV + GDN recurrent state + captured hidden + last logits, with optional SSD spill, byte/entry budgets, and automatic eviction. Hits skip prefill on revisited prompts. This hot/cold cache hierarchy is inspired by [oMLX](https://github.com/jundot/omlx)'s tiered KV cache work, but dflash-mlx stores DFlash prefix snapshots rather than active paged-KV blocks.
-- **Positional sparse prefill** (`prompt_token_positions`) — `stream_dflash_generate` accepts an optional list of original positions alongside a compacted `prompt_tokens_override`, so a caller (e.g. oMLX specprefill) can prefill the target on a selected token subset placed at its true positions. Full-attention layers RoPE each token at its original position (contiguous runs delegate to the native rope and stay bitwise-exact); GDN layers run over the compacted sequence; gemma4 sliding-window layers rebuild their window mask from the true positions. Mutually exclusive with the prefix cache. Use chunk-based selection — incoherent (e.g. every-other-token) selection shreds local structure and collapses draft acceptance.
+## Requirements
 
-## Benchmarks
-
-Apple M5 Max, 64 GB unified memory, MLX 0.31.1. Protocol: stock `mlx_lm.stream_generate` baseline vs DFlash, sequential, 3 repeats, median, 60s cooldown. Generation prompt: `"The function $f$ satisfies the functional equation \[ f(x) + f(y) = f(x + y) - xy - 1 \] for all real numbers $x$ and $y$. If $f(1) = 1$, then find all integers $n$ such that $f(n) = n$. Enter all such integers, separated by commas. Please reason step by step, and put your final answer within \boxed{}."`
-
-| Model | Tokens | Baseline | DFlash | Speedup | Acceptance |
-|-------|--------|----------|--------|---------|------------|
-| Qwen3.5-4B | 1024 | 53.80 tok/s | 182.87 tok/s | 3.40x | 86.43% |
-| Qwen3.5-4B | 2048 | 53.90 tok/s | 188.70 tok/s | 3.49x | 87.70% |
-| Qwen3.5-4B | 4096 | 53.49 tok/s | 195.84 tok/s | 3.66x | 88.35% |
-| Qwen3.5-4B | 8192 | 53.28 tok/s | 160.51 tok/s | 3.02x | 87.30% |
-| Qwen3.5-9B | 1024 | 30.95 tok/s | 135.34 tok/s | 4.37x | 89.55% |
-| Qwen3.5-9B | 2048 | 30.70 tok/s | 113.00 tok/s | 3.65x | 89.16% |
-| Qwen3.5-9B | 4096 | 30.56 tok/s | 94.59 tok/s | 3.06x | 88.31% |
-| Qwen3.5-9B | 8192 | 29.43 tok/s | 66.94 tok/s | 2.22x | 86.67% |
-| Qwen3.5-27B-4bit | 1024 | 33.55 tok/s | 79.02 tok/s | 2.37x | 90.04% |
-| Qwen3.5-27B-4bit | 2048 | 33.10 tok/s | 70.21 tok/s | 2.12x | 89.60% |
-| Qwen3.5-27B-4bit | 4096 | 31.47 tok/s | 55.68 tok/s | 1.77x | 88.38% |
-| Qwen3.5-27B-4bit | 8192 | 33.88 tok/s | 45.29 tok/s | 1.34x | 85.97% |
-| Qwen3.6-27B-4bit | 1024 | 33.26 tok/s | 98.05 tok/s | 2.95x | 84.67% |
-| Qwen3.6-27B-4bit | 2048 | 32.34 tok/s | 90.67 tok/s | 2.81x | 84.62% |
-| Qwen3.6-27B-4bit | 4096 | 30.58 tok/s | 93.55 tok/s | 3.06x | 87.04% |
-| Qwen3.6-27B-4bit | 8192 | 26.03 tok/s | 79.12 tok/s | 3.04x | 83.45% |
-| Qwen3.6-27B-4bit | 16384 | 21.50 tok/s | 60.77 tok/s | 2.78x | 84.40% |
-| Qwen3.5-35B-A3B-4bit | 1024 | 143.03 tok/s | 248.85 tok/s | 1.76x | 89.26% |
-| Qwen3.5-35B-A3B-4bit | 2048 | 141.43 tok/s | 255.01 tok/s | 1.81x | 89.75% |
-| Qwen3.5-35B-A3B-4bit | 4096 | 141.49 tok/s | 216.47 tok/s | 1.53x | 88.50% |
-| Qwen3.5-35B-A3B-4bit | 8192 | 138.59 tok/s | 170.39 tok/s | 1.22x | 86.41% |
-| Qwen3.6-35B-A3B-4bit | 1024 | 138.26 tok/s | 300.33 tok/s | 2.20x | 91.02% |
-| Qwen3.6-35B-A3B-4bit | 2048 | 139.03 tok/s | 252.93 tok/s | 1.82x | 89.60% |
-| Qwen3.6-35B-A3B-4bit | 4096 | 134.50 tok/s | 208.40 tok/s | 1.56x | 88.43% |
-| Qwen3.6-35B-A3B-4bit | 8192 | 133.20 tok/s | 177.45 tok/s | 1.33x | 87.01% |
-
-Per-run JSON: [`benchmark/results/`](benchmark/results/). Reproduce on your hardware with `dflash benchmark`.
+- Apple Silicon Mac, macOS. **24 GB unified memory recommended**: the pack is 8.6 GB on
+  disk, and pack + drafter + a 2 K-token prompt peaks at ~12.5–14.8 GB of Metal memory
+  (with `--prefill-step-size 512`; the default 2048 step peaks at ~17.7 GB on a 2 K-token
+  prefill). Nothing else GPU-resident should be running at the same time.
+- Python 3.11+ (tested on 3.12.9).
+- `mlx >= 0.32.1`, `mlx-lm >= 0.31.3` (tested with mlx 0.32.2 / mlx-lm 0.31.3; the pack's
+  own `runtime/requirements.txt` pins mlx 0.32.0 / mlx-lm 0.31.3).
+- ~13 GB of disk for the two model downloads (pack 8.6 GB + drafter 3.85 GB bf16).
+- `hf` (the `huggingface_hub` CLI) for the downloads; the setup script installs it into the
+  venv if missing.
 
 ## Install
 
+One command does the venv, the editable install and both downloads (idempotent; re-running
+skips whatever is already there):
+
 ```bash
-pip install dflash-mlx
+git clone https://github.com/NakliTechie/dflash-mlx-bonsai2
+cd dflash-mlx-bonsai2
+bash scripts/setup-bonsai2.sh
 ```
 
-Optional benchmark dataset support:
+It ends by printing the exact `dflash serve` command for your paths. `--dry-run` shows what
+it would do without touching anything; `HF_HOME` is respected for the download location.
+
+Manual equivalent:
 
 ```bash
-pip install "dflash-mlx[bench]"
+python3 -m venv .venv && source .venv/bin/activate      # or: uv venv && source .venv/bin/activate
+pip install -e .                                        # this repo, editable
+pip install "huggingface_hub>=1.0"                      # the `hf` CLI
+hf download prism-ml/Ternary-Bonsai-2-27B-mlx-2bit      # 8.6 GB, prints the snapshot path
+hf download NakliTechie/Qwen3.8-27B-DFlash2-ternary-bonsai2 --exclude "*.gguf"   # 3.85 GB
 ```
 
-## Quick start
+## Run
 
 ```bash
-PROMPT='The function $f$ satisfies the functional equation \[ f(x) + f(y) = f(x + y) - xy - 1 \] for all real numbers $x$ and $y$. If $f(1) = 1$, then find all integers $n$ such that $f(n) = n$. Enter all such integers, separated by commas. Please reason step by step, and put your final answer within \boxed{}.'
+bash scripts/serve-bonsai2.sh          # extra args are passed through to `dflash serve`
+```
 
-# One-shot generation, draft auto-resolved
-dflash generate --model Qwen/Qwen3.5-9B --prompt "$PROMPT"
+which runs (with the paths resolved from the HF cache):
 
-# Server (OpenAI-compatible)
+```bash
+DFLASH_TOOL_PARSER=off DFLASH_PRISM_VERIFY=v7 \
 dflash serve \
-  --model mlx-community/Qwen3.6-27B-4bit \
-  --draft z-lab/Qwen3.6-27B-DFlash \
-  --port 8000
-
-# Canonical local benchmark
-dflash benchmark \
-  --model Qwen/Qwen3.5-9B \
-  --prompt "$PROMPT" \
-  --max-tokens 1024 \
-  --repeat 3 \
-  --cooldown 60 \
-  --no-eos
-
-# AIME25 dataset run, with baseline-vs-DFlash speed and exact-answer score
-dflash benchmark \
-  --suite aime25 \
-  --limit 30 \
-  --shuffle \
-  --seed 42 \
-  --model mlx-community/Qwen3.6-27B-4bit \
-  --draft z-lab/Qwen3.6-27B-DFlash
+  --model  "$HF_HOME/hub/models--prism-ml--Ternary-Bonsai-2-27B-mlx-2bit/snapshots/<rev>" \
+  --draft  "$HF_HOME/hub/models--NakliTechie--Qwen3.8-27B-DFlash2-ternary-bonsai2/snapshots/<rev>" \
+  --port 8790 \
+  --prefill-step-size 512
 ```
 
-Send a request:
+`--model` must be a **local directory** for the pack (the prism loader dispatches on the
+pack's `config.json`; a bare repo id falls through to `mlx_lm.load`, which cannot build it).
+The drafter is W4-quantized at load by the registry default (`--draft-quant w4`); pass
+`--draft-quant none` to keep it bf16 (measured: no acceptance difference).
+
+Then point any OpenAI-compatible client at `http://127.0.0.1:8790/v1`:
 
 ```bash
-curl http://127.0.0.1:8000/v1/chat/completions \
+curl http://127.0.0.1:8790/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d "{
-    \"model\": \"mlx-community/Qwen3.6-27B-4bit\",
-    \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}],
-    \"max_tokens\": 1024,
-    \"stream\": true
-  }"
+  -d '{"model": "Ternary-Bonsai-2-27B-mlx-2bit",
+       "messages": [{"role": "user", "content": "Write a Python LRU cache class."}],
+       "max_tokens": 512, "temperature": 0, "stream": true}'
 ```
 
-Compatible with OpenCode, aider, Continue, Open WebUI, LM Studio through its
-OpenAI-compatible adapter, and any other OpenAI-compatible client. Chat
-Completions tool calls stream as OpenAI
-`delta.tool_calls` for Qwen3-Coder XML, Gemma4, and JSON tool-call payloads
-inside model tool spans; malformed or undeclared tool calls fail at the server
-boundary instead of leaking raw XML/JSON as assistant content. Chat Completions
-accepts `tool_choice: "auto"` and `tool_choice: "none"`; function-specific
-`tool_choice` and `parallel_tool_calls: false` are rejected because the server
-does not implement serial tool enforcement. Greedy requests use DFlash by
-default; pass a positive `--fastpath-max-tokens` value to opt into the
-target-only short-response fast path.
+**Use `temperature: 0`.** Speculation only engages on greedy requests; a sampled request
+runs target-only autoregressive decode (the server logs `exact target AR`).
 
-`POST /v1/responses` is available as a minimal non-streaming compatibility
-adapter for text input and function-call tools. Streaming Responses,
-multimodal input, reasoning/text/truncation controls, `tool_choice`,
-`parallel_tool_calls`, and persistent `previous_response_id` / `store`
-behavior are not implemented. Sampling and logprobs use exact target-only AR.
-
-Inspect live server metrics:
+One-shot generation and the benchmark work the same way:
 
 ```bash
-curl http://127.0.0.1:8000/metrics
+DFLASH_PRISM_VERIFY=v7 dflash generate --model <pack-dir> --draft <drafter-dir> --prompt "..."
+
+DFLASH_PRISM_VERIFY=v7 dflash benchmark --model <pack-dir> --draft <drafter-dir> \
+  --only-dflash --block-tokens 8 --verify-mode dflash --max-tokens 512 --no-eos --prompt "..."
 ```
 
-`prefill_tok_s_physical` counts only tokens actually computed after prefix-cache
-restore. `prefill_tok_s_restored` counts restored prefix tokens over the same
-wall time. `prefill_tok_s_apparent` uses the full logical prompt length over
-the same user-visible prefill wall time. `rates.average_decode_tok_s` is the
-weighted decode-only average since server startup: total generated tokens
-divided by cumulative decode seconds. `current_request` shows an in-flight
-prefill/decode, `recent_requests` keeps the last 32 completed requests, and
-`cache_status` is `WARM` when a request restored prefix tokens and `COLD`
-otherwise. In-flight and completed DFlash requests also report
-`tokens_per_cycle`, `cycles`, adaptive block counters, and CopySpec counters so
-long-context sessions show when speculative progress collapses. `rss_gb`
-reports process resident memory. `wired_gb` stays `null` unless a true
-per-process wired-memory source is available.
-The endpoint is for live debugging and benchmark visibility; it does not create
-benchmark artifacts.
+`--only-dflash` is required: the benchmark's baseline leg loads the target through stock
+`mlx_lm.load`, which cannot build the pack. Compare against the plain-decode number below.
 
-Chat-template thinking follows the tokenizer default. For Qwen thinking models,
-that means the thinking template path is enabled unless a request or CLI
-template override explicitly disables it:
+## Measured (Apple M4 Pro, 24 GB)
 
-```bash
-dflash serve --model mlx-community/Qwen3.6-27B-4bit --chat-template-args '{"enable_thinking":false}'
+Round-3 drafter, `DFLASH_PRISM_VERIFY=v7`, fixed 8-token blocks, thinking off, quiet
+machine, each prompt run twice (`lab/leg8/padded/`, 2026-09-21). Plain decode through the
+same pack is **~21.5 tok/s** (46 ms/token with the fp16 activation cast; 18.1 tok/s on the
+pack's own fp32 path).
+
+| prompt | tokens per 8-token cycle | tok/s | vs plain decode |
+|---|---|---|---|
+| code, chat template (1024 tokens) | 4.08 | 26.9 / 29.0 | ~1.3× |
+| math, raw prompt (512) | 3.61 / 3.63 | 25.4 / 26.0 | ~1.2× |
+| code, raw completion (512) | 4.57 | 33.0 / 33.0 | ~1.5× |
+| chat / email (512) | ~2.4 | ~17 | slight loss |
+
+Per-cycle cost is 138–152 ms cold (isolated verify(8) 105–115 ms + ~25–35 ms
+draft/commit), so throughput is `tokens per cycle / cycle time`; a prompt the drafter
+predicts well (code) wins, a prompt it does not (chat, and above all thinking traces) does
+not. Cycle time grows with context: ~149 ms at short context → 171–182 ms at ~2 K tokens,
+so long answers run 25–30 % slower per token than short ones. Prefill is ~80–90 tok/s
+(TTFT on a 2.2 K-token input is 22–24 s).
+
+Caveats on these numbers:
+
+- One machine, one session each. Session-to-session cycle-time variance (thermal, memory
+  pressure) is of the same size as the drafter gain; the per-cycle savings are the robust
+  signal, the tok/s are illustrative.
+- Any memory pressure (swap, another GPU-resident process, Chrome with WebGPU content)
+  multiplies the cycle time by 1.5–2×. Measure on a quiet machine or not at all.
+- The table is `--verify-mode dflash` (fixed 8-token blocks). `dflash serve` defaults to
+  `--verify-mode adaptive`, which probes shorter blocks on low acceptance and brought the
+  chat prompt back to plain-decode parity (19.0 vs 17.4 tok/s fixed, in an earlier session
+  with the shipped drafter).
+
+## Losslessness
+
+Every emitted token is the target's argmax at verification time. The output equals plain
+greedy decoding **up to fp16 ties**: the 8-row verify kernel and the 1-row decode kernel
+accumulate in different orders, so at positions where the top-2 logit margin is ~0.00–0.02
+they can disagree. Measured: `v7` produced 0 argmax flips against the fp32 reference on
+1000 real tokens teacher-forced in 5-row blocks (the fp16-cast stock path produced 1); an
+earlier 8-row kernel showed 5 flips in 1024 positions, all at margins ≤ 0.016. Over a
+~2 K-token generation that is enough for two runs to diverge at some point and both be
+coherent. Upstream documents the same "MLX dispatch divergence".
+
+## Environment flags
+
+| Variable | Values | Meaning |
+|---|---|---|
+| `DFLASH_PRISM_VERIFY` | `v7` (default), `v4b`, `fp16`, `off` | verify-path matmul for `Packed` modules. `v7` = padded 8-row MMA kernel + fused prep; `v4b` = the earlier threadgroup-tile kernel (8-row calls only); `fp16` = stock kernel with an fp16 activation cast; `off` = the pack's own fp32 path (slow; parity reference). |
+| `DFLASH_PRISM_VERIFY_STATS` | set | print a rows-per-call histogram at exit (diagnostic). |
+| `DFLASH_TOOL_PARSER` | `on` (default), `off` | `off` disables the server's strict tool-call parser and mlx-lm's in-stream tool-call detection; tool-call text streams through as content for clients that parse it themselves. |
+
+All upstream flags (`--verify-mode`, `--block-tokens`, `--draft-quant`, prefix cache,
+diagnostics, `--prefill-step-size`, ...) apply; see [`docs/runtime-flags.md`](docs/runtime-flags.md).
+
+## Known limitations
+
+- **Chat is roughly break-even.** At ~2.4 accepted tokens per cycle, chat/email prompts
+  land at ~17 tok/s under fixed blocks against ~21.5 plain; adaptive verify (the serve
+  default) recovers parity, no more. Thinking traces are the worst case (highest-entropy
+  stream; acceptance decays over long traces). The wins are code (~1.3×), math (~1.2×) and
+  raw code completion (~1.5×).
+- **Greedy loops on long generations.** The target's true greedy decode of open-ended
+  prompts can fall into a repetition loop past ~800 tokens ("I am sorry for the life we
+  didn't live…"). That is the model under greedy decoding, not the speculation, but
+  speculation requires greedy. Give the client a repetition penalty or accept sampled
+  (non-speculative) decoding for long creative output.
+- **fp16 tie flips** (above): not bit-identical to single-token decode.
+- **Memory.** 24 GB is the practical minimum; on that box nothing else GPU-resident can run
+  alongside the server, and Chrome loses its WebGPU adapter while the server holds ~15 GB.
+- **`/v1/models` lists every model in the HF cache**, not only the served one (upstream
+  behaviour); pick the pack entry in your client.
+- **`dflash benchmark` needs `--only-dflash`** (its baseline leg cannot load the pack).
+- The prism loader is text-only: the pack's vision tower is skipped.
+- Pre-M5 GPUs use upstream's steel fallback kernels for the W4 drafter (`dflash doctor`
+  reports NAX unavailable); measured on M4 Pro only.
+
+## Layout
+
+```
+dflash_mlx/runtime/prism_pack.py   pack loader (Packed modules into a stock TextModel)
+dflash_mlx/runtime/prism_qmm.py    small-M 2-bit Metal GEMM + fused prep kernel, verify-path install
+dflash_mlx/server/model_provider.py DFLASH_TOOL_PARSER seam
+dflash_mlx/runtime/registry.py     ("Ternary-Bonsai-2-27B",) registry row
+scripts/setup-bonsai2.sh           one-command setup; scripts/serve-bonsai2.sh runs the server
+lab/                               the research trail: kernel iterations v1..v8, parity and tie-flip
+                                   audits, per-leg benchmark logs, lab/aws/ drafter training pipeline
 ```
 
-## Tested models
+`lab/` is kept as evidence, not as product code; nothing in `dflash_mlx/` imports it.
 
-Optimized for Qwen3.5 / Qwen3.6 hybrid GatedDeltaNet + attention targets. Qwen3
-(pure attention) targets work but skip the tape-replay rollback path. Gemma4
-targets use the Gemma4 adapter. Prefix snapshots are enabled only for Gemma4
-configs with known non-shared KV (`num_kv_shared_layers == 0`); shared-KV or
-unknown configs fail closed. Local `dflash serve` diagnostics have verified
-Gemma4 31B and 26B-A4B exact repeated-prompt restore and long-chat continuation
-restore, but those diagnostics are cache-latency evidence, not public benchmark
-throughput claims.
+## Attribution
 
-Validated large DFlash drafts default to `w4` in memory. Current Qwen3.5,
-Qwen3.6, and Gemma4 probes showed this is the best practical memory/throughput
-tradeoff; pass `--draft-quant none` when you need a bf16/non-quant draft A/B.
+- [bstnxbt/dflash-mlx](https://github.com/bstnxbt/dflash-mlx) — the runtime this fork
+  builds on (Apache-2.0). The server, CLI, target hooks, rollback and cache are theirs.
+- [z-lab/dflash](https://github.com/z-lab/dflash) and
+  [z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2) — the
+  DFlash 2 method and the drafter this fork's drafter was fine-tuned from (Apache-2.0).
+  Paper: [DFlash: Block Diffusion for Flash Speculative Decoding](https://arxiv.org/abs/2602.06036).
+- [PrismML](https://huggingface.co/prism-ml) — Ternary-Bonsai-2-27B and its MLX pack runtime
+  (Apache-2.0). "Created using Bonsai by Prism ML."
+- [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) — the base model (Apache-2.0).
 
-For Gemma4 long-context memory pressure, set `--prefill-step-size 1024`
-explicitly. For Gemma4 31B under tighter long-context memory limits,
-`--prefill-step-size 512` reduced peak memory and TTFT in local `dflash serve`
-probes, but it is prompt-sensitive and not a public benchmark throughput claim.
-The default is `2048`.
-
-`dflash serve` uses the product session policy by default: prefix cache
-enabled, L2 snapshots enabled, boundary cache clears enabled, and a `4GB` MLX
-cache limit. Pass explicit flags such as `--no-prefix-cache-l2`,
-`--no-clear-cache-boundaries`, or `--cache-limit auto` only when you want to
-override that policy.
-
-| Target | Draft |
-|--------|-------|
-| [Qwen/Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) | [z-lab/Qwen3.5-4B-DFlash](https://huggingface.co/z-lab/Qwen3.5-4B-DFlash) |
-| [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) | [z-lab/Qwen3.5-9B-DFlash](https://huggingface.co/z-lab/Qwen3.5-9B-DFlash) |
-| [mlx-community/Qwen3.5-27B-4bit](https://huggingface.co/mlx-community/Qwen3.5-27B-4bit) | [z-lab/Qwen3.5-27B-DFlash](https://huggingface.co/z-lab/Qwen3.5-27B-DFlash) |
-| [mlx-community/Qwen3.5-35B-A3B-4bit](https://huggingface.co/mlx-community/Qwen3.5-35B-A3B-4bit) | [z-lab/Qwen3.5-35B-A3B-DFlash](https://huggingface.co/z-lab/Qwen3.5-35B-A3B-DFlash) |
-| [mlx-community/Qwen3.6-27B-4bit](https://huggingface.co/mlx-community/Qwen3.6-27B-4bit) | [z-lab/Qwen3.6-27B-DFlash](https://huggingface.co/z-lab/Qwen3.6-27B-DFlash) |
-| [mlx-community/Qwen3.6-35B-A3B-4bit](https://huggingface.co/mlx-community/Qwen3.6-35B-A3B-4bit) | [z-lab/Qwen3.6-35B-A3B-DFlash](https://huggingface.co/z-lab/Qwen3.6-35B-A3B-DFlash) |
-| [mlx-community/Qwen3.8-27B-4bit](https://huggingface.co/mlx-community/Qwen3.8-27B-4bit) | [z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2) |
-| [Qwen/Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) | [z-lab/Qwen3-4B-DFlash-b16](https://huggingface.co/z-lab/Qwen3-4B-DFlash-b16) |
-| [Qwen/Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | [z-lab/Qwen3-8B-DFlash-b16](https://huggingface.co/z-lab/Qwen3-8B-DFlash-b16) |
-| [mlx-community/gemma-4-31b-it-4bit](https://huggingface.co/mlx-community/gemma-4-31b-it-4bit) | [z-lab/gemma-4-31B-it-DFlash](https://huggingface.co/z-lab/gemma-4-31B-it-DFlash) |
-| [mlx-community/gemma-4-26b-a4b-it-4bit](https://huggingface.co/mlx-community/gemma-4-26b-a4b-it-4bit) | [z-lab/gemma-4-26B-A4B-it-DFlash](https://huggingface.co/z-lab/gemma-4-26B-A4B-it-DFlash) |
-
-```bash
-dflash models
-```
-
-Models without a matching DFlash draft are rejected. Pass `--draft` explicitly to override the registry.
-
-## CLI
-
-```
-dflash serve      # OpenAI-compatible server
-dflash generate   # one-shot local generation
-dflash benchmark  # baseline-vs-DFlash runtime benchmark
-dflash doctor     # environment and config checks
-dflash models     # list supported target/draft pairs
-```
-
-## Common server controls
-
-```bash
-# Opt into target-only AR for very short responses
-dflash serve --model Qwen/Qwen3.5-9B --fastpath-max-tokens 64
-
-# Tune prefill batching
-dflash serve --model Qwen/Qwen3.5-9B --prefill-step-size 8192
-
-# Diagnostics
-dflash serve --model Qwen/Qwen3.5-9B --diagnostics basic   # request + cache events
-dflash serve --model Qwen/Qwen3.5-9B --diagnostics full    # + memory waterfall + cycle timings
-
-# Bound L1 prefix snapshots
-dflash serve --model Qwen/Qwen3.5-9B \
-  --prefix-cache-max-entries 2 \
-  --prefix-cache-max-bytes 2GB
-
-# Enable SSD L2 spill
-dflash serve --model Qwen/Qwen3.5-9B \
-  --prefix-cache-l2 \
-  --prefix-cache-l2-dir .artifacts/dflash/l2 \
-  --prefix-cache-l2-max-bytes 50GB
-```
-
-Diagnostics artifacts land in `.artifacts/dflash/diagnostics/<timestamp>-serve-<mode>/`. `basic` writes request and cache events; `full` adds the memory waterfall and per-cycle timings. Use `full` for diagnosis, not for throughput claims.
-
-## Features
-
-- **Auto draft resolution** — no manual `--draft` flag needed for registered targets
-- **Streaming** — token-by-token output (CLI + SSE)
-- **Chat templates** — enabled by default
-- **Recurrent rollback** — `RecurrentRollbackCache` keeps GatedDeltaNet state coherent across speculative verify and rollback
-- **Verify-specialized int4 qmm** — custom M=16 Metal kernel auto-enabled on MoE and dense ≥40-layer targets; falls back to stock `mx.quantized_matmul` everywhere else
-- **Adaptive verify policy** — default verify mode adjusts the verify block from observed acceptance and long-context pressure; fixed DFlash verification is still available with `--verify-mode dflash`
-- **Prefix cache L1+L2** — RAM snapshots with optional SSD spill, budget-based eviction, and hybrid-architecture support
-- **Diagnostics** — opt-in structured artifacts under `.artifacts/dflash/diagnostics/`
-
-## Roadmap
-
-- **More architecture backends** — add new target families only with
-  family-specific cache layout, attention masks, logits post-processing, hidden
-  capture, rollback/trim behavior, and parity tests.
-- **Kernel work where it matters** — optimize family-specific hot paths only
-  after the backend contract and parity tests are stable.
-- **Tool-call regime auto-fallback** — switch to target-only AR when speculative surplus goes negative on structured outputs
-- **Sustained acceptance at long context** — draft KV cache window scaling and long-context verify optimization
+See [`NOTICE`](NOTICE).
 
 ## Citation
 
@@ -294,4 +263,4 @@ Diagnostics artifacts land in `.artifacts/dflash/diagnostics/<timestamp>-serve-<
 
 ## License
 
-Apache-2.0
+Apache-2.0, unchanged from upstream. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
