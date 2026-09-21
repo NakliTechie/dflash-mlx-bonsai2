@@ -54,6 +54,8 @@ The **pack loader** (`dflash_mlx/runtime/prism_pack.py`) builds a stock `mlx_lm`
 
 The **drafter** ([naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2)) is z-lab's DFlash 2 fine-tuned on 1.5 M tokens of the ternary model's own greedy generations, captured with a llama.cpp hidden-state dumper and trained on a rented GPU (`lab/aws/`). It accepts more on every prompt measured: chat 2.46 to 2.68, code 3.07 to 3.28, raw code 4.41 to 4.57 tokens per cycle against the shipped drafter. `DFLASH_TOOL_PARSER=off` lets clients that parse `<tool_call>` text themselves stream it through the server.
 
+The **browser port** (`lab/webgpu/`) runs the same loop inside the WebGPU engine that [LocalMind](https://github.com/NakliTechie/LocalMind) uses for Bonsai 2: the drafter in WGSL with Q4_K/Q6_K weights kept packed on the GPU, an M ≤ 8 ternary GEMM for the verify block, and a recurrence-only rewind after a rollback (the target is a Gated-DeltaNet hybrid). `runner/spec-runner.js` is the class LocalMind vendors; in-app on the same M4 Pro it is 1.18× on a 1,486-token code answer (34.4 vs 40.7 ms/token), output identical.
+
 ## Commands
 
 ```bash
