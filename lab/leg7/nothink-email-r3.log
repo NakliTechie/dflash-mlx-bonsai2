@@ -1,0 +1,17 @@
+WARNING: thermal pressure is 'unknown' — results may be throttled. Increase --cooldown or wait for chip to cool.
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+Summary:
+  suite                         : smoke
+  prompts                       : 1
+  baseline generation_tps median: None
+  dflash generation_tps median  : 12.612694287153191
+  speedup median                : None
+  baseline prefill tok/s median : None
+  dflash prefill tok/s median  : 53.713332999521036 physical / 53.713332999521036 apparent
+  acceptance median             : 0.5776892430278885
+  baseline peak memory median   : None
+  dflash peak memory median     : 12.483570649
+  memory end phys footprint     : None baseline / 12.663022928 dflash
+  memory end mlx cache          : None baseline / 0.006013148 dflash
+Artifacts written to: lab/leg7/nothink-email-r3

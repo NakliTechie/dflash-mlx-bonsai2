@@ -1,0 +1,14 @@
+[14:08:29] thinking-OFF set start: 7854M used (1983M wired, 1796M compressor), 15G unused.
+[14:08:29] benchmark email-r3
+[14:08:52] email-r3 exit 0 | 12.612694287153191 0.5776892430278885 
+[14:08:52] benchmark code-r3
+[14:09:38] code-r3 exit 0 | 24.105300663220035 0.7548828125 
+[14:09:38] benchmark story-r3
+[14:11:56] story-r3 exit 0 | 14.53776377068602 0.6029561671763507 
+[14:11:56] benchmark email-z0
+[14:12:22] email-z0 exit 0 | 11.588560063247266 0.5099601593625498 
+[14:12:22] benchmark code-z0
+[14:13:13] code-z0 exit 0 | 21.538655899266818 0.744140625 
+[14:13:13] benchmark story-z0
+[14:15:30] story-z0 exit 0 | 11.904961500287712 0.5566750629722922 
+[14:15:30] NOTHINK DONE
