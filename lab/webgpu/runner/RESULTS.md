@@ -129,3 +129,26 @@ Reading the numbers:
    the runner's `prefill` should reuse the engine's normal prefill (16-token chunks) with taps added to it instead of
    8-token verify sessions (observed TTFT: 888 ms through the tapped 8-token sessions vs 1783 ms for the engine's own prompt path in
    `run-code-b8-2.log` on this 57-token prompt; a 2k-token prompt needs the wide chunks).
+
+
+## Update 2026-09-21 (later): packed drafter + GPU top-16 + eviction; block 5 default
+
+Runner options now: `block` (default **5**), `smallm` (f16 default / f32 / off), `sink` / `window` (64 / 1024; 0/0 =
+no eviction), `eos=0` (run past EOS, for long identity checks), `packed=0` (f16 drafter weights), `cputopk=1` (the old
+7 MB readback path), `max`, `prompt`. The kernel agent's recurrence-only rewind is not landed yet; the tape replay stays.
+
+| run | tokens | identical to plain greedy | tok/cycle | ms/cycle | ms/token (tok/s) | plain ms/token | ratio | log |
+|---|---|---|---|---|---|---|---|---|
+| code, block 5, packed drafter, GPU top-16 | 256 | yes, 256/256, no divergence | 3.66 | 141.0 (median 155.8) | **38.5 (26.0)** | 34.7 (28.8) | **0.90×** | `run-code-b5-packed.log` |
+| lighthouse, block 5, `eos=0`, 1536 tokens | 1536 | yes, 1536/1536 | 3.46 | 190.5 (median 196.7) | 55.1 (18.1) | 36.9 (27.1) | 0.67× | `run-lighthouse-1536.log` |
+
+Code breakdown per cycle: draft+head **22.6** (was 38.7), verify 85.5 (median 84.7), replay 32.8 mean (50 / 56 / 64 / 76 ms
+for 1 / 2 / 3 / 4 replayed tokens; none in 33 of 71 cycles), append 0.1. Accept histogram 0:9 1:12 2:7 3:10 4:33 — the
+same cycle-for-cycle histogram as the f16-drafter run (the packed kernels change nothing the selector sees).
+
+Lighthouse at 1536 tokens (the model runs past its EOS into repetitive text): 445 cycles, eviction fired 118 times, the
+drafter context stayed at 1088 rows (sink 64 + window 1024) for 1558 absolute positions, and every token still equals
+plain greedy — the eviction + positions path is exercised and exact for this run. Speed there is the tape-replay worst
+case: 294 of 445 cycles accepted exactly 3 of 4 drafts, i.e. a 4-token replay (84 ms) after a 92 ms verify.
+
+With the replay removed the code run would be 108 ms/cycle = 29.6 ms/token = 1.17× plain; that is now the whole gap.

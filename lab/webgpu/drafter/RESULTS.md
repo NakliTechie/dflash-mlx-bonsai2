@@ -186,3 +186,45 @@ at ~140 GB/s. Against the engine's own numbers (decode 34.6 ms/token, 8-token ve
    (C-capacity) and reuse — required before a runner loops thousands of cycles.
 6. Fold `dump.py`'s MLX-vs-MLX bf16-vs-GGUF comparison into a multi-cycle acceptance check once the runner exists (does
    Q4_K_M cost acceptance vs the bf16 drafter on real prompts?).
+
+## Update 2026-09-21 (later): packed weights in-shader, GPU top-16, sink/window context
+
+**Packed-weight GEMMs (`gemm_q4k`, `gemm_q6k`).** The Q4_K / Q6_K blocks now stay on the GPU as raw GGUF bytes (Q6_K
+repacked at load to a 212-byte = 53-u32 stride so every block is word-aligned) and are dequantized inside the GEMM;
+activations and the residual stream stay f32. Load: 4.9 s → 0.75–0.9 s (no CPU dequant), GPU weights 3.60 → 1.06 GB.
+Kernel shape that won (`run-gguf-packed-v5*.log`): 64 threads = 16 column PAIRS × 4 lanes, lane q owns sub-block pair
+q of every 256-value block, the block's X tile (8 rows × 256) staged once per block in workgroup memory, two output
+columns per thread so each staged X load feeds 16 FMAs, unrolled named accumulators, and a K-split (wg.z + `ksum`)
+when N is narrow (< ~512 workgroups). Tried and rejected: (v1) 4 columns × 16 k-lanes without the tile: 30.7 ms step —
+no faster than f16 (the step is issue-bound, not bandwidth-bound); (v2) tile + `acc[8]` indexed by a loop variable:
+slower (private-memory array); (v3) unrolled: 20.5 ms; (v4) 2 columns/thread: 18 ms; (v5) + Q6_K 2-col + K-split:
+**17.3 ms**; (v6) 4 columns/thread: 29 ms (register pressure) — reverted to v5.
+
+| | f16 weights (step 3) | packed v5 |
+|---|---|---|
+| warm draft step (median of 5) | 27.0 ms | **17.3 ms** |
+| context projection, 27 rows, warm | 10.7 ms | 7.5 ms |
+| per op, one step (timestamps): ffn_down / up / gate | 6.83 / 6.20 / 6.07 | 4.46 / 3.67 / 3.65 |
+| attn_q / attn_output / k / v / conv_proj ×2 | 1.62 / 1.57 / 0.58 / 0.57 / 0.59+0.58 | 0.95 / 0.98 / 0.35 / 0.39 / 0.38+0.37 |
+| everything else (attention, norms, convs, silu, selector) | ~0.8 | ~0.7 |
+| profiled op total | 25 | 15.9 |
+| weight load | 4949 ms | 741–876 ms |
+| GPU weight bytes | 3.60 GB | 1.06 GB |
+
+Correctness (`run-gguf32-packed.log`, oracle `--weights gguf32` = the GGUF dequantized to exact f32, added to
+`dump.py` because the step-3 `gguf` oracle holds f16-rounded weights and the packed path is more exact than it):
+every stage rmsRel ≤ 3.4e-6 (`draft_context` 8.0e-7, `final_hidden` 3.2e-6, `sel_hidden` 2.5e-6, `sel_edges` 2.9e-6,
+unary logits 1.6e-6), argmax 7/7, selected 7/7. The gate asked for ≤ 1e-5.
+
+**GPU top-16 (`topk`).** One workgroup (256 threads) per row over the head graph's logits buffer: private top-16 per
+thread over a strided slice → storage scratch [row, 256, 16] → 16 threads merge 256 each → thread 0 merges 256; the
+runner reads back 7×16 ids + values (896 B) instead of the 7 MB logits, and walks the selector's 112 candidates on the
+CPU (0.2–0.4 ms, codebook rows dequantized on demand). Unit test: id set equals a CPU sort on 3 × 248320 random rows.
+In the runner, draft+head fell from 38.7 to 22.6 ms per cycle (17.3 drafter + ≈5 head: M=7 lut2 matmul, top-16, two
+small readbacks).
+
+**Sink/window eviction.** `createContext(cap, {sink, window})` keeps the first `sink` rows and the last `window` rows
+after every append (MLX `ContextOnlyDraftKVCache`, upstream defaults 64 / 1024), rows and their absolute positions
+move together (a `pos` buffer feeds the attention mask `qpos − kpos < 2048`, so sink rows older than the window get
+masked exactly as MLX masks them). Unit test: 72 synthetic rows → kept positions `[0..15] ++ [40..71]` with a
+sink-16/window-32 context and all K/V rows intact.

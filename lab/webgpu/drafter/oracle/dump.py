@@ -30,7 +30,7 @@ from dflash_mlx.runtime.prism_pack import load_pack_tokenizer
 from dflash_mlx.runtime.loading import load_draft_bundle
 from dflash_mlx.draft_backend import EagerDraftBackend
 
-ap = argparse.ArgumentParser(); ap.add_argument('--weights', choices=['bf16', 'gguf'], default='bf16'); ap.add_argument('--out', default=None)
+ap = argparse.ArgumentParser(); ap.add_argument('--weights', choices=['bf16', 'gguf', 'gguf32'], default='bf16'); ap.add_argument('--out', default=None)
 ap.add_argument('--features', default='lab/webgpu/oracle/context_features.npy', help='cached tapped features [C, 5H] from a full-target prefill (dump_drafter_oracle.py); if missing, the full target is loaded and run')
 ap.add_argument('--meta', default='lab/webgpu/oracle/meta.json', help='meta.json next to the cached features (prompt_ids, anchor)')
 args = ap.parse_args()
@@ -80,7 +80,7 @@ bundle = load_draft_bundle(DRAFT, draft_quant=None)
 draft = bundle.model if hasattr(bundle, 'model') else bundle[0]
 draft.bind_target_model(model, target_ops=bind_ops)
 print('draft', type(draft).__name__, 'embed_scale', draft.embed_scale, 'mask', draft.mask_token_id, 'block', draft.block_size)
-if args.weights == 'gguf':
+if args.weights in ('gguf', 'gguf32'):
     import gguf
     from gguf.quants import dequantize
     reader = gguf.GGUFReader(GGUF)
@@ -104,7 +104,8 @@ if args.weights == 'gguf':
         if t.tensor_type == gguf.GGMLQuantizationType.F32:
             arr = np.array(t.data, dtype=np.float32).reshape(shape); dt = mx.float32
         else:
-            arr = dequantize(np.array(t.data), t.tensor_type).reshape(shape).astype(np.float16); dt = mx.float16   # f16-rounded = the browser's copy
+            arr = dequantize(np.array(t.data), t.tensor_type).reshape(shape); dt = mx.float16 if args.weights == 'gguf' else mx.float32   # gguf: f16-rounded (the step-3 browser copy); gguf32: exact dequant (the packed kernels' values)
+            arr = arr.astype(np.float16 if args.weights == 'gguf' else np.float32)
         new.append((mlx_name(t.name), mx.array(arr).astype(dt)))
     draft.load_weights(new, strict=True); mx.eval(draft.parameters()); print('loaded', len(new), 'tensors from the GGUF (quantized -> f16, norms/bases f32)')
     index['gguf'] = GGUF
