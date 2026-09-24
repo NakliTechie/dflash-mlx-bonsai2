@@ -421,7 +421,9 @@ class DFlash2DraftModel(DFlashDraftModel):
         self.capabilities = DraftRuntimeCapabilities(
             default_block_tokens=5,
             max_block_tokens=min(5, int(args.block_size)),
-            supports_copyspec=False,
+            # Context K/V are target-hidden projections only (the dynamic convs
+            # act on block rows), so advance_context matches a draft cycle.
+            supports_copyspec=True,
             supports_ddtree=False,
             supports_early_rollback_launch=True,
         )

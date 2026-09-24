@@ -20,7 +20,11 @@ from dflash_mlx.draft.dflash2 import (
     remap_dflash2_codebook_weights,
 )
 from dflash_mlx.draft_backend import EagerDraftBackend
-from dflash_mlx.model import DFlashDraftModel, DFlashDraftModelArgs
+from dflash_mlx.model import (
+    ContextOnlyDraftKVCache,
+    DFlashDraftModel,
+    DFlashDraftModelArgs,
+)
 from dflash_mlx.runtime import loading as runtime_loading
 
 
@@ -115,7 +119,7 @@ def test_checkpoint_dispatch_selects_dflash2_without_affecting_prior_dflash():
     ).capabilities
     assert capabilities.default_block_tokens == 5
     assert capabilities.max_block_tokens == 5
-    assert not capabilities.supports_copyspec
+    assert capabilities.supports_copyspec
     assert not capabilities.supports_ddtree
     assert capabilities.supports_early_rollback_launch
 
@@ -162,6 +166,35 @@ def test_dflash2_non_causal_block_attention_allows_future_block_tokens():
     mx.eval(mask, expected)
 
     assert bool(mx.all(mask == expected).item())
+
+
+def test_dflash2_advance_context_matches_draft_cycle_cache():
+    # CopySpec skips the draft forward and calls advance_context instead; the
+    # draft cache must end up identical, so the next real draft is unchanged.
+    mx.random.seed(0)
+    args = DFlash2DraftModelArgs.from_dict(_dflash2_config(num_hidden_layers=2, layer_types=["sliding_attention"] * 2))
+    model = DFlash2DraftModel(args)
+    mx.eval(model.parameters())
+    backend = EagerDraftBackend()
+    drafted = backend.make_cache(draft_model=model, sink_size=2, window_size=6)
+    copied = backend.make_cache(draft_model=model, sink_size=2, window_size=6)
+    assert all(isinstance(cache, ContextOnlyDraftKVCache) for cache in drafted)
+    prompt = mx.random.normal((1, 11, 32))
+    noise = mx.random.normal((1, 5, 32))
+    for cache in (drafted, copied):
+        model.forward_projected_context(noise_embedding=noise, draft_context=prompt, cache=cache)
+    step = mx.random.normal((1, 3, 32))
+    model.forward_projected_context(noise_embedding=noise, draft_context=step, cache=drafted)
+    backend.advance_context(draft_model=model, draft_cache=copied, draft_context=step)
+    for a, b in zip(drafted, copied):
+        assert a.offset == b.offset
+        assert a.positions.tolist() == b.positions.tolist()
+        assert mx.allclose(a.keys, b.keys).item()
+        assert mx.allclose(a.values, b.values).item()
+    nxt = mx.random.normal((1, 2, 32))
+    out_a = model.forward_projected_context(noise_embedding=noise, draft_context=nxt, cache=drafted)
+    out_b = model.forward_projected_context(noise_embedding=noise, draft_context=nxt, cache=copied)
+    assert mx.array_equal(out_a, out_b).item()
 
 
 def test_dflash2_grouped_dynamic_conv_matches_reference():
