@@ -16,6 +16,9 @@
 //   -> verify block [anchor, drafts[0..block-2]] through the tapped small-M verify session -> accept the longest
 //   agreeing prefix (k) + the bonus token -> append rows 0..k of the verify run's features to the drafter context
 //   -> if k+1 < block: restore the checkpoint and rewind the recurrent state through the accepted rows (RewindSession).
+// Optional prompt lookup (`ngram: true`, `ngramK`): when the context's suffix (>= ngramK tokens) occurred earlier in this
+// cache's token history, the tokens that followed it are the draft (the drafter runs only to fill a short match). The
+// verify block, acceptance, context append and rewind are the same, so output and drafter context are unchanged.
 // Output is greedy-identical to the engine's own decode (runner/RESULTS.md).
 import { Drafter, CFG } from '../drafter/drafter.js';
 
@@ -43,11 +46,13 @@ export class DFlashRunner {
     if (!(this.block >= 2 && this.block <= CFG.BLOCK)) throw new Error(`DFlashRunner: block must be 2..${CFG.BLOCK}`);
     this.sink = opts.sink ?? 64; this.window = opts.window ?? 1024;
     this.smallM = opts.smallM === 'off' ? undefined : { precision: opts.smallM ?? 'f16' };
+    this.ngram = !!opts.ngram; this.ngramK = opts.ngramK ?? 3;
+    if (!(this.ngramK >= 1)) throw new Error('DFlashRunner: ngramK must be >= 1');
     this.log = opts.log || (() => {});
     this.H = this.cfg.hidden_size; this.VOC = this.cfg.vocab_size;
     if (this.H !== CFG.H || this.VOC !== CFG.VOCAB) throw new Error(`DFlashRunner: target H/V ${this.H}/${this.VOC} != drafter ${CFG.H}/${CFG.VOCAB}`);
-    this.res = new Map();      // cache -> { sessions, rewind, slot, ctx, ctxEnd }
-    this.stats = { cycles: 0, tokens: 0, accepted: 0, generations: 0 };
+    this.res = new Map();      // cache -> { sessions, rewind, slot, ctx, ctxEnd, hist }
+    this.stats = { cycles: 0, tokens: 0, accepted: 0, generations: 0, ngramCycles: 0, ngramAccepted: 0 };
     this.disposed = false;
   }
 
@@ -93,7 +98,8 @@ export class DFlashRunner {
     const rewind = new I.RewindSession(inner, cache, LV, verify); await rewind.build();
     const slot = await cache.allocateCheckpointSlot();
     const ctx = this.dr.createContext(this.sink + this.window > 0 ? this.sink + this.window + 16 : cache.maxLength + 16, { sink: this.sink, window: this.window });
-    r = { sessions, verify, prefill, rewind, slot, ctx, ctxEnd: -1 }; this.res.set(cache, r); return r;
+    // hist: the token ids the cache holds (prompt lookup)
+    r = { sessions, verify, prefill, rewind, slot, ctx, ctxEnd: -1, hist: [] }; this.res.set(cache, r); return r;
   }
 
   release(cache) {
@@ -141,6 +147,21 @@ export class DFlashRunner {
     return sel.path;
   }
 
+  // prompt lookup over context = hist + [anchor]: the most recent earlier position whose preceding tokens match the
+  // context's suffix longest (>= ngramK, capped at 32); returns up to n tokens that followed it, or null
+  #lookup(hist, anchor, n) {
+    const L = hist.length, MAXM = 32; const at = (i) => i === L ? anchor : hist[i];
+    let best = 0, bestP = -1;
+    for (let p = L - 1; p >= 0; --p) {
+      if (hist[p] !== anchor) continue;
+      let m = 1; while (m < MAXM && p - m >= 0 && hist[p - m] === at(L - m)) m++;
+      if (m > best) { best = m; bestP = p; if (m >= MAXM) break; }
+    }
+    if (best < this.ngramK) return null;
+    const out = []; for (let i = bestP + 1; i <= L && out.length < n; ++i) out.push(at(i));
+    return out;
+  }
+
   // ---- the engine seam ----
   async *generate(tokenIds, cache, generationArgs, beginDecode, eosTokenId) {
     const { I, dr, rt, H } = this; const LV = this.block;
@@ -152,6 +173,9 @@ export class DFlashRunner {
     // drafter context: keep it when it still mirrors the cache (prefix reuse without truncation), else rebuild from the suffix
     const past = cache.get_seq_length();
     if (r.ctxEnd !== past) dr.resetContext(r.ctx);
+    // token history: truncate to the reused prefix; a cache filled outside this runner leaves it unknown (lookup only, so
+    // a wrong history costs acceptance, never correctness)
+    if (r.hist.length !== past) r.hist = r.hist.length > past ? r.hist.slice(0, past) : [];
     // prompt prefill in the engine's block sizes through tapped sessions; anchor = next token after the last chunk.
     // Only the last (sink + window) rows of the suffix feed the drafter context — earlier rows would be evicted anyway.
     const ids = Array.from(tokenIds); const keep = this.sink + this.window > 0 ? this.sink + this.window : ids.length; const firstKept = Math.max(0, ids.length - keep);
@@ -163,6 +187,7 @@ export class DFlashRunner {
       for (let o = Math.max(0, firstKept - i); o < chunk.length; o += CFG.BLOCK) { const n = Math.min(CFG.BLOCK, chunk.length - o); dr.appendContext(r.ctx, { buffer: run.feat.buffer, offset: run.feat.offset + o * 5 * H * 4, size: n * 5 * H * 4 }, n); }
       i += chunk.length;
     }
+    for (const t of ids) r.hist.push(t);
     await rt.queueIdle();
     onPrefillDone?.({ tokens: tokenIds.length, cache_length: cache.get_seq_length() });
     if (maxNewTokens <= 0 || isEos(anchor)) { r.ctxEnd = cache.get_seq_length(); return; }
@@ -171,7 +196,8 @@ export class DFlashRunner {
     try {
       while (emitted < maxNewTokens && !eosSeen.v) {
         if (cache.get_seq_length() + LV > cache.maxLength) break;   // no room for a full verify block
-        const drafted = (await this.#draft(r.ctx, anchor)).slice(0, LV - 1);
+        let drafted = this.ngram ? this.#lookup(r.hist, anchor, LV - 1) : null; const ng = !!drafted;
+        if (!drafted || drafted.length < LV - 1) { const d = (await this.#draft(r.ctx, anchor)).slice(0, LV - 1); drafted = drafted ? [...drafted, ...d.slice(drafted.length)] : d; }
         const block = [anchor, ...drafted];
         r.slot.checkpoint.capture(); const pos = cache.seqLength;
         const run = await this.#runBlock(r, r.verify, block); const vt = Array.from(await run.tokens());
@@ -187,7 +213,8 @@ export class DFlashRunner {
         const keep = y < out.length ? y : k + 1;
         dr.appendContext(r.ctx, { ...run.feat, size: keep * 5 * H * 4 }, keep);
         if (keep < LV) { r.slot.checkpoint.restore(); r.rewind.run(keep); cache.seqLength = pos + keep; }
-        this.stats.cycles++; this.stats.accepted += k;
+        for (let i = 0; i < keep; ++i) r.hist.push(block[i]);
+        this.stats.cycles++; this.stats.accepted += k; if (ng) { this.stats.ngramCycles++; this.stats.ngramAccepted += k; }
         for (let i = 0; i < y; ++i) { yield out[i]; emitted++; this.stats.tokens++; }
         anchor = bonus;
       }

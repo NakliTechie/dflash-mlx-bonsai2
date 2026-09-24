@@ -1,0 +1,28 @@
+22:37:19 {"state":"load-target","prog":"tokenizer /"}
+22:37:22 {"state":"load-target","prog":"weights 2/449"}
+22:37:25 {"state":"load-target","prog":"weights /"}
+[console] target loaded; eos 248046
+22:37:34 {"state":"plain","prog":"ready /"}
+[console] plain ref: 256 tokens, 66.03 ms/token
+22:37:52 {"state":"attach","prog":"drafter 60/79"}
+[console] weights: 79 tensors, 1.06 GB on GPU, 1138 ms (dequant 155 ms)
+[console] DFlashRunner ready: block 8, drafter 1.06 GB on GPU
+22:37:55 {"state":"warmup","prog":"drafter 79/79"}
+22:38:10 {"state":"plain-0","prog":"drafter 79/79"}
+[console] rep 0 plain: 256 tokens, 74.02 ms/token, same as ref true
+22:38:28 {"state":"spec-0-ngram0","prog":"drafter 79/79"}
+[console] rep 0 dflash: {"rep":0,"cfg":"dflash","n":256,"msPerTok":59.3,"ttftMs":906.3,"cycles":59,"tokPerCycle":4.339,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.248}
+22:38:46 {"state":"spec-0-ngram3","prog":"drafter 79/79"}
+[console] rep 0 ngram k=3: {"rep":0,"cfg":"ngram k=3","n":256,"msPerTok":60.84,"ttftMs":888.3,"cycles":61,"tokPerCycle":4.197,"ngramCycles":2,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.217}
+22:39:01 {"state":"spec-0-ngram6","prog":"drafter 79/79"}
+[console] rep 0 ngram k=6: {"rep":0,"cfg":"ngram k=6","n":256,"msPerTok":59.48,"ttftMs":951.9,"cycles":60,"tokPerCycle":4.267,"ngramCycles":1,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.244}
+22:39:19 {"state":"plain-1","prog":"drafter 79/79"}
+[console] rep 1 plain: 256 tokens, 73.48 ms/token, same as ref true
+22:39:37 {"state":"spec-1-ngram0","prog":"drafter 79/79"}
+[console] rep 1 dflash: {"rep":1,"cfg":"dflash","n":256,"msPerTok":58.76,"ttftMs":971.2,"cycles":59,"tokPerCycle":4.339,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.251}
+22:39:55 {"state":"spec-1-ngram3","prog":"drafter 79/79"}
+[console] rep 1 ngram k=3: {"rep":1,"cfg":"ngram k=3","n":256,"msPerTok":60.49,"ttftMs":969.3,"cycles":61,"tokPerCycle":4.197,"ngramCycles":2,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.215}
+22:40:10 {"state":"spec-1-ngram6","prog":"drafter 79/79"}
+[console] rep 1 ngram k=6: {"rep":1,"cfg":"ngram k=6","n":256,"msPerTok":57.61,"ttftMs":937,"cycles":60,"tokPerCycle":4.267,"ngramCycles":1,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.275}
+22:40:25 {"state":"done","prog":"drafter 79/79"}
+RESULTS {"gpu":{"f16":true,"tsq":true,"arch":"metal-3"},"prompt":{"name":"code","tokens":57},"results":{"seam":{"prompt":"code","block":8,"max":256,"eos":true,"refTokens":256,"refText":"```python\n\"\"\"\nlru_cache.py\n\nImplements a classic LRU (Least Recently Used) cache with O(1) get and put.\n\nThe implementation uses a doubly-linked list to maintain access order and a\nhash map for O(1) key lookup.  When the cache is full, the least-recently-used\nentry is evicted.\n\"\"\"\n\nfrom __future__ i","rows":[{"rep":0,"cfg":"plain","n":256,"msPerTok":74.02,"ttftMs":848.5,"identicalToRef":true},{"rep":0,"cfg":"dflash","n":256,"msPerTok":59.3,"ttftMs":906.3,"cycles":59,"tokPerCycle":4.339,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.248},{"rep":0,"cfg":"ngram k=3","n":256,"msPerTok":60.84,"ttftMs":888.3,"cycles":61,"tokPerCycle":4.197,"ngramCycles":2,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.217},{"rep":0,"cfg":"ngram k=6","n":256,"msPerTok":59.48,"ttftMs":951.9,"cycles":60,"tokPerCycle":4.267,"ngramCycles":1,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.244},{"rep":1,"cfg":"plain","n":256,"msPerTok":73.48,"ttftMs":899,"identicalToRef":true},{"rep":1,"cfg":"dflash","n":256,"msPerTok":58.76,"ttftMs":971.2,"cycles":59,"tokPerCycle":4.339,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.251},{"rep":1,"cfg":"ngram k=3","n":256,"msPerTok":60.49,"ttftMs":969.3,"cycles":61,"tokPerCycle":4.197,"ngramCycles":2,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.215},{"rep":1,"cfg":"ngram k=6","n":256,"msPerTok":57.61,"ttftMs":937,"cycles":60,"tokPerCycle":4.267,"ngramCycles":1,"ngramAccepted":3,"generations":1,"compared":256,"firstDivergence":-1,"identical":true,"speedup":1.275}],"allIdentical":true,"runnerStats":{"cycles":419,"tokens":1785,"accepted":1415,"generations":7,"ngramCycles":6,"ngramAccepted":12}}},"error":null}

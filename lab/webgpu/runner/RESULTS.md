@@ -176,3 +176,34 @@ verify outcomes as the replayed one — the kernel agent's bitwise identity resu
 The cycle is now verify (85 ms at block 5, 117 at block 8) + drafter (17) + head (5) + rewind (7): the verify graph is
 73–80 % of it. Next levers: the M=4/5 small-M route on the verify graph (kernel agent), fusing gate+up in the drafter,
 and per-dispatch overhead in the rewind (144 dispatches) and the drafter (~125 dispatches per step).
+
+
+## Update 2026-09-24: prompt lookup (n-gram) drafts stacked on DFlash2, inside the existing verify block
+
+`spec-runner.js` options `ngram` (default off) and `ngramK` (default 3). The runner keeps a token history per cache,
+which mirrors the cache. It is truncated on prefix reuse, extended with the prompt suffix, and extended with each
+cycle's kept rows. Each cycle looks up the longest earlier match (>= k, capped at 32) of `hist + [anchor]` and takes
+up to block-1 following tokens as the draft. The drafter runs only when the match is shorter than block-1, and it
+fills the rest. Verify, acceptance, context append and rewind do not change. Stats: `ngramCycles`, `ngramAccepted`.
+The harness mode `runner.js?seam=1&configs=0,3,6&reps=2` drives `DFlashRunner` through the engine's own `streamTokens`
+(LocalMind `ternary_bonsai_2_27b.js` sha1 802efcc, copied into a private engine dir, served on 8797). Plain and spec
+stop at EOS. Logs: `run-ngram-<prompt>-b<block>.log`.
+
+Every spec run matches plain greedy token for token (36 of 36 runs, 3 prompts x 2 blocks x 3 configs x 2 reps).
+Median ms/token over 2 reps (plain measured in-page next to each rep; tok/cycle is deterministic):
+
+| prompt (tokens) | block | plain | dflash | ngram k=3 | ngram k=6 | tok/cycle dflash / k3 / k6 | n-gram cycles (accepted) k3 / k6 |
+|---|---|---|---|---|---|---|---|
+| codeedit (490) | 5 | 75.1 | 52.4 | 60.2 | 51.3 | 4.30 / 3.63 / 4.08 | 46 (74) / 16 (35) |
+| codeedit (490) | 8 | 76.6 | 49.9 | 53.0 | 49.7 | 5.77 / 5.10 / 5.44 | 24 (56) / 9 (19) |
+| code (256) | 5 | 88.9 | 60.0 | 55.4 | 55.0 | 3.61 / 3.51 / 3.56 | 4 (5) / 2 (3) |
+| code (256) | 8 | 73.8 | 59.0 | 60.7 | 58.5 | 4.34 / 4.20 / 4.27 | 2 (3) / 1 (3) |
+| lighthouse (96, EOS) | 5 | 70.5 | 81.0 | 80.4 | 76.8 | 2.53 / 2.53 / 2.53 | 1 (0) / 0 |
+| lighthouse (96, EOS) | 8 | 78.0 | 95.6 | 100.4 | 97.0 | 2.67 / 2.67 / 2.67 | 0 / 0 |
+
+Reading: n-gram drafts lower tokens/cycle on every prompt. On the rename/comment edit they accept 1.6 (k=3) and 2.2
+(k=6) drafts per n-gram cycle, against about 3.3 for the drafter at block 5, because renamed identifiers break the
+copied spans. Skipping the drafter on those cycles saves about 20 ms. That saving does not cover the lost acceptance
+at k=3. At k=6 the ms/token lands within the rep-to-rep noise of dflash (up to 8 ms). Plain decode ran at 70-89
+ms/token here, about 2x the 35 ms of the 2026-09-21 runs. The absolute numbers are therefore not comparable with the
+tables above; only the in-page ratios are.

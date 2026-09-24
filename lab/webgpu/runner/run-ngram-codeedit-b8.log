@@ -1,0 +1,29 @@
+22:27:13 {"state":"load-target","prog":"tokenizer /"}
+22:27:16 {"state":"load-target","prog":"weights 5858715636/5935527936"}
+22:27:19 {"state":"load-target","prog":"weights /"}
+[console] target loaded; eos 248046
+22:27:28 {"state":"plain","prog":"ready /"}
+[console] plain ref: 490 tokens, 72.93 ms/token
+22:28:07 {"state":"attach","prog":"ready /"}
+[console] weights: 79 tensors, 1.06 GB on GPU, 1275 ms (dequant 175 ms)
+[console] DFlashRunner ready: block 8, drafter 1.06 GB on GPU
+22:28:10 {"state":"attach","prog":"drafter 79/79"}
+22:28:13 {"state":"warmup","prog":"drafter 79/79"}
+22:28:43 {"state":"plain-0","prog":"drafter 79/79"}
+[console] rep 0 plain: 490 tokens, 75.95 ms/token, same as ref true
+22:29:25 {"state":"spec-0-ngram0","prog":"drafter 79/79"}
+[console] rep 0 dflash: {"rep":0,"cfg":"dflash","n":490,"msPerTok":47.04,"ttftMs":6343.7,"cycles":85,"tokPerCycle":5.765,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.615}
+22:29:55 {"state":"spec-0-ngram3","prog":"drafter 79/79"}
+[console] rep 0 ngram k=3: {"rep":0,"cfg":"ngram k=3","n":490,"msPerTok":53.03,"ttftMs":6101.1,"cycles":96,"tokPerCycle":5.104,"ngramCycles":24,"ngramAccepted":56,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.432}
+22:30:28 {"state":"spec-0-ngram6","prog":"drafter 79/79"}
+[console] rep 0 ngram k=6: {"rep":0,"cfg":"ngram k=6","n":490,"msPerTok":50.56,"ttftMs":6261.7,"cycles":90,"tokPerCycle":5.444,"ngramCycles":9,"ngramAccepted":19,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.502}
+22:30:58 {"state":"plain-1","prog":"drafter 79/79"}
+[console] rep 1 plain: 490 tokens, 77.24 ms/token, same as ref true
+22:31:40 {"state":"spec-1-ngram0","prog":"drafter 79/79"}
+[console] rep 1 dflash: {"rep":1,"cfg":"dflash","n":490,"msPerTok":52.82,"ttftMs":6582.5,"cycles":85,"tokPerCycle":5.765,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.462}
+22:32:13 {"state":"spec-1-ngram3","prog":"drafter 79/79"}
+[console] rep 1 ngram k=3: {"rep":1,"cfg":"ngram k=3","n":490,"msPerTok":52.91,"ttftMs":6561,"cycles":96,"tokPerCycle":5.104,"ngramCycles":24,"ngramAccepted":56,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.46}
+22:32:46 {"state":"spec-1-ngram6","prog":"drafter 79/79"}
+[console] rep 1 ngram k=6: {"rep":1,"cfg":"ngram k=6","n":490,"msPerTok":48.74,"ttftMs":5861.5,"cycles":90,"tokPerCycle":5.444,"ngramCycles":9,"ngramAccepted":19,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.585}
+22:33:16 {"state":"done","prog":"drafter 79/79"}
+RESULTS {"gpu":{"f16":true,"tsq":true,"arch":"metal-3"},"prompt":{"name":"codeedit","tokens":395},"results":{"seam":{"prompt":"codeedit","block":8,"max":512,"eos":true,"refTokens":490,"refText":"```python\ndef process_records(records, key, threshold=0.5, max_value=None):\n    # Initialize result dictionary and counters for missing values and sum\n    result = {}\n    missing_count = 0\n    value_sum = 0.0\n\n    # Iterate through records to categorize values and accumulate sum\n    for index, recor","rows":[{"rep":0,"cfg":"plain","n":490,"msPerTok":75.95,"ttftMs":6212,"identicalToRef":true},{"rep":0,"cfg":"dflash","n":490,"msPerTok":47.04,"ttftMs":6343.7,"cycles":85,"tokPerCycle":5.765,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.615},{"rep":0,"cfg":"ngram k=3","n":490,"msPerTok":53.03,"ttftMs":6101.1,"cycles":96,"tokPerCycle":5.104,"ngramCycles":24,"ngramAccepted":56,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.432},{"rep":0,"cfg":"ngram k=6","n":490,"msPerTok":50.56,"ttftMs":6261.7,"cycles":90,"tokPerCycle":5.444,"ngramCycles":9,"ngramAccepted":19,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.502},{"rep":1,"cfg":"plain","n":490,"msPerTok":77.24,"ttftMs":5681.6,"identicalToRef":true},{"rep":1,"cfg":"dflash","n":490,"msPerTok":52.82,"ttftMs":6582.5,"cycles":85,"tokPerCycle":5.765,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.462},{"rep":1,"cfg":"ngram k=3","n":490,"msPerTok":52.91,"ttftMs":6561,"cycles":96,"tokPerCycle":5.104,"ngramCycles":24,"ngramAccepted":56,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.46},{"rep":1,"cfg":"ngram k=6","n":490,"msPerTok":48.74,"ttftMs":5861.5,"cycles":90,"tokPerCycle":5.444,"ngramCycles":9,"ngramAccepted":19,"generations":1,"compared":490,"firstDivergence":-1,"identical":true,"speedup":1.585}],"allIdentical":true,"runnerStats":{"cycles":627,"tokens":3423,"accepted":2803,"generations":7,"ngramCycles":66,"ngramAccepted":150}}},"error":null}

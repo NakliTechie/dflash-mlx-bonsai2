@@ -10,6 +10,9 @@
 // Query: ?model=<gguf> &block=5 &max=256 &prompt=code|oracle|lighthouse|<text> &smallm=f16|f32|off &selftest=1 &draft=<drafter gguf url>
 //        &sink=64 &window=1024 (drafter context eviction; 0/0 = none) &eos=0 (run past EOS) &packed=0 (f16 drafter weights) &cputopk=1 (old head path)
 //        &rewind=0 (tape replay through a (k+1)-row session instead of the recurrence-only RewindSession, patch section (f))
+//        &seam=1: drive spec-runner.js's DFlashRunner through the engine's own streamTokens (needs an engine with the
+//        specDecodeRunner seam + dc/fc internals) &ngram=0|1 &ngram_k=3, or &configs=0,3,6 (0 = ngram off, N = ngram k=N)
+//        &reps=2 (plain + every config per rep, after one warm-up generation); plain and spec both honour &eos
 (() => { // hidden-tab guard (verify-qwen35-harness.js): rAF never fires and short timers are throttled in a hidden tab
   const ch = new MessageChannel(); const q = [];
   ch.port1.onmessage = () => { const cb = q.shift(); if (cb) cb(performance.now()); };
@@ -22,6 +25,7 @@
 })();
 import { Drafter, CFG } from '../drafter/drafter.js';
 import { fetchNpy } from '../drafter/npy.js';
+import { DFlashRunner } from './spec-runner.js';
 const V = window.__dr = { state: 'init', log: [], results: {}, error: null };
 const log = (...a) => { const s = a.join(' '); V.log.push([Date.now(), s]); console.log(s); };
 const qs = new URLSearchParams(location.search);
@@ -33,6 +37,48 @@ const PROMPTS = {
   code: 'Write a Python module with a class LRUCache(capacity) supporting get(key) and put(key, value) in O(1), with docstrings, type hints, and a small pytest test file at the end.',
   oracle: 'Write a Python function that reverses a string, with a docstring.',
   lighthouse: 'Write a short paragraph about lighthouses.',
+  codeedit: `Rename the variables in this Python function to descriptive names and add a comment above each block. Keep the behaviour identical. Return the whole function.
+
+\`\`\`python
+def proc(d, k, t=0.5, m=None):
+    r = {}
+    c = 0
+    s = 0.0
+    for i, x in enumerate(d):
+        if x is None:
+            continue
+        v = x.get(k)
+        if v is None:
+            c += 1
+            continue
+        if m is not None and v > m:
+            v = m
+        if v < t:
+            r.setdefault("low", []).append(i)
+        else:
+            r.setdefault("high", []).append(i)
+        s += v
+    n = len(d) - c
+    if n == 0:
+        return r, 0.0, c
+    a = s / n
+    q = []
+    for i, x in enumerate(d):
+        if x is None or x.get(k) is None:
+            continue
+        w = x.get(k)
+        if m is not None and w > m:
+            w = m
+        q.append((w - a) ** 2)
+    z = (sum(q) / len(q)) ** 0.5 if q else 0.0
+    for g in ("low", "high"):
+        if g in r:
+            r[g] = sorted(r[g], key=lambda j: d[j].get(k))
+    o = {"mean": a, "std": z, "missing": c}
+    for g, h in r.items():
+        o[g + "_count"] = len(h)
+    return r, o, c
+\`\`\``,
 };
 const chat = (u) => `<|im_start|>user\n${u}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
 const ms = (t) => +(performance.now() - t).toFixed(1);
@@ -48,6 +94,23 @@ const ms = (t) => +(performance.now() - t).toFixed(1);
     const eos = new Set([...(m.eosTokenIds || [248046])]); const enc = (s) => m.tokenizer.encode(s, { add_special_tokens: false }).ids; const dec = (ids) => m.tokenizer.decode(ids, { skip_special_tokens: false });
     V.gpu = { f16: dev.features.has('shader-f16'), tsq: dev.features.has('timestamp-query'), arch: dev.adapterInfo?.architecture };
     log('target loaded; eos ' + [...eos].join(','));
+    if (qs.get('seam') === '1') {   // ---- DFlashRunner (spec-runner.js) through the engine seam; plain vs each config ----
+      const ids = enc(chat(PROMPTS[PROMPT] ?? PROMPT)); V.prompt = { name: PROMPT, tokens: ids.length };
+      const configs = (qs.get('configs') ?? (qs.get('ngram') === '1' ? String(qs.get('ngram_k') ?? 3) : '0')).split(',').map(Number); const REPS = Number(qs.get('reps') || 2);
+      const gen = async () => { m.resetCache(); const out = []; const t0 = performance.now(); let tFirst = null; for await (const t of m.streamTokens({ suffixIds: ids, maxNewTokens: MAX, eosTokenId: [...eos][0], stopOnEos: STOP_EOS }, {})) { if (tFirst === null) tFirst = performance.now(); out.push(t); } const tEnd = performance.now(); return { tokens: out, ttftMs: +(tFirst - t0).toFixed(1), msPerTok: +((tEnd - tFirst) / Math.max(1, out.length - 1)).toFixed(2) }; };
+      const cmp = (a, b) => { const L = Math.min(a.length, b.length); let first = -1; for (let i = 0; i < L; ++i) if (a[i] !== b[i]) { first = i; break; } return { compared: L, firstDivergence: first, identical: first === -1 && a.length === b.length }; };
+      V.state = 'plain'; inner.dflashRunner = null; const ref = await gen(); log(`plain ref: ${ref.tokens.length} tokens, ${ref.msPerTok} ms/token`);
+      V.state = 'attach'; const runner = await DFlashRunner.create(m, { drafter: DRAFT, block: LV, smallM: SMALLM, sink: SINK, window: WINDOW, packed: PACKED, log, onProgress: (p) => { V.prog = `drafter ${p.done}/${p.total}`; } });
+      const spec = async (k) => { runner.ngram = k > 0; runner.ngramK = k || 3; inner.dflashRunner = runner; const s0 = { ...runner.stats }; const g = await gen(); inner.dflashRunner = null; const d = Object.fromEntries(Object.keys(s0).map(x => [x, runner.stats[x] - s0[x]])); return { ...g, cycles: d.cycles, tokPerCycle: +(g.tokens.length / Math.max(1, d.cycles)).toFixed(3), ngramCycles: d.ngramCycles, ngramAccepted: d.ngramAccepted, generations: d.generations }; };
+      V.state = 'warmup'; await spec(configs[0]);
+      const rows = [];
+      for (let rep = 0; rep < REPS; ++rep) {
+        V.state = 'plain-' + rep; const p = await gen(); const pm = cmp(ref.tokens, p.tokens); rows.push({ rep, cfg: 'plain', n: p.tokens.length, msPerTok: p.msPerTok, ttftMs: p.ttftMs, identicalToRef: pm.identical }); log(`rep ${rep} plain: ${p.tokens.length} tokens, ${p.msPerTok} ms/token, same as ref ${pm.identical}`);
+        for (const k of configs) { V.state = `spec-${rep}-ngram${k}`; const s = await spec(k); const sm = cmp(ref.tokens, s.tokens); const row = { rep, cfg: k ? `ngram k=${k}` : 'dflash', n: s.tokens.length, msPerTok: s.msPerTok, ttftMs: s.ttftMs, cycles: s.cycles, tokPerCycle: s.tokPerCycle, ngramCycles: s.ngramCycles, ngramAccepted: s.ngramAccepted, generations: s.generations, ...sm, speedup: +(p.msPerTok / s.msPerTok).toFixed(3) }; rows.push(row); log(`rep ${rep} ${row.cfg}: ${JSON.stringify(row)}`); if (!sm.identical) log('DIVERGENCE vs plain at ' + sm.firstDivergence); }
+      }
+      V.results = { seam: { prompt: PROMPT, block: LV, max: MAX, eos: STOP_EOS, refTokens: ref.tokens.length, refText: dec(ref.tokens).slice(0, 300), rows, allIdentical: rows.every(r => r.identical !== false && r.identicalToRef !== false), runnerStats: runner.stats } };
+      runner.dispose(); V.state = 'done'; return;
+    }
     // ---- drafter on the engine's device ----
     V.state = 'load-drafter'; const dr = new Drafter(dev, { log, packed: PACKED });
     await dr.loadWeights(DRAFT, (p) => { V.prog = `drafter ${p.done}/${p.total}`; }); V.drafter = dr.stats;

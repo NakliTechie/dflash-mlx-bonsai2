@@ -1,0 +1,28 @@
+22:40:48 {"state":"load-target","prog":"tokenizer /"}
+22:40:51 {"state":"load-target","prog":"weights 4/449"}
+22:40:54 {"state":"load-target","prog":"weights /"}
+[console] target loaded; eos 248046
+22:41:03 {"state":"plain","prog":"ready /"}
+[console] plain ref: 96 tokens, 68.82 ms/token
+22:41:09 {"state":"attach","prog":"drafter 76/79"}
+[console] weights: 79 tensors, 1.06 GB on GPU, 1209 ms (dequant 144 ms)
+[console] DFlashRunner ready: block 5, drafter 1.06 GB on GPU
+22:41:12 {"state":"warmup","prog":"drafter 79/79"}
+22:41:21 {"state":"plain-0","prog":"drafter 79/79"}
+[console] rep 0 plain: 96 tokens, 70.26 ms/token, same as ref true
+22:41:27 {"state":"spec-0-ngram0","prog":"drafter 79/79"}
+[console] rep 0 dflash: {"rep":0,"cfg":"dflash","n":96,"msPerTok":78.3,"ttftMs":684.4,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.897}
+22:41:36 {"state":"spec-0-ngram3","prog":"drafter 79/79"}
+[console] rep 0 ngram k=3: {"rep":0,"cfg":"ngram k=3","n":96,"msPerTok":74.35,"ttftMs":491.3,"cycles":38,"tokPerCycle":2.526,"ngramCycles":1,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.945}
+22:41:42 {"state":"spec-0-ngram6","prog":"drafter 79/79"}
+[console] rep 0 ngram k=6: {"rep":0,"cfg":"ngram k=6","n":96,"msPerTok":75.84,"ttftMs":778.6,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.926}
+22:41:51 {"state":"plain-1","prog":"drafter 79/79"}
+[console] rep 1 plain: 96 tokens, 70.69 ms/token, same as ref true
+22:42:00 {"state":"spec-1-ngram0","prog":"drafter 79/79"}
+[console] rep 1 dflash: {"rep":1,"cfg":"dflash","n":96,"msPerTok":83.76,"ttftMs":528.4,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.844}
+22:42:06 {"state":"spec-1-ngram3","prog":"drafter 79/79"}
+[console] rep 1 ngram k=3: {"rep":1,"cfg":"ngram k=3","n":96,"msPerTok":86.42,"ttftMs":694.5,"cycles":38,"tokPerCycle":2.526,"ngramCycles":1,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.818}
+22:42:15 {"state":"spec-1-ngram6","prog":"drafter 79/79"}
+[console] rep 1 ngram k=6: {"rep":1,"cfg":"ngram k=6","n":96,"msPerTok":77.74,"ttftMs":495.8,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.909}
+22:42:24 {"state":"done","prog":"drafter 79/79"}
+RESULTS {"gpu":{"f16":true,"tsq":true,"arch":"metal-3"},"prompt":{"name":"lighthouse","tokens":21},"results":{"seam":{"prompt":"lighthouse","block":5,"max":256,"eos":true,"refTokens":96,"refText":"Lighthouses stand as enduring symbols of maritime safety and human ingenuity, perched on rugged cliffs and isolated islands to guide ships through treacherous waters. For centuries, their powerful beams have cut through fog and darkness, preventing countless vessels from crashing against hidden rock","rows":[{"rep":0,"cfg":"plain","n":96,"msPerTok":70.26,"ttftMs":533,"identicalToRef":true},{"rep":0,"cfg":"dflash","n":96,"msPerTok":78.3,"ttftMs":684.4,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.897},{"rep":0,"cfg":"ngram k=3","n":96,"msPerTok":74.35,"ttftMs":491.3,"cycles":38,"tokPerCycle":2.526,"ngramCycles":1,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.945},{"rep":0,"cfg":"ngram k=6","n":96,"msPerTok":75.84,"ttftMs":778.6,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.926},{"rep":1,"cfg":"plain","n":96,"msPerTok":70.69,"ttftMs":502.3,"identicalToRef":true},{"rep":1,"cfg":"dflash","n":96,"msPerTok":83.76,"ttftMs":528.4,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.844},{"rep":1,"cfg":"ngram k=3","n":96,"msPerTok":86.42,"ttftMs":694.5,"cycles":38,"tokPerCycle":2.526,"ngramCycles":1,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.818},{"rep":1,"cfg":"ngram k=6","n":96,"msPerTok":77.74,"ttftMs":495.8,"cycles":38,"tokPerCycle":2.526,"ngramCycles":0,"ngramAccepted":0,"generations":1,"compared":96,"firstDivergence":-1,"identical":true,"speedup":0.909}],"allIdentical":true,"runnerStats":{"cycles":266,"tokens":665,"accepted":406,"generations":7,"ngramCycles":2,"ngramAccepted":0}}},"error":null}
