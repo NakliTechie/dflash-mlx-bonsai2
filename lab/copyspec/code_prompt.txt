@@ -1,0 +1,41 @@
+Rename the variables in the following Python function to descriptive names and add a short comment above each logical step. Keep the behaviour exactly the same. Return only the full rewritten function in one code block.
+
+```python
+def proc(d, k, t=0.5, m=None):
+    r = {}
+    c = 0
+    if m is None:
+        m = len(d)
+    for i, x in enumerate(d):
+        if i >= m:
+            break
+        v = x.get(k)
+        if v is None:
+            c += 1
+            continue
+        s = str(v).strip().lower()
+        if not s:
+            c += 1
+            continue
+        w = x.get("weight", 1.0)
+        if w < 0:
+            raise ValueError("negative weight at %d" % i)
+        if s in r:
+            a, b = r[s]
+            r[s] = (a + w, b + 1)
+        else:
+            r[s] = (w, 1)
+    o = []
+    for s, (a, b) in r.items():
+        f = a / b
+        if f >= t:
+            o.append((s, round(f, 3), b))
+    o.sort(key=lambda z: (-z[1], z[0]))
+    tot = sum(b for _, _, b in o)
+    res = {"items": o, "skipped": c, "total": tot}
+    if tot == 0:
+        res["ratio"] = 0.0
+    else:
+        res["ratio"] = round(len(o) / tot, 4)
+    return res
+```
