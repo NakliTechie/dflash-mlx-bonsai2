@@ -1,0 +1,162 @@
+2026-09-21 21:23:26 [dflash] loading model on generation worker thread...
+[transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+[transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
++-----------------------------------------------------------------------------------------+
+| DFlash v0.1.10 - speculative decoding engine                                            |
+| Target:       /Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit |
+| Draft:        /Users/chiragpatnaik/Code/models/Qwen3.8-27B-DFlash2-r3 (explicit)        |
+| Draft quant:  none                                                                      |
+| Draft dtype:  checkpoint                                                                |
+| Mode:         DFlash (speculative decoding active)                                      |
+| Thinking:     enabled                                                                   |
+| Fast path:    off                                                                       |
+| Prefix cache: enabled                                                                   |
+| Target FA KV: full KV                                                                   |
+| Server:       mlx_lm.server on port 8790                                                |
+| Runtime:      default                                                                   |
+| Prefill step: 512                                                                       |
+| Draft cache:  sink=64 window=1024                                                       |
+| Verify cap:   block                                                                     |
+| Clear cache:  boundary                                                                  |
+| L1 cache:     on entries=8 bytes=8.0 GiB                                                |
+| L2 cache:     on (/Users/chiragpatnaik/.cache/dflash/prefix_l2, 50.0 GiB)               |
+| Max snapshot: 32000                                                                     |
+| Waterfall:    off                                                                       |
+| Diagnostics:  off                                                                       |
+| Diagnostics dir: off                                                                    |
+| Verify mode:  adaptive                                                                  |
+| Wired limit: auto -> 17.8 GiB                                                           |
+| Cache limit: 1.0 GiB -> 1.0 GiB                                                         |
++-----------------------------------------------------------------------------------------+
+2026-09-21 21:23:30,848 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [21/Sep/2026 21:23:31] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:23:31] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:23:39] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:23:57] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:23:57] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [21/Sep/2026 21:23:57] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:23:57 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-21 21:23:57 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-21 21:23:57 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:24:09 [dflash] prefill: 512/1821 tokens | 11.3s
+2026-09-21 21:24:09,288 - INFO - Prompt processing progress: 512/1821
+2026-09-21 21:24:17 [dflash] prefill: 1024/1821 tokens | 19.5s
+2026-09-21 21:24:17,429 - INFO - Prompt processing progress: 1024/1821
+2026-09-21 21:24:25 [dflash] prefill: 1536/1821 tokens | 27.1s
+2026-09-21 21:24:25,011 - INFO - Prompt processing progress: 1536/1821
+2026-09-21 21:24:29 [dflash] prefill: 1815/1821 tokens | 31.4s
+2026-09-21 21:24:29,355 - INFO - Prompt processing progress: 1815/1821
+2026-09-21 21:24:29 [dflash] prefill: 1816/1821 tokens | 31.5s
+2026-09-21 21:24:29,455 - INFO - Prompt processing progress: 1816/1821
+2026-09-21 21:24:29 [dflash] prefill: 1821/1821 tokens | 31.7s
+2026-09-21 21:24:29 [dflash] req#1 mlx_active=11.53 mlx_cache=0.04 mlx_peak=14.36 rss_now=0.29 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:24:33] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:24:33 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=2 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:24:35 [dflash] prefill: 52/58 tokens | 1.4s
+2026-09-21 21:24:35,293 - INFO - Prompt processing progress: 52/58
+2026-09-21 21:24:35 [dflash] prefill: 53/58 tokens | 1.5s
+2026-09-21 21:24:35,390 - INFO - Prompt processing progress: 53/58
+2026-09-21 21:24:35 [dflash] prefill: 58/58 tokens | 1.6s
+2026-09-21 21:24:35,555 - INFO - Prompt processing progress: 58/58
+2026-09-21 21:24:37 [dflash] end-of-request snapshot saved (90 tokens)
+2026-09-21 21:24:37 [dflash] decode 14.7 tok/s | prefill logical 35.5 tok/s | prefill real 35.5 tok/s | prefill restored 0.0 tok/s | 68.8% accepted | 32 tokens | 3.8s | prompt: 58 tokens
+2026-09-21 21:24:37 [dflash] req#2 mlx_active=11.74 mlx_cache=0.00 mlx_peak=14.36 rss_now=0.39 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:25:02] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:05] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:05] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [21/Sep/2026 21:25:05] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:25:05 [dflash] prefix-cache-stats [lookup] entries=1/8 bytes=171526144/8589934592 hits=0+0 misses=3 insertions=1 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=3 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:25:12 [dflash] prefill: 512/1821 tokens | 7.5s
+2026-09-21 21:25:12,908 - INFO - Prompt processing progress: 512/1821
+2026-09-21 21:25:19 [dflash] prefill: 1024/1821 tokens | 14.4s
+127.0.0.1 - - [21/Sep/2026 21:25:23] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:25] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:25] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+2026-09-21 21:25:27 [dflash] prefill: 1536/1821 tokens | 21.8s
+2026-09-21 21:25:31 [dflash] prefill: 1815/1821 tokens | 25.8s
+2026-09-21 21:25:31 [dflash] prefill: 1816/1821 tokens | 25.9s
+2026-09-21 21:25:31 [dflash] prefill: 1821/1821 tokens | 26.1s
+2026-09-21 21:25:31 [dflash] req#3 mlx_active=11.74 mlx_cache=0.04 mlx_peak=14.56 rss_now=0.30 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:25:31] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:25:31 [dflash] prefix-cache-stats [lookup] entries=1/8 bytes=171526144/8589934592 hits=0+0 misses=4 insertions=1 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=4 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:25:38 [dflash] prefill: 512/1821 tokens | 7.2s
+2026-09-21 21:25:38,771 - INFO - Prompt processing progress: 512/1821
+2026-09-21 21:25:45 [dflash] prefill: 1024/1821 tokens | 14.3s
+2026-09-21 21:25:45,787 - INFO - Prompt processing progress: 1024/1821
+127.0.0.1 - - [21/Sep/2026 21:25:47] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:49] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:25:49] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+2026-09-21 21:25:54 [dflash] prefill: 1536/1821 tokens | 22.8s
+2026-09-21 21:25:58 [dflash] prefill: 1815/1821 tokens | 27.2s
+2026-09-21 21:25:58 [dflash] prefill: 1816/1821 tokens | 27.3s
+2026-09-21 21:25:58 [dflash] prefill: 1821/1821 tokens | 27.5s
+2026-09-21 21:25:59 [dflash] req#4 mlx_active=11.74 mlx_cache=0.04 mlx_peak=14.56 rss_now=0.29 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:25:59] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:25:59 [dflash] prefix-cache-stats [lookup] entries=1/8 bytes=171526144/8589934592 hits=0+0 misses=5 insertions=1 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=5 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:26:06 [dflash] prefill: 512/1821 tokens | 7.9s
+2026-09-21 21:26:06,961 - INFO - Prompt processing progress: 512/1821
+2026-09-21 21:26:14 [dflash] prefill: 1024/1821 tokens | 15.7s
+2026-09-21 21:26:14,686 - INFO - Prompt processing progress: 1024/1821
+2026-09-21 21:26:22 [dflash] prefill: 1536/1821 tokens | 23.9s
+2026-09-21 21:26:22,919 - INFO - Prompt processing progress: 1536/1821
+2026-09-21 21:26:28 [dflash] prefill: 1815/1821 tokens | 29.5s
+2026-09-21 21:26:28,571 - INFO - Prompt processing progress: 1815/1821
+2026-09-21 21:26:28 [dflash] prefill: 1816/1821 tokens | 29.7s
+2026-09-21 21:26:28,694 - INFO - Prompt processing progress: 1816/1821
+2026-09-21 21:26:28 [dflash] prefill: 1821/1821 tokens | 29.9s
+2026-09-21 21:26:28,925 - INFO - Prompt processing progress: 1821/1821
+2026-09-21 21:26:33 [dflash] end-of-request snapshot saved (1865 tokens)
+2026-09-21 21:26:33 [dflash] decode 10.2 tok/s | prefill logical 60.9 tok/s | prefill real 60.9 tok/s | prefill restored 0.0 tok/s | 70.5% accepted | 44 tokens | 34.2s | prompt: 1821 tokens
+2026-09-21 21:26:33 [dflash] req#5 mlx_active=12.23 mlx_cache=0.04 mlx_peak=14.56 rss_now=0.30 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:26:33] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [21/Sep/2026 21:26:33] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:26:33 [dflash] prefix-cache-stats [lookup] entries=2/8 bytes=612057088/8589934592 hits=0+0 misses=6 insertions=2 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=6 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:26:43 [dflash] prefill: 512/1923 tokens | 9.9s
+2026-09-21 21:26:43,156 - INFO - Prompt processing progress: 512/1923
+2026-09-21 21:26:51 [dflash] prefill: 1024/1923 tokens | 18.0s
+2026-09-21 21:26:51,278 - INFO - Prompt processing progress: 1024/1923
+2026-09-21 21:26:59 [dflash] prefill: 1536/1923 tokens | 26.1s
+2026-09-21 21:26:59,393 - INFO - Prompt processing progress: 1536/1923
+2026-09-21 21:27:05 [dflash] prefill: 1917/1923 tokens | 32.5s
+2026-09-21 21:27:05,819 - INFO - Prompt processing progress: 1917/1923
+2026-09-21 21:27:05 [dflash] prefill: 1918/1923 tokens | 32.6s
+2026-09-21 21:27:06 [dflash] prefill: 1923/1923 tokens | 32.8s
+2026-09-21 21:27:06 [dflash] req#6 mlx_active=12.23 mlx_cache=0.04 mlx_peak=15.06 rss_now=0.29 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:27:08] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:27:11] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 21:27:11] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [21/Sep/2026 21:27:11] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:27:11 [dflash] prefix-cache-stats [lookup] entries=2/8 bytes=612057088/8589934592 hits=0+0 misses=7 insertions=2 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=7 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:27:18 [dflash] prefill: 512/1821 tokens | 7.6s
+2026-09-21 21:27:18,961 - INFO - Prompt processing progress: 512/1821
+2026-09-21 21:27:26 [dflash] prefill: 1024/1821 tokens | 14.7s
+2026-09-21 21:27:26,103 - INFO - Prompt processing progress: 1024/1821
+2026-09-21 21:27:34 [dflash] prefill: 1536/1821 tokens | 22.7s
+2026-09-21 21:27:34,108 - INFO - Prompt processing progress: 1536/1821
+2026-09-21 21:27:38 [dflash] prefill: 1815/1821 tokens | 27.1s
+2026-09-21 21:27:38,436 - INFO - Prompt processing progress: 1815/1821
+2026-09-21 21:27:38 [dflash] prefill: 1816/1821 tokens | 27.2s
+2026-09-21 21:27:38,552 - INFO - Prompt processing progress: 1816/1821
+2026-09-21 21:27:38 [dflash] prefill: 1821/1821 tokens | 27.4s
+2026-09-21 21:27:38,781 - INFO - Prompt processing progress: 1821/1821
+2026-09-21 21:27:41 [dflash] end-of-request snapshot saved (1865 tokens)
+2026-09-21 21:27:42 [dflash] decode 13.7 tok/s | prefill logical 66.4 tok/s | prefill real 66.4 tok/s | prefill restored 0.0 tok/s | 70.5% accepted | 44 tokens | 30.6s | prompt: 1821 tokens
+2026-09-21 21:27:42 [dflash] req#7 mlx_active=12.70 mlx_cache=0.04 mlx_peak=15.06 rss_now=0.30 rss_peak=7.90 untracked=0.00 GB
+127.0.0.1 - - [21/Sep/2026 21:27:42] "OPTIONS /v1/chat/completions HTTP/1.1" 204 -
+127.0.0.1 - - [21/Sep/2026 21:27:42] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 21:27:42 [dflash] prefix-cache-stats [lookup] entries=2/8 bytes=612057088/8589934592 hits=0+0 misses=8 insertions=3 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=8 l2_writes=0 l2_bytes=0/53687091200 l2_coverage_rejects=0
+2026-09-21 21:27:50 [dflash] prefill: 512/1923 tokens | 8.0s
+2026-09-21 21:27:50,040 - INFO - Prompt processing progress: 512/1923
+2026-09-21 21:27:57 [dflash] prefill: 1024/1923 tokens | 15.7s
+2026-09-21 21:27:57,776 - INFO - Prompt processing progress: 1024/1923
+2026-09-21 21:28:06 [dflash] prefill: 1536/1923 tokens | 24.6s
+2026-09-21 21:28:06,641 - INFO - Prompt processing progress: 1536/1923
+2026-09-21 21:28:13 [dflash] prefill: 1917/1923 tokens | 31.7s
+2026-09-21 21:28:13,720 - INFO - Prompt processing progress: 1917/1923
+2026-09-21 21:28:13 [dflash] prefill: 1918/1923 tokens | 31.8s
+2026-09-21 21:28:13,817 - INFO - Prompt processing progress: 1918/1923
+2026-09-21 21:28:13 [dflash] prefill: 1923/1923 tokens | 32.0s
+2026-09-21 21:28:13,987 - INFO - Prompt processing progress: 1923/1923
+2026-09-21 21:28:20 [dflash] end-of-request snapshot saved (2022 tokens)
+2026-09-21 21:28:21 [dflash] decode 14.0 tok/s | prefill logical 60.2 tok/s | prefill real 60.2 tok/s | prefill restored 0.0 tok/s | 72.7% accepted | 99 tokens | 39.0s | prompt: 1923 tokens
+2026-09-21 21:28:21 [dflash] req#8 mlx_active=12.73 mlx_cache=0.04 mlx_peak=15.06 rss_now=0.31 rss_peak=7.90 untracked=0.00 GB

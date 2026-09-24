@@ -1,4 +1,4 @@
-2026-09-21 21:36:13 [dflash] loading model on generation worker thread...
+2026-09-21 22:52:02 [dflash] loading model on generation worker thread...
 [transformers] You are using a model of type `prism_hadamard_qwen35` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
 [transformers] The tokenizer you are loading from '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
 +-----------------------------------------------------------------------------------------+
@@ -28,19 +28,19 @@
 | Wired limit: auto -> 17.8 GiB                                                           |
 | Cache limit: 1.0 GiB -> 1.0 GiB                                                         |
 +-----------------------------------------------------------------------------------------+
-2026-09-21 21:36:16,547 - INFO - Starting httpd at 127.0.0.1 on port 8790...
-127.0.0.1 - - [21/Sep/2026 21:36:17] "GET /v1/models HTTP/1.1" 200 -
-127.0.0.1 - - [21/Sep/2026 21:36:18] "GET /v1/models HTTP/1.1" 200 -
-127.0.0.1 - - [21/Sep/2026 21:36:19] "POST /v1/chat/completions HTTP/1.1" 200 -
-2026-09-21 21:36:19 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
-2026-09-21 21:36:19 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
-2026-09-21 21:36:19 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=440552832/53687091200 l2_coverage_rejects=0
-2026-09-21 21:37:07 [dflash] prefill: 2048/7973 tokens | 47.3s
-2026-09-21 21:37:07,246 - INFO - Prompt processing progress: 2048/7973
-2026-09-21 21:38:00 [dflash] prefill: 4096/7973 tokens | 100.4s
-2026-09-21 21:38:00,388 - INFO - Prompt processing progress: 4096/7973
+2026-09-21 22:52:05,029 - INFO - Starting httpd at 127.0.0.1 on port 8790...
+127.0.0.1 - - [21/Sep/2026 22:52:07] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 22:52:07] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2026 22:52:08] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 22:52:08 [dflash] prefix L2 cache enabled (dir=/Users/chiragpatnaik/.cache/dflash/prefix_l2, max_bytes=53687091200, writable=True)
+2026-09-21 22:52:08 [dflash] prefix cache enabled (max_entries=8, max_bytes=8589934592)
+2026-09-21 22:52:08 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=1 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=1 l2_writes=0 l2_bytes=440552832/53687091200 l2_coverage_rejects=0
+2026-09-21 22:52:26 [dflash] prefill: 2048/7974 tokens | 18.3s
+2026-09-21 22:52:26,966 - INFO - Prompt processing progress: 2048/7974
+2026-09-21 22:52:46 [dflash] prefill: 4096/7974 tokens | 38.3s
+2026-09-21 22:52:46,963 - INFO - Prompt processing progress: 4096/7974
 ----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 62385)
+Exception occurred during processing of request from ('127.0.0.1', 49452)
 Traceback (most recent call last):
   File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 697, in process_request_thread
     self.finish_request(request, client_address)
@@ -97,10 +97,10 @@ Traceback (most recent call last):
     mx.eval(logits, *captured.values())
 RuntimeError: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory).
 ----------------------------------------
-127.0.0.1 - - [21/Sep/2026 21:38:14] "POST /v1/chat/completions HTTP/1.1" 200 -
-2026-09-21 21:38:14 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=2 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=440552832/53687091200 l2_coverage_rejects=0
+127.0.0.1 - - [21/Sep/2026 22:53:07] "POST /v1/chat/completions HTTP/1.1" 200 -
+2026-09-21 22:53:07 [dflash] prefix-cache-stats [lookup] entries=0/8 bytes=0/8589934592 hits=0+0 misses=2 insertions=0 evictions=0 prefill_tokens_saved=0 sidecar_hits=0 coverage_rejects=0 l2_hits=0 l2_misses=2 l2_writes=0 l2_bytes=440552832/53687091200 l2_coverage_rejects=0
 ----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 62469)
+Exception occurred during processing of request from ('127.0.0.1', 49495)
 Traceback (most recent call last):
   File "/Users/chiragpatnaik/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/socketserver.py", line 697, in process_request_thread
     self.finish_request(request, client_address)

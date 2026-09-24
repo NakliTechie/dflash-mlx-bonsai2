@@ -71,3 +71,13 @@ prompt ~100000 tokens (n=99868)
 {"prompt_tokens": 99972, "ttft_s": 3267.55, "prefill_tok_s": 30.6, "total_s": 3267.69, "completion": "OK", "usage": {"completion_tokens": 2, "prompt_tokens": 99972, "total_tokens": 99974, "prompt_tokens_details": {"cached_tokens": 0}}}
 [22:36:47] mem after: 19G used (12G wired, 293M compressor), 4439M unused. swap 5907.62M
 [22:36:52] 100K DONE (llama.cpp only)
+[22:52:01] MLX 100k start: 11G used (2286M wired, 741M compressor), 12G unused.
+[22:52:07] dflash serve cold prefill target 8000
+prompt ~8002 tokens (n=7874)
+{"prompt_tokens": 8002, "ttft_s": null, "prefill_tok_s": null, "total_s": 56.35, "completion": "", "usage": null}
+[22:53:05] mem after: 19G used (16G wired, 2085M compressor), 3801M unused. swap 6878.06M
+[22:53:05] dflash serve cold prefill target 100000
+prompt ~100000 tokens (n=99869)
+{"prompt_tokens": 100000, "ttft_s": null, "prefill_tok_s": null, "total_s": 17.71, "completion": "", "usage": null}
+[22:53:26] mem after: 19G used (16G wired, 1968M compressor), 3895M unused. swap 6962.06M
+[22:53:26] MLX 100K DONE
