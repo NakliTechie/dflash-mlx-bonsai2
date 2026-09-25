@@ -1,9 +1,9 @@
 {
   "hardware": {
-    "chip": "Apple M5 Max",
-    "memory_gb": "64",
+    "chip": "Apple M4 Pro",
+    "memory_gb": "24",
     "mlx_version": "0.31.1",
-    "python": "3.14.3"
+    "python": "3.12.9"
   },
   "config": {
     "target_model": "Qwen/Qwen3.5-4B",
@@ -11,80 +11,80 @@
     "max_new_tokens": 2048,
     "block_tokens": 16,
     "cooldown": 10,
-    "prompt": "The function $f$ satisfies the functional equation \\[ f(x) + f(y) = f(x + y) - xy - 1 \\] for all real numbers $x$ and $y$. If $f(1) = 1$, then find all integers $n$ such that $f(n) = n$. Enter all such integers, separated by commas. Please reason step by step, and put your final answer within \\boxed{}.",
-    "prompt_tokens": 92,
-    "prompt_id": "the_function_f_satisfies_the_functional_equation",
+    "prompt": "Write a comprehensive history of Pilot as a fountain pen producer. Cover their founding in Japan, key innovations like the Capless and Custom series, their role in popularizing Japanese fine nibs globally, manufacturing techniques, competition with Sailor and Platinum, and their evolution from a domestic brand to a global writing instrument company.",
+    "prompt_tokens": 62,
+    "prompt_id": "write_a_comprehensive_history_of_pilot_as_a_foun",
     "repeat": 3,
-    "git_hash": "da458e2"
+    "git_hash": "19303f6"
   },
   "runs": [
     {
       "run": 1,
       "thermal_pressure": "unknown",
       "baseline": {
-        "ttft_ms": 255.722333000449,
-        "generation_tps": 54.11140954600346,
-        "peak_memory_gb": 8.539407223
+        "ttft_ms": 2622.2565829521045,
+        "generation_tps": 26.16589667507145,
+        "peak_memory_gb": 8.539373666
       },
       "dflash": {
-        "ttft_ms": 195.410875,
-        "generation_tps": 227.04994265493949,
-        "tokens_per_cycle": 9.309090909090909,
-        "cycles": 220,
-        "acceptance_ratio": 0.892578125,
-        "acceptance_first_20_avg": 7.05,
-        "acceptance_last_20_avg": 12.1,
-        "peak_memory_gb": 9.807426357
+        "ttft_ms": 1734.752084,
+        "generation_tps": 43.7257320228369,
+        "tokens_per_cycle": 5.347258485639687,
+        "cycles": 383,
+        "acceptance_ratio": 0.81298828125,
+        "acceptance_first_20_avg": 5.25,
+        "acceptance_last_20_avg": 13.75,
+        "peak_memory_gb": 9.790439421
       },
-      "speedup": 4.195971691735553
+      "speedup": 1.6710962580730093
     },
     {
       "run": 2,
       "thermal_pressure": "unknown",
       "baseline": {
-        "ttft_ms": 237.81787500047358,
-        "generation_tps": 53.605651848329494,
-        "peak_memory_gb": 8.539411794
+        "ttft_ms": 1425.5514999385923,
+        "generation_tps": 25.954189250834176,
+        "peak_memory_gb": 8.53937276
       },
       "dflash": {
-        "ttft_ms": 210.89275,
-        "generation_tps": 219.82982957221353,
-        "tokens_per_cycle": 9.309090909090909,
-        "cycles": 220,
-        "acceptance_ratio": 0.892578125,
-        "acceptance_first_20_avg": 7.05,
-        "acceptance_last_20_avg": 12.1,
-        "peak_memory_gb": 9.807422133
+        "ttft_ms": 1581.4005419999999,
+        "generation_tps": 40.29928975291277,
+        "tokens_per_cycle": 5.347258485639687,
+        "cycles": 383,
+        "acceptance_ratio": 0.81298828125,
+        "acceptance_first_20_avg": 5.25,
+        "acceptance_last_20_avg": 13.75,
+        "peak_memory_gb": 9.790439421
       },
-      "speedup": 4.1008703745305555
+      "speedup": 1.5527084804476232
     },
     {
       "run": 3,
       "thermal_pressure": "unknown",
       "baseline": {
-        "ttft_ms": 239.12012500022686,
-        "generation_tps": 53.742076932901355,
-        "peak_memory_gb": 8.539407314
+        "ttft_ms": 1494.1997079877183,
+        "generation_tps": 26.080970948781555,
+        "peak_memory_gb": 8.539371852
       },
       "dflash": {
-        "ttft_ms": 203.6515,
-        "generation_tps": 208.04611932078,
-        "tokens_per_cycle": 9.309090909090909,
-        "cycles": 220,
-        "acceptance_ratio": 0.892578125,
-        "acceptance_first_20_avg": 7.05,
-        "acceptance_last_20_avg": 12.1,
-        "peak_memory_gb": 9.807423541
+        "ttft_ms": 1468.079625,
+        "generation_tps": 43.58415381293664,
+        "tokens_per_cycle": 5.347258485639687,
+        "cycles": 383,
+        "acceptance_ratio": 0.81298828125,
+        "acceptance_first_20_avg": 5.25,
+        "acceptance_last_20_avg": 13.75,
+        "peak_memory_gb": 9.790439421
       },
-      "speedup": 3.8711961128806394
+      "speedup": 1.6711093271231452
     }
   ],
   "summary": {
-    "baseline_tps_median": 53.742076932901355,
-    "dflash_tps_median": 219.82982957221353,
-    "dflash_tps_min": 208.04611932078,
-    "dflash_tps_max": 227.04994265493949,
-    "speedup_median": 4.1008703745305555,
-    "acceptance_ratio_median": 0.892578125
+    "baseline_tps_median": 26.080970948781555,
+    "dflash_tps_median": 43.58415381293664,
+    "dflash_tps_min": 40.29928975291277,
+    "dflash_tps_max": 43.7257320228369,
+    "speedup_median": 1.6710962580730093,
+    "acceptance_ratio_median": 0.81298828125
   }
 }
