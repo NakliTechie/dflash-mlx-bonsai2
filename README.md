@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/status-experimental-4c6ef5?style=flat-square" alt="Status: experimental, one machine measured per platform">
 </p>
 
-<p align="center"><a href="marketing/launch.mp4"><img src="marketing/hero.jpg" alt="Measured speedups with the re-fitted drafter: 2.2× on maths and coding tests on one NVIDIA L4, 1.5× on code completion on an M4 Pro Mac, 1.2× on code in a browser tab with the same answers word for word" width="800"></a></p>
+<p align="center"><a href="marketing/launch.mp4"><img src="marketing/hero.jpg" alt="Measured speedups with the re-fitted drafter: 2.2× on maths and code on one NVIDIA L4 and 3.2× on code edits with prompt lookup, 1.5× on code completion on an M4 Pro Mac, 1.2× on code in a browser tab with the same answers word for word" width="800"></a></p>
 
 ## Install
 
