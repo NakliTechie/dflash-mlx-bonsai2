@@ -1,7 +1,7 @@
 """In-graph verify_block(8) timing through the runtime's own patch (install_prism_verify_linears) for each mode."""
 import sys, os, time, statistics as st
 sys.path.insert(0, 'lab')
-PACK = '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit'
+from prism_pack_loader import default_pack_dir; PACK = default_pack_dir()
 import mlx.core as mx
 from prism_pack_loader import load_text_model
 from dflash_mlx.engine.target_ops import resolve_target_ops

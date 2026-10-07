@@ -1,6 +1,6 @@
 """Parity of the padded v7 path vs stock fp32 for the row counts a real verify uses (3,4,5,7,8)."""
 import sys; sys.path.insert(0, 'lab')
-PACK = '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit'
+from prism_pack_loader import default_pack_dir; PACK = default_pack_dir()
 import mlx.core as mx
 from prism_pack_loader import load_text_model
 from dflash_mlx.runtime.prism_qmm import install_prism_verify_linears

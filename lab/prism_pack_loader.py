@@ -4,11 +4,22 @@ Builds the stock mlx_lm Qwen3.5 TextModel and installs the pack's Packed modules
 skipping the vision tower. Mirrors runtime/artifact.load_model but accepts the
 `language_model.` tensor namespace of vision packs.
 """
-import json, sys
+import json, os, sys
 from pathlib import Path
 import mlx.core as mx
 from mlx_lm.models.qwen3_5 import TextModel, TextModelArgs
 from mlx_lm.utils import load_tokenizer
+
+def default_pack_dir():
+    """The pack directory: $BONSAI2_PACK, else the Hugging Face cache snapshot setup-bonsai2.sh downloads."""
+    if os.environ.get('BONSAI2_PACK'):
+        return os.environ['BONSAI2_PACK']
+    from huggingface_hub import constants, snapshot_download
+    repo = os.environ.get('BONSAI2_PACK_REPO', 'prism-ml/Ternary-Bonsai-2-27B-mlx-2bit')
+    local_dir = Path(constants.HF_HUB_CACHE) / repo.split('/')[-1]   # `hf download --local-dir` layout
+    if (local_dir / 'config.json').is_file():
+        return str(local_dir)
+    return snapshot_download(repo, local_files_only=True)
 
 def load_text_model(directory):
     directory = Path(directory)

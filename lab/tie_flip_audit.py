@@ -2,7 +2,7 @@
 target's greedy argmax? Teacher-force a ~1000-token real text through verify_block in 5-row chunks (the real
 verify width) and count argmax disagreements vs the fp32 reference, plus mean |logit margin| at the flips."""
 import sys, re; sys.path.insert(0, 'lab')
-PACK = '/Users/chiragpatnaik/.cache/huggingface/hub/Ternary-Bonsai-2-27B-mlx-2bit'
+from prism_pack_loader import default_pack_dir; PACK = default_pack_dir()
 import mlx.core as mx, numpy as np
 from prism_pack_loader import load_text_model
 from dflash_mlx.engine.target_ops import resolve_target_ops
