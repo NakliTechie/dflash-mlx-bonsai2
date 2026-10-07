@@ -7,7 +7,7 @@ Pick the row that matches your hardware; each section below is complete on its o
 | You have | Path | Download | Measured speedup |
 |---|---|---|---|
 | Apple Silicon Mac, 24 GB | [1. Mac: `dflash serve`](#1-mac-dflash-serve) | 8.6 GB pack + 3.85 GB drafter | 1.2–1.5× on code and math (M4 Pro) |
-| NVIDIA GPU, 24 GB | [2. NVIDIA: llama.cpp](#2-nvidia-llamacpp) | 7.2 GB GGUF + 1.1 GB drafter GGUF | ~2× on code, ~1× on prose (L4) |
+| NVIDIA GPU, 24 GB | [2. NVIDIA: llama.cpp](#2-nvidia-llamacpp) | 7.2 GB GGUF + 1.1 GB drafter GGUF | 2.2× maths and code, 3.2× code edits with prompt lookup (L4) |
 | No GPU, a Google Cloud account | [3. Cloud Run L4](#3-nvidia-in-the-cloud-cloud-run-l4) | none locally | 2.1× math and code, 3.2× code edits (L4) |
 | Chrome with WebGPU | [4. Browser: LocalMind](#4-browser-localmind) | 5.9 GB model + 1.1 GB drafter, once | 1.18× on code (M4 Pro) |
 
@@ -75,12 +75,17 @@ hf download naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2 Qwen3.8-27B-DFlash2-
   -m  models/Ternary-Bonsai-2-27B-PQ2_0.gguf -ngl 999 -fa on -c 16384 --jinja \
   -md models/Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf -ngld 999 \
   --spec-type draft-dflash --spec-draft-n-max 7 \
+  --spec-type ngram-mod \
   --port 8080
 ```
 
 Point any OpenAI-compatible client at `http://localhost:8080/v1`, with temperature 0 for the measured numbers.
-For code edits, where the answer repeats your input, add `--spec-type ngram-mod` as well. llama.cpp then tries
-prompt lookup first and falls back to the drafter (3.2× vs 2.5× on code edits in the Cloud Run benchmark). For
+
+The second `--spec-type ngram-mod` turns on llama.cpp's prompt lookup. It runs before the drafter and reuses text
+already in your prompt, so it helps most when the answer repeats your input. On 80 HumanEval refactors on one L4,
+the drafter alone gave 2.46×, prompt lookup alone 1.57×, and both together **3.15×**. On maths and code it costs
+almost nothing (2.14× vs 2.17× on GSM8K). It is the default in the Cloud Run deploy below. Drop the line if you
+want the drafter alone. For
 chat-heavy traffic, `--spec-draft-n-max 3` wastes less work. To answer faster, add
 `"chat_template_kwargs": {"enable_thinking": false}` to a request; it turns off thinking.
 

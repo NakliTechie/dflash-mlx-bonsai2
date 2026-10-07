@@ -51,6 +51,8 @@ Apple M4 Pro, 24 GB, quiet machine, thinking off, greedy. Plain decode through t
 | code completion (raw, 512) | 4.57 | 33 | ~1.5× |
 | chat / email (512) | ~2.4 | ~17 | slight loss |
 
+The same drafter on one NVIDIA L4 through llama.cpp is faster still, measured by [bonsai2-run](https://github.com/NakliTechie/bonsai2-run/blob/main/results/bench-stack-2026-09-24/RESULTS.md): 2.2× on GSM8K, MBPP and MATH-500 (31 → 68 tok/s). On code edits, llama.cpp's prompt lookup (`--spec-type ngram-mod`) runs first and reuses text from your prompt, and the drafter covers the rest: 3.15× together, against 2.46× for the drafter alone and 1.57× for prompt lookup alone. The MLX server has its own prompt lookup from upstream (`--copyspec-mode`, on by default); its gain on code edits on a Mac is not measured yet.
+
 Output equals plain greedy decoding up to fp16 ties (the 8-row and 1-row kernels accumulate in different orders; on 1000 real tokens the `v7` path made 0 argmax flips against the fp32 reference). The gains and the caveats behind each row are in [docs/BONSAI2.md](docs/BONSAI2.md).
 
 ## What this fork adds
