@@ -72,6 +72,8 @@ upstream's, documented in [`docs/`](docs/).
 - ~13 GB of disk for the two model downloads (pack 8.6 GB + drafter 3.85 GB bf16).
 - `hf` (the `huggingface_hub` CLI) for the downloads; the setup script installs it into the
   venv if missing.
+- The pack ships its own Python (`runtime/` in the Hugging Face repo), and the loader imports it,
+  the same trust as `trust_remote_code`. Read it before running if that matters to you.
 
 ## Install
 

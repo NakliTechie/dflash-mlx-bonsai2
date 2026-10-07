@@ -1,23 +1,28 @@
 <h1 align="center">dflash-mlx-bonsai2</h1>
 
-<p align="center"><b>DFlash 2 speculative decoding for PrismML's Ternary-Bonsai-2-27B on Apple Silicon: the 2-bit 27B model, 1.2–1.5× faster on code and math, same greedy output.</b></p>
+<p align="center"><b>DFlash 2 speculative decoding for PrismML's Ternary-Bonsai-2-27B: the 2-bit 27B model, faster on code and math, same greedy output. On a Mac, an NVIDIA GPU or a browser tab.</b></p>
 
-<p align="center">Apple Silicon, 24 GB. Runs local. No account, no server, no telemetry.</p>
+<p align="center">Apple Silicon 24 GB, NVIDIA 24 GB, or Chrome with WebGPU. Runs on your own hardware. No account, no telemetry.</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache--2.0-4c6ef5?style=flat-square" alt="License: Apache-2.0">
-  <img src="https://img.shields.io/badge/platform-Apple%20Silicon-4c6ef5?style=flat-square" alt="Platform: Apple Silicon">
+  <img src="https://img.shields.io/badge/runs%20on-Mac%20%C2%B7%20NVIDIA%20%C2%B7%20WebGPU-4c6ef5?style=flat-square" alt="Runs on: Apple Silicon Mac, NVIDIA GPU, WebGPU browser">
   <img src="https://img.shields.io/badge/output-greedy--identical-4c6ef5?style=flat-square" alt="Output: greedy-identical up to fp16 ties">
-  <img src="https://img.shields.io/badge/status-experimental-4c6ef5?style=flat-square" alt="Status: experimental, one machine measured">
+  <img src="https://img.shields.io/badge/status-experimental-4c6ef5?style=flat-square" alt="Status: experimental, one machine measured per platform">
 </p>
+
+<p align="center"><a href="marketing/launch.mp4"><img src="marketing/hero.jpg" alt="Measured speedups with the re-fitted drafter: 2.2× on maths and coding tests on one NVIDIA L4, 1.5× on code completion on an M4 Pro Mac, 1.2× on code in a browser tab with the same answers word for word" width="800"></a></p>
 
 ## Install
 
 | Platform | Command |
 |---|---|
+| Browser (Chrome, WebGPU) | Open [localmind.naklitechie.com](https://localmind.naklitechie.com), pick **Ternary Bonsai 2 27B**; the drafter attaches by default |
 | Apple Silicon Mac (macOS, Python 3.11+) | `git clone https://github.com/NakliTechie/dflash-mlx-bonsai2 && cd dflash-mlx-bonsai2 && bash scripts/setup-bonsai2.sh` |
+| NVIDIA GPU (CUDA, 24 GB) | [PrismML's llama.cpp](https://github.com/PrismML-Eng/llama.cpp) `prism` branch: `llama-server -m <PQ2_0.gguf> -md <drafter.gguf> --spec-type draft-dflash` |
+| NVIDIA in the cloud (Cloud Run L4) | `curl -fsSL https://raw.githubusercontent.com/NakliTechie/bonsai2-run/main/cloudrun/bonsai2-cloudrun.sh \| bash` |
 
-The script makes a venv, installs this repo, and downloads the model pack (8.6 GB) and the drafter (3.85 GB) into the Hugging Face cache; it is idempotent and `--dry-run` shows the plan. Then start the server and point any OpenAI-compatible client at it:
+Step-by-step for every row, with downloads, flags and a chat UI for the Mac server: [docs/USAGE.md](docs/USAGE.md). The rest of this README is the Mac path. On a Mac, the script makes a venv, installs this repo, and downloads the model pack (8.6 GB) and the drafter (3.85 GB) into the Hugging Face cache; it is idempotent and `--dry-run` shows the plan. Then start the server and point any OpenAI-compatible client at it:
 
 ```bash
 bash scripts/serve-bonsai2.sh                      # dflash serve on http://127.0.0.1:8790/v1
@@ -29,11 +34,11 @@ Use `temperature: 0`: speculation only engages on greedy requests. No config fil
 
 ## Why
 
-You have a 27B model that fits in 6 GB, and it answers at 21 tokens a second because every token re-reads all 6 GB. Speculative decoding fixes that in principle: a small drafter guesses a block of tokens and the big model checks them in one pass. In practice, on the 2-bit Bonsai 2 target, two things were broken, and this fork fixes both.
+You have a 27B model packed to 2 bits, and on a Mac it answers at 21 tokens a second because every token re-reads all of its weights. Speculative decoding fixes that in principle: a small drafter guesses a block of tokens and the big model checks them in one pass. In practice, on the 2-bit Bonsai 2 target, two things were broken, and this fork fixes both.
 
 The drafter ([z-lab's DFlash 2](https://github.com/z-lab/dflash)) was trained on bf16 Qwen3.8 and guesses what the bf16 model would say, not what the ternary one does. And MLX's 2-bit matmul is tuned for one row, so checking 8 tokens cost as much as decoding 8 tokens one by one. This fork of [bstnxbt/dflash-mlx](https://github.com/bstnxbt/dflash-mlx) adds a loader for the Hadamard-rotated pack, a Metal 8-row 2-bit GEMM for the check, and a drafter re-fitted on the ternary model's own output.
 
-**Use something else if** you want the base Qwen3.8-27B at 4 bits, where upstream [dflash-mlx](https://github.com/bstnxbt/dflash-mlx) already works and has more memory headroom; you want a CUDA box, where [PrismML's llama.cpp fork](https://github.com/PrismML-Eng/llama.cpp) with a DFlash 2 drafter is the right path (our port of it is in `lab/leg9/patches`, not fast on Metal); or your traffic is chat and thinking, where this fork is break-even and plain [mlx-lm](https://github.com/ml-explore/mlx-lm) is simpler.
+**Use something else if** you want the base Qwen3.8-27B at 4 bits, where upstream [dflash-mlx](https://github.com/bstnxbt/dflash-mlx) already works and has more memory headroom; you have a CUDA box, where [PrismML's llama.cpp fork](https://github.com/PrismML-Eng/llama.cpp) with this same drafter is the right path ([docs/USAGE.md](docs/USAGE.md#2-nvidia-llamacpp); our Metal port of it is in `lab/leg9/patches`, and it is not fast); or your traffic is chat and thinking, where this fork is break-even and plain [mlx-lm](https://github.com/ml-explore/mlx-lm) is simpler.
 
 ## What it does to the numbers
 
@@ -52,7 +57,7 @@ Output equals plain greedy decoding up to fp16 ties (the 8-row and 1-row kernels
 
 The **pack loader** (`dflash_mlx/runtime/prism_pack.py`) builds a stock `mlx_lm` Qwen3.5 text model and installs the pack's Hadamard + 2-bit modules into it, so upstream's hidden capture, tape-replay rollback and prefix cache work unchanged (parity with the pack's own loader: max logit delta 3e-5). The **verify kernel** (`dflash_mlx/runtime/prism_qmm.py`, `DFLASH_PRISM_VERIFY=v7`) is a simdgroup 8×8 MMA GEMM that dequantizes 2-bit weights straight into matrix-tile registers, with a fused sign, Hadamard, transpose and row-sum prep; 2–8-row verify calls are padded to 8 because the real DFlash 2 verify is 4–5 rows wide. It cut the 8-token check from 438 ms to 105–115 ms against a 46 ms decode step.
 
-The **drafter** ([naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2)) is z-lab's DFlash 2 fine-tuned on 1.5 M tokens of the ternary model's own greedy generations, captured with a llama.cpp hidden-state dumper and trained on a rented GPU (`lab/aws/`). It accepts more on every prompt measured: chat 2.46 to 2.68, code 3.07 to 3.28, raw code 4.41 to 4.57 tokens per cycle against the shipped drafter. `DFLASH_TOOL_PARSER=off` lets clients that parse `<tool_call>` text themselves stream it through the server.
+The **drafter** ([naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2](https://huggingface.co/naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2)) is z-lab's DFlash 2 fine-tuned on 1.5 M tokens of the ternary model's own greedy generations, captured with a llama.cpp hidden-state dumper and trained on a rented GPU (`lab/aws/`). Against the shipped drafter it accepts more on every prompt measured (drafter A/B, its own runs): chat 2.46 to 2.68, code 3.07 to 3.28, raw code 4.41 to 4.57 tokens per cycle. `DFLASH_TOOL_PARSER=off` lets clients that parse `<tool_call>` text themselves stream it through the server.
 
 The **browser port** (`lab/webgpu/`) runs the same loop inside the WebGPU engine that [LocalMind](https://github.com/NakliTechie/LocalMind) uses for Bonsai 2: the drafter in WGSL with Q4_K/Q6_K weights kept packed on the GPU, an M ≤ 8 ternary GEMM for the verify block, and a recurrence-only rewind after a rollback (the target is a Gated-DeltaNet hybrid). `runner/spec-runner.js` is the class LocalMind vendors; in-app on the same M4 Pro it is 1.18× on a 1,486-token code answer (34.4 vs 40.7 ms/token), output identical.
 
@@ -73,7 +78,7 @@ DFLASH_TOOL_PARSER=off dflash serve ...                         # stream tool-ca
 ## Verify it yourself
 
 ```bash
-python lab/padded_parity.py      # 3–8-row verify path vs the stock fp32 path: argmax identical, fp16-level deltas
+python lab/padded_parity.py      # pack from $BONSAI2_PACK or the HF cache; 3–8-row verify path vs the stock fp32 path: argmax identical, fp16-level deltas
 python lab/tie_flip_audit.py     # 1000 real tokens: argmax flips per verify path vs the fp32 reference
 python lab/verify_timing_modes.py v4b v7   # isolated verify(8) vs decode(1), per kernel
 ```
@@ -82,4 +87,4 @@ The parity and tie-flip audits are what "greedy-identical up to fp16 ties" point
 
 ## License
 
-Apache-2.0, as upstream; see NOTICE for z-lab, PrismML and Qwen attribution. Founding document and every measurement: [docs/BONSAI2.md](docs/BONSAI2.md) · runtime flags: [docs/runtime-flags.md](docs/runtime-flags.md) · research trail: `lab/`.
+Apache-2.0, as upstream; see NOTICE for z-lab, PrismML and Qwen attribution. Founding document and every measurement: [docs/BONSAI2.md](docs/BONSAI2.md) · Mac, NVIDIA and browser setup: [docs/USAGE.md](docs/USAGE.md) · runtime flags: [docs/runtime-flags.md](docs/runtime-flags.md) · research trail: `lab/`.
