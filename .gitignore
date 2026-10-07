@@ -51,3 +51,6 @@ skills-lock.json
 lab/aws/corpus/
 .artifacts/
 .bonsai2.env
+
+# plan store symlink (NakliTechie/plans)
+/plan
