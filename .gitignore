@@ -54,3 +54,6 @@ lab/aws/corpus/
 
 # plan store symlink (NakliTechie/plans)
 /plan
+# Promo output (regenerable; /windup-nt sweeps it)
+/marketing
+/brag-output*
